@@ -8,7 +8,7 @@ import (
 )
 
 func TestDirectory(t *testing.T) {
-	mod := NewDirectoryModule(DirectoryConfig{})
+	mod := DirectoryModule{}
 
 	env := &env.DummyEnv{
 		Env: map[string]string{
@@ -29,7 +29,7 @@ func TestDirectory(t *testing.T) {
 }
 
 func TestHomeDirectory(t *testing.T) {
-	mod := NewDirectoryModule(DirectoryConfig{})
+	mod := DirectoryModule{}
 
 	env := &env.DummyEnv{
 		Env: map[string]string{
@@ -50,7 +50,7 @@ func TestHomeDirectory(t *testing.T) {
 }
 
 func TestHomeDirectorySubdirectory(t *testing.T) {
-	mod := NewDirectoryModule(DirectoryConfig{})
+	mod := DirectoryModule{}
 
 	env := &env.DummyEnv{
 		Env: map[string]string{
@@ -71,7 +71,7 @@ func TestHomeDirectorySubdirectory(t *testing.T) {
 }
 
 func TestHomeDirectorySubdirectoryTruncated(t *testing.T) {
-	mod := NewDirectoryModule(DirectoryConfig{})
+	mod := DirectoryModule{}
 
 	env := &env.DummyEnv{
 		Env: map[string]string{
@@ -90,7 +90,7 @@ func TestHomeDirectorySubdirectoryTruncated(t *testing.T) {
 }
 
 func TestHomeDirectoryTruncated(t *testing.T) {
-	mod := NewDirectoryModule(DirectoryConfig{})
+	mod := DirectoryModule{}
 
 	env := &env.DummyEnv{
 		Env: map[string]string{

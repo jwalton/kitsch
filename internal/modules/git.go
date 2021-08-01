@@ -7,30 +7,43 @@ import (
 	"github.com/jwalton/kitsch-prompt/internal/env"
 	"github.com/jwalton/kitsch-prompt/internal/gitutils"
 	"github.com/jwalton/kitsch-prompt/internal/style"
+	"gopkg.in/yaml.v3"
 )
 
-// GitConfig is configuration for the git module.
-type GitConfig struct {
-	CommonConfig
-}
-
-type gitModule struct {
-	config GitConfig
-}
-
-// NewGitModule creates a git module.
+// GitModule shows information about the current git repo.
 //
 // The default implementation of the git module is loosely based  on
 // https://github.com/lyze/posh-git-sh and https://github.com/dahlbyk/posh-git.
 //
-func NewGitModule(config GitConfig) Module {
-	return gitModule{config}
+// Provides the following template variables:
+//
+// • stashCount - The number of stashes.
+//
+// • state - A `{ State, Step, Total, Base, Branch }` object.  All of these
+//   values are strings.  State is the current state of the repo (e.g. "MERGING"
+//   if in the middle of a merge).  Step and Total represent the number of steps
+//   left to complete the current operation (e.g. the number of commits left
+//   to apply in an interactive rebase), or empty string if no such operation is
+//   in progress.  Base is the name of the base branch we are merging from or
+//   rebasing from.  Branch is the name of the current branch or hash.
+//
+// • stats - A `{ Index, Files, Unmerged }` object.  Index and Files are the
+//   number of `{ Added, Modified, Deleted }` files in the index and working
+//   directory, respectively.  Unmerged is the number of unmerged files, if
+//   there is a merge operation in progress.
+//
+// • ahead - The number of commits ahead of the upstream branch.
+//
+// • behind - The number of commits behind the upstream branch.
+//
+// • symbol - The symbol to use to indicate the current state of the repo.
+//
+type GitModule struct {
+	CommonConfig `yaml:",inline"`
 }
 
 // Execute runs a git module.
-func (mod gitModule) Execute(env env.Env) ModuleResult {
-	config := mod.config
-
+func (mod GitModule) Execute(env env.Env) ModuleResult {
 	cwd := env.Getwd()
 	git := gitutils.New("git", cwd)
 
@@ -67,7 +80,6 @@ func (mod gitModule) Execute(env env.Env) ModuleResult {
 	}
 
 	data := map[string]interface{}{
-		"shortName":  state.Base,
 		"stashCount": stashCount,
 		"state":      state,
 		"stats":      stats,
@@ -78,10 +90,10 @@ func (mod gitModule) Execute(env env.Env) ModuleResult {
 
 	defaultOutput := mod.renderDefault(symbol, state, stats, stashCount, upstream, ahead, behind)
 
-	return executeModule(config.CommonConfig, data, config.Style, defaultOutput)
+	return executeModule(mod.CommonConfig, data, mod.Style, defaultOutput)
 }
 
-func (mod gitModule) renderDefault(
+func (mod GitModule) renderDefault(
 	symbol string,
 	state gitutils.RepositoryState,
 	stats gitutils.GitStats,
@@ -90,6 +102,7 @@ func (mod gitModule) renderDefault(
 	ahead int,
 	behind int,
 ) string {
+	// TODO: Make these styles configurable.
 	branchStyle := style.Style{FG: "brightCyan"}
 	if upstream != "" {
 		if ahead > 0 && behind > 0 {
@@ -136,9 +149,17 @@ func (mod gitModule) renderDefault(
 	return "[" + branch + statsPart + "]"
 }
 
-func (mod gitModule) renderStats(stats gitutils.GitFileStats) string {
+func (mod GitModule) renderStats(stats gitutils.GitFileStats) string {
 	if stats.Added > 0 || stats.Modified > 0 || stats.Deleted > 0 {
 		return fmt.Sprintf("+%d ~%d -%d ", stats.Added, stats.Modified, stats.Deleted)
 	}
 	return ""
+}
+
+func init() {
+	registerFactory("git", func(node *yaml.Node) (Module, error) {
+		var module GitModule
+		err := node.Decode(&module)
+		return &module, err
+	})
 }

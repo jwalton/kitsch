@@ -3,11 +3,21 @@ package modules
 import (
 	"github.com/jwalton/kitsch-prompt/internal/env"
 	styleLib "github.com/jwalton/kitsch-prompt/internal/style"
+	"gopkg.in/yaml.v3"
 )
 
-// PromptConfig is configuration for a prompt module.
-type PromptConfig struct {
-	CommonConfig
+// PromptModule shows a prompt to the user.
+//
+// The prompt module displays a "$", or a "#" if the current user is root.
+//
+// The prompt module provides the following template variables:
+//
+// • isRoot - True if the user is root, false otherwise.
+//
+// • status - An `int` which represents the return status of the last command.
+//
+type PromptModule struct {
+	CommonConfig `yaml:",inline"`
 	// Prompt is what to display as the prompt.  Defaults to "$".
 	Prompt string
 	// RootPrompt is what to display as the prompt if the current user is root.  Defaults to "#".
@@ -19,27 +29,8 @@ type PromptConfig struct {
 	ErrorStyle styleLib.Style
 }
 
-type prompt struct {
-	config PromptConfig
-}
-
-// NewPromptModule creates a prompt module.
-//
-// The prompt module displays a "$", or a "#" if the current user is root.
-//
-// The prompt module returns the following template variables:
-//
-// • isRoot - True if the user is root, false otherwise.
-//
-// • status - An `int` which represents the return status of the last command.
-//
-func NewPromptModule(config PromptConfig) Module {
-	return prompt{config}
-}
-
-func (mod prompt) Execute(env env.Env) ModuleResult {
-	config := mod.config
-
+// Execute the prompt module.
+func (mod PromptModule) Execute(env env.Env) ModuleResult {
 	isRoot := env.IsRoot()
 	status := env.Status()
 
@@ -51,25 +42,33 @@ func (mod prompt) Execute(env env.Env) ModuleResult {
 	// TODO: Use env.Keymap() here.
 	var text string
 	if !isRoot {
-		text = defaultString(config.Prompt, "$")
+		text = defaultString(mod.Prompt, "$")
 	} else {
-		text = defaultString(config.RootPrompt, "#")
+		text = defaultString(mod.RootPrompt, "#")
 	}
 
 	var style styleLib.Style
 	if status != 0 {
-		style = config.ErrorStyle
+		style = mod.ErrorStyle
 	} else if !isRoot {
-		style = config.Style
+		style = mod.Style
 		if style.IsEmpty() {
-			style = config.Style
+			style = mod.Style
 		}
 	} else {
-		style = config.RootStyle
+		style = mod.RootStyle
 		if style.IsEmpty() {
-			style = config.Style
+			style = mod.Style
 		}
 	}
 
-	return executeModule(config.CommonConfig, data, style, text)
+	return executeModule(mod.CommonConfig, data, style, text)
+}
+
+func init() {
+	registerFactory("prompt", func(node *yaml.Node) (Module, error) {
+		var module PromptModule
+		err := node.Decode(&module)
+		return &module, err
+	})
 }

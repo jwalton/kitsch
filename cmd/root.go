@@ -45,7 +45,7 @@ func init() {
 	// TODO: Is Cobra a bit heavyweight here?
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.pixdl.yaml)")
-	rootCmd.PersistentFlags().BoolP("verbose", "d", false, "Use verbose output")
+	rootCmd.PersistentFlags().Bool("verbose", false, "Use verbose output")
 }
 
 // initConfig reads in config file and ENV variables if set.

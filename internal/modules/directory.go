@@ -5,15 +5,23 @@ import (
 	"strings"
 
 	"github.com/jwalton/kitsch-prompt/internal/env"
+	"gopkg.in/yaml.v3"
 )
 
 const defaultHomeSymbol = "~"
 const defaultTruncationLength = 3
 const defaultTruncationSymbol = "…"
 
-// DirectoryConfig is configuration for a directory module.
-type DirectoryConfig struct {
-	CommonConfig
+// DirectoryModule shows the current working directory.
+//
+// Provides the following template variables:
+//
+// • rawDirectory - The unmodified current working directory.
+//
+// • directory - The directory to show.
+//
+type DirectoryModule struct {
+	CommonConfig `yaml:",inline"`
 	// HomeSymbol is the symbol to replace the home directory with in directory
 	// strings.  Defaults to "~".
 	HomeSymbol string
@@ -25,27 +33,8 @@ type DirectoryConfig struct {
 	TruncationSymbol string
 }
 
-type directoryModule struct {
-	config DirectoryConfig
-}
-
-// NewDirectoryModule creates a directory module.
-//
-// The directory module shows the current working directory.
-//
-// Returns the following template variables:
-//
-// • rawDirectory - The unmodified current working directory.
-//
-// • directory - The directory to show.
-//
-func NewDirectoryModule(config DirectoryConfig) Module {
-	return directoryModule{config}
-}
-
-func (mod directoryModule) Execute(env env.Env) ModuleResult {
-	config := mod.config
-
+// Execute the directory module.
+func (mod DirectoryModule) Execute(env env.Env) ModuleResult {
 	rawDirectory := env.Getwd()
 
 	// TODO: Truncate to root of git repo if we're in a git repo.
@@ -65,7 +54,7 @@ func (mod directoryModule) Execute(env env.Env) ModuleResult {
 		}
 	}
 
-	truncationLength := defaultNumber(config.TruncationLength, defaultTruncationLength)
+	truncationLength := defaultNumber(mod.TruncationLength, defaultTruncationLength)
 
 	// Truncate directory to `truncationLength`.
 	//
@@ -75,14 +64,14 @@ func (mod directoryModule) Execute(env env.Env) ModuleResult {
 	isTruncated := isHome && (len(parts) > truncationLength+1) || !isHome && (len(parts) > truncationLength)
 	if isTruncated {
 		parts = parts[len(parts)-truncationLength:]
-		truncationSymbol := defaultString(config.TruncationSymbol, defaultTruncationSymbol)
+		truncationSymbol := defaultString(mod.TruncationSymbol, defaultTruncationSymbol)
 		directory = truncationSymbol + string(os.PathSeparator) + strings.Join(parts, string(os.PathSeparator))
 	}
 
 	// If this is the home directory, and we haven't truncated the path, add the
 	// home symbol back.
 	if isHome && !isTruncated {
-		directory = defaultString(config.HomeSymbol, defaultHomeSymbol) + directory
+		directory = defaultString(mod.HomeSymbol, defaultHomeSymbol) + directory
 	}
 
 	// TODO: Add read-only icon if read-only directory.
@@ -92,5 +81,13 @@ func (mod directoryModule) Execute(env env.Env) ModuleResult {
 		"directory":    directory,
 	}
 
-	return executeModule(config.CommonConfig, data, config.Style, directory)
+	return executeModule(mod.CommonConfig, data, mod.Style, directory)
+}
+
+func init() {
+	registerFactory("directory", func(node *yaml.Node) (Module, error) {
+		var module DirectoryModule
+		err := node.Decode(&module)
+		return &module, err
+	})
 }

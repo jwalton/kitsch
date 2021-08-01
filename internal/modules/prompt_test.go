@@ -9,7 +9,7 @@ import (
 )
 
 func TestPrompt(t *testing.T) {
-	mod := NewPromptModule(PromptConfig{})
+	mod := PromptModule{}
 	env := &env.DummyEnv{}
 
 	result := mod.Execute(env)
@@ -25,7 +25,7 @@ func TestPrompt(t *testing.T) {
 }
 
 func TestRootPrompt(t *testing.T) {
-	mod := NewPromptModule(PromptConfig{})
+	mod := PromptModule{}
 	env := &env.DummyEnv{Root: true}
 
 	result := mod.Execute(env)
@@ -41,12 +41,12 @@ func TestRootPrompt(t *testing.T) {
 }
 
 func TestStyle(t *testing.T) {
-	mod := NewPromptModule(PromptConfig{
+	mod := PromptModule{
 		CommonConfig: CommonConfig{
 			Style: style.Style{FG: "blue"},
 		},
 		RootStyle: style.Style{FG: "red"},
-	})
+	}
 
 	stdEnv := &env.DummyEnv{Root: false}
 	result := mod.Execute(stdEnv)

@@ -9,14 +9,14 @@ import (
 )
 
 func TestBlock(t *testing.T) {
-	usernameMod := NewUsernameModule(UsernameConfig{
+	usernameMod := UsernameModule{
 		ShowAlways: true,
-	})
-	promptMod := NewPromptModule(PromptConfig{})
-	blockMod := NewBlockModule(BlockConfig{
-		Modules: []Module{usernameMod, promptMod},
+	}
+	promptMod := PromptModule{}
+	blockMod := BlockModule{
+		Modules: ModuleList{[]Module{usernameMod, promptMod}},
 		Join:    " ",
-	})
+	}
 
 	env := &env.DummyEnv{
 		Env: map[string]string{
@@ -29,18 +29,18 @@ func TestBlock(t *testing.T) {
 }
 
 func TestBlockStyles(t *testing.T) {
-	usernameMod := NewUsernameModule(UsernameConfig{
+	usernameMod := UsernameModule{
 		CommonConfig: CommonConfig{Style: style.Style{FG: "red"}},
 		ShowAlways:   true,
-	})
-	promptMod := NewPromptModule(PromptConfig{
+	}
+	promptMod := PromptModule{
 		CommonConfig: CommonConfig{Style: style.Style{FG: "blue"}},
-	})
+	}
 
-	blockMod := NewBlockModule(BlockConfig{
-		Modules: []Module{usernameMod, promptMod},
+	blockMod := BlockModule{
+		Modules: ModuleList{[]Module{usernameMod, promptMod}},
 		Join:    " {{.prevStyle.FG}}{{.nextStyle.FG}} ",
-	})
+	}
 
 	env := &env.DummyEnv{
 		Env: map[string]string{

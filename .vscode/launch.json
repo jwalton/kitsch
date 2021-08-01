@@ -10,7 +10,7 @@
       "request": "launch",
       "mode": "debug",
       "program": "${workspaceFolder}",
-      "args": ["show"],
+      "args": ["prompt"],
       "cwd": "${workspaceFolder}"
     }
   ]

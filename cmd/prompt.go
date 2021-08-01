@@ -3,9 +3,9 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/jwalton/kitsch-prompt/internal/config"
 	"github.com/jwalton/kitsch-prompt/internal/env"
 	"github.com/jwalton/kitsch-prompt/internal/modules"
-	"github.com/jwalton/kitsch-prompt/internal/style"
 	"github.com/spf13/cobra"
 )
 
@@ -20,31 +20,35 @@ var promptCmd = &cobra.Command{
 
 		runtimeEnv := env.NewEnv(jobs, cmdDuration, status, keymap)
 
-		block := modules.NewBlockModule(modules.BlockConfig{
-			Modules: []modules.Module{
-				modules.NewTimeModule(modules.TimeConfig{
-					CommonConfig: modules.CommonConfig{Style: style.ParseMust("brightBlack")},
-				}),
-				modules.NewDirectoryModule(modules.DirectoryConfig{
-					CommonConfig: modules.CommonConfig{
-						Style:    style.ParseMust("brightBlue"),
-						Template: "[{{.directory}}]",
-					},
-				}),
-				modules.NewGitModule(modules.GitConfig{
-					CommonConfig: modules.CommonConfig{
-						Style: style.ParseMust("brightYellow"),
-					},
-				}),
-				modules.NewPromptModule(modules.PromptConfig{
-					CommonConfig: modules.CommonConfig{Style: style.ParseMust("brightBlue")},
-				}),
-			},
-			Join: " ",
-		})
+		yamlConfig := `
+prompt:
+  type: block
+  join: " "
+  modules:
+    - type: time
+      style: brightBlack
+    - type: directory
+      style: brightBlue
+      template: "[{{.directory}}]"
+    - type: git
+      style: brightYellow
+    - type: prompt
+      style: brightBlue
+`
 
-		result := block.Execute(runtimeEnv)
-		fmt.Println(result.Text)
+		var module modules.Module
+		configuration, err := config.ReadConfig(yamlConfig)
+		if err == nil {
+			module, err = configuration.GetPromptModule()
+		}
+
+		if err != nil {
+			fmt.Println(err)
+			fmt.Print("$ ")
+		} else {
+			result := module.Execute(runtimeEnv)
+			fmt.Println(result.Text)
+		}
 	},
 }
 

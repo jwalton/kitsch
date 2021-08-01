@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/yaml.v3"
 )
 
 func TestParse(t *testing.T) {
@@ -39,7 +40,37 @@ func TestUnmarshall(t *testing.T) {
 	assert.Nil(t, err, "err should be nil")
 	assert.Equal(t, Style{FG: "blue", BG: "red", Modifiers: []string{"bold"}}, style)
 
-	err = style.UnmarshalInterface("bgBlue")
+	err = style.UnmarshalInterface("bgBlue bold")
 	assert.Nil(t, err, "err should be nil")
-	assert.Equal(t, Style{FG: "", BG: "blue", Modifiers: nil}, style)
+	assert.Equal(t, Style{FG: "", BG: "blue", Modifiers: []string{"bold"}}, style)
+}
+
+type yamlTestStruct struct {
+	Style Style `yaml:"style"`
+}
+
+func TestUnmarshallYaml(t *testing.T) {
+	text := `
+style:
+  fg: blue
+  bg: red
+  modifiers:
+    - bold
+`
+
+	var result yamlTestStruct
+	err := yaml.Unmarshal([]byte(text), &result)
+	assert.Nil(t, err, "err should be nil")
+	assert.Equal(t, Style{FG: "blue", BG: "red", Modifiers: []string{"bold"}}, result.Style)
+}
+
+func TestUnmarshallYamlString(t *testing.T) {
+	text := `
+style: bgBlue bold
+`
+
+	var result yamlTestStruct
+	err := yaml.Unmarshal([]byte(text), &result)
+	assert.Nil(t, err, "err should be nil")
+	assert.Equal(t, Style{FG: "", BG: "blue", Modifiers: []string{"bold"}}, result.Style)
 }
