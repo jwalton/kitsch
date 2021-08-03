@@ -21,6 +21,7 @@ import (
 	"bytes"
 	"text/template"
 
+	"github.com/Masterminds/sprig/v3"
 	"github.com/jwalton/kitsch-prompt/internal/env"
 	"github.com/jwalton/kitsch-prompt/internal/style"
 	styleLib "github.com/jwalton/kitsch-prompt/internal/style"
@@ -81,7 +82,7 @@ func executeModule(
 	// suffix, _, suffixEndStyle, _, suffixErr := config.SuffixStyle.Apply(config.Suffix)
 
 	if config.Template != "" {
-		tmpl, err := template.New("module-template").Parse(config.Template)
+		tmpl, err := compileTemplate("module-template", config.Template)
 		// FIX: Should add this error to a list of warnings for this module.
 		if err == nil {
 			text = templateToString(tmpl, data)
@@ -99,6 +100,21 @@ func executeModule(
 		StartStyle: startStyle,
 		EndStyle:   endStyle,
 	}
+}
+
+var springTemplateFunctions = sprig.TxtFuncMap()
+
+// Compilte a module template and add default template functions.
+func compileTemplate(name string, templateString string) (*template.Template, error) {
+	tmpl, err := template.
+		New(name).
+		Funcs(springTemplateFunctions).
+		Funcs(styleLib.TxtFuncMap()).
+		Parse(templateString)
+	if err != nil {
+		return nil, err
+	}
+	return tmpl, nil
 }
 
 func templateToString(template *template.Template, data interface{}) string {

@@ -21,7 +21,7 @@ func (style Style) Apply(text string) (
 	if colorErr != nil {
 		err = colorErr
 	}
-	text, colorErr = applyColor(text, style.FG, false)
+	text, colorErr = applyColor(text, style.BG, true)
 	if colorErr != nil {
 		err = colorErr
 	}

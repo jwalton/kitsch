@@ -149,17 +149,26 @@ func ParseMust(styleString string) Style {
 	return result
 }
 
+// isBgColor returns true if the passed in style is a background color,
+// and returns the color with the bg prefix stripped.
+func isBgColor(styleStr string) (string, bool) {
+	if strings.HasPrefix(styleStr, bgPrefix) {
+		// Handle case where `styleStr` starts with "bg:".
+		return styleStr[3:], true
+	} else if strings.HasPrefix(styleStr, "bg") {
+		return strings.ToLower(styleStr[2:3]) + styleStr[3:], true
+	}
+	return "", false
+}
+
 // parseStyleSubstring is a helper function for `ParseStyle` which parses an individual
 // style string.
 func parseStyleSubstring(styleStr string, isBackground bool, style *Style) error {
 	// TODO: Add `bg#abcdef` support to gchalk.  Maybe add `bg:red` support, too.
-	if strings.HasPrefix(styleStr, bgPrefix) {
-		// Handle case where `styleStr` starts with "bg:".
-		return parseStyleSubstring(styleStr[3:], true, style)
-	} else if strings.HasPrefix(styleStr, "bg") {
-		// Handle cases like "bgBlue" - convert this to "blue".
-		styleStr = strings.ToLower(styleStr[2:3]) + styleStr[3:]
-		return parseStyleSubstring(styleStr, true, style)
+	// It would be nice if `gchalk.style()` supported these and FG hex colors.
+	if color, isBg := isBgColor(styleStr); isBg {
+		// Handle case where `styleStr` starts with "bg:" or "bg".
+		return parseStyleSubstring(color, true, style)
 	} else if validateColor(styleStr) {
 		if isBackground {
 			style.BG = styleStr

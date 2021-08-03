@@ -66,7 +66,7 @@ func (mod BlockModule) joinChildren(children []ModuleResult) string {
 
 	if mod.Join != "" {
 		var err error
-		join, err = template.New("join").Parse(mod.Join)
+		join, err = compileTemplate("join", mod.Join)
 		if err != nil {
 			join = nil
 		}

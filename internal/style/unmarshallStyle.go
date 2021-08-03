@@ -34,6 +34,16 @@ func (style *Style) UnmarshalYAML(node *yaml.Node) error {
 func (style *Style) UnmarshalInterface(styleInterface interface{}) error {
 	// TODO: Can maybe simplify this by just unmarshalling from YAML directly?
 	switch styleInterface := styleInterface.(type) {
+	case Style:
+		style.BG = styleInterface.BG
+		style.FG = styleInterface.FG
+		style.Modifiers = styleInterface.Modifiers
+		return nil
+	case *Style:
+		style.BG = styleInterface.BG
+		style.FG = styleInterface.FG
+		style.Modifiers = styleInterface.Modifiers
+		return nil
 	case string:
 		return style.parse(styleInterface)
 	case map[string]interface{}:
