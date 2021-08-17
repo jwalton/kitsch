@@ -46,8 +46,7 @@ func (mod BlockModule) Execute(env env.Env) ModuleResult {
 	defaultText := mod.joinChildren(children)
 
 	data := map[string]interface{}{
-		"children":    children,
-		"defaultText": defaultText,
+		"children": children,
 	}
 
 	result := executeModule(mod.CommonConfig, data, mod.Style, defaultText)

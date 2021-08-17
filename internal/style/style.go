@@ -57,6 +57,14 @@ func (style *Style) Mix(nested Style) Style {
 	}
 }
 
+// Default will return the given style if and only if the receiver is empty.
+func (style *Style) Default(defaultStyle Style) Style {
+	if style.IsEmpty() {
+		return defaultStyle
+	}
+	return *style
+}
+
 // defaultString returns value if it is non-empty, or def otherwise.
 func defaultString(value string, def string) string {
 	if value != "" {
@@ -187,4 +195,25 @@ func parseStyleSubstring(styleStr string, isBackground bool, style *Style) error
 func validateColor(color string) bool {
 	_, validAnsiStyle := ansistyles.Color[color]
 	return validAnsiStyle || hexColorRegex.MatchString(color)
+}
+
+// ToFgColor converts a color to a foreground color.
+func ToFgColor(color string) string {
+	if color == "" {
+		color = "black"
+	} else if fgColor, isBg := isBgColor(color); isBg {
+		color = fgColor
+	}
+	return color
+}
+
+// ToBgColor converts a color to a background color.
+func ToBgColor(color string) string {
+	if color == "" {
+		color = "black"
+	} else if !strings.HasPrefix(color, "bg") {
+		color = "bg:" + color
+	}
+
+	return color
 }

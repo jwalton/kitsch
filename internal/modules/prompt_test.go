@@ -16,8 +16,9 @@ func TestPrompt(t *testing.T) {
 	assert.Equal(t, ModuleResult{
 		Text: "$",
 		Data: map[string]interface{}{
-			"isRoot": false,
-			"status": 0,
+			"isRoot":  false,
+			"status":  0,
+			"default": "$",
 		},
 		StartStyle: style.Style{},
 		EndStyle:   style.Style{},
@@ -32,8 +33,9 @@ func TestRootPrompt(t *testing.T) {
 	assert.Equal(t, ModuleResult{
 		Text: "#",
 		Data: map[string]interface{}{
-			"isRoot": true,
-			"status": 0,
+			"isRoot":  true,
+			"status":  0,
+			"default": "#",
 		},
 		StartStyle: style.Style{},
 		EndStyle:   style.Style{},

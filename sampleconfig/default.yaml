@@ -1,0 +1,24 @@
+prompt:
+  type: block
+  join: " "
+  modules:
+    - type: time
+      style: brightBlack
+    - type: directory
+      style: brightBlue
+      template: "[{{.directory}}]"
+    - type: block
+      modules:
+      - type: text
+        style: brightYellow
+        text: "["
+      - type: git
+      - type: text
+        text: " "
+      - type: git_status
+      - type: text
+        style: brightYellow
+        text: "]"
+    - type: prompt
+      style: brightBlue
+      errorStyle: brightRed

@@ -1,5 +1,7 @@
 package env
 
+import "github.com/jwalton/kitsch-prompt/internal/gitutils"
+
 // DummyEnv is a dummy environment for use in unit testing.
 type DummyEnv struct {
 	// Env contains the environment variables for this dummy environment.
@@ -80,4 +82,10 @@ func (env *DummyEnv) Status() int {
 // Keymap returns the zsh/fish keymap
 func (env *DummyEnv) Keymap() string {
 	return env.TestKeymap
+}
+
+// Git returns a git instance for the current repo, or nil if the current
+// working directory is not part of a git repo, or git is uninstalled.
+func (env *DummyEnv) Git() *gitutils.GitUtils {
+	return nil
 }

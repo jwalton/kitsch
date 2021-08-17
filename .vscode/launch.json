@@ -10,8 +10,18 @@
       "request": "launch",
       "mode": "debug",
       "program": "${workspaceFolder}",
-      "args": ["prompt"],
+      "args": ["prompt", "--config", "${workspaceFolder}/sampleconfig/default.yaml"],
       "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Powerline prompt",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}",
+      "args": ["prompt", "--config", "${workspaceFolder}/sampleconfig/powerline.yaml"],
+      "cwd": "${workspaceFolder}",
+      "env": { "FORCE_COLOR": "3" }
     }
   ]
 }

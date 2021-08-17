@@ -75,6 +75,8 @@ func executeModule(
 	defaultText string,
 ) ModuleResult {
 	text := defaultText
+	data["default"] = defaultText
+
 	var startStyle styleLib.Style
 	var endStyle styleLib.Style
 

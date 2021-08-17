@@ -2,7 +2,6 @@ package style
 
 import (
 	"fmt"
-	"strings"
 	"text/template"
 )
 
@@ -17,10 +16,7 @@ func toText(text interface{}) string {
 // Apply a foreground color to the given text.
 func fgColor(color string, text interface{}) string {
 	textString := toText(text)
-
-	if fixedColor, isBg := isBgColor(color); isBg {
-		color = fixedColor
-	}
+	color = ToFgColor(color)
 
 	style := Style{}
 	err := style.parse(color)
@@ -30,19 +26,17 @@ func fgColor(color string, text interface{}) string {
 	return textString
 }
 
-// Apply a background color to the given text.
+// BgColor applies a color as a background color to the given text.
 func bgColor(color string, text interface{}) string {
 	textString := toText(text)
-
-	if !strings.HasPrefix(color, "bg") {
-		color = "bg" + color
-	}
+	color = ToBgColor(color)
 
 	style := Style{}
 	err := style.parse(color)
 	if err == nil {
 		textString, _, _, _ = style.Apply(textString)
 	}
+
 	return textString
 }
 

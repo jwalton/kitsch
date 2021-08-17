@@ -1,0 +1,22 @@
+prompt:
+  type: block
+  join: '{{ style .prevStyle " " }}{{ "\ue0b0 " | fgColor .prevStyle.BG | bgColor .nextStyle.BG }}'
+  modules:
+    - type: time
+      style: bg#222 brightWhite
+    - type: directory
+      style: "bgBlue #cff"
+    - type: block
+      style: bg#440
+      join: " "
+      modules:
+        - type: git
+        - type: git_status
+    - type: prompt
+      style: bgBlack
+      errorStyle: bgRed brightWhite
+      prompt: "\ue0b0"
+      rootPrompt: "#"
+      template: "{{ if (ne .status 0) }}{{ .status }}{{ end }}"
+    - type: string
+      value: " "

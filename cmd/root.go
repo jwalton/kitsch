@@ -2,10 +2,12 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 	"os"
 
 	"github.com/MakeNowJust/heredoc"
+	"github.com/jwalton/kitsch-prompt/sampleconfig"
 	"github.com/spf13/cobra"
 )
 
@@ -42,8 +44,9 @@ func Execute() {
 }
 
 func init() {
-	// TODO: Is Cobra a bit heavyweight here?
 	cobra.OnInitialize(initConfig)
+	// FIXME: Move config files into .config, or somewhere sensible on windows.
+	// FIXME: set a deafult.
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.pixdl.yaml)")
 	rootCmd.PersistentFlags().Bool("verbose", false, "Use verbose output")
 }
@@ -51,4 +54,27 @@ func init() {
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
 	// TODO: Read in config file.
+}
+
+func readConfig() (sampleconfig.Config, error) {
+	var configuration sampleconfig.Config
+	var err error
+
+	if cfgFile != "" {
+		var yamlData []byte
+		yamlData, err = os.ReadFile(cfgFile)
+		if err == nil {
+			err = configuration.LoadFromYaml(yamlData)
+		}
+	} else {
+		fmt.Println("Using default configuration.")
+		configuration, err = sampleconfig.LoadDefaultConfig()
+	}
+
+	if err != nil {
+		fmt.Println("Error: could not read config file " + cfgFile)
+		configuration, err = sampleconfig.LoadDefaultConfig()
+	}
+
+	return configuration, err
 }

@@ -6,6 +6,8 @@ import (
 	"os"
 	"os/user"
 	"runtime"
+
+	"github.com/jwalton/kitsch-prompt/internal/gitutils"
 )
 
 // Env is an interface between modules and the runtime environment.
@@ -36,13 +38,18 @@ type Env interface {
 	Status() int
 	// Keymap returns the zsh/fish keymap.
 	Keymap() string
+	// Git returns a git instance for the current repo, or nil if the current
+	// working directory is not part of a git repo, or git is uninstalled.
+	Git() *gitutils.GitUtils
 }
 
 type defaultEnv struct {
-	jobs        int
-	cmdDuration int
-	status      int
-	keymap      string
+	jobs           int
+	cmdDuration    int
+	status         int
+	keymap         string
+	gitInitialized bool
+	git            *gitutils.GitUtils
 }
 
 // NewEnv creates a new instance of Env.
@@ -126,4 +133,14 @@ func (env *defaultEnv) Status() int {
 // Keymap returns the zsh/fish keymap
 func (env *defaultEnv) Keymap() string {
 	return env.keymap
+}
+
+// Git returns a git instance for the current repo, or nil if the current
+// working directory is not part of a git repo, or git is uninstalled.
+func (env *defaultEnv) Git() *gitutils.GitUtils {
+	if !env.gitInitialized {
+		env.git = gitutils.New("git", env.Getwd())
+		env.gitInitialized = true
+	}
+	return env.git
 }

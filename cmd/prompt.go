@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/jwalton/kitsch-prompt/internal/config"
 	"github.com/jwalton/kitsch-prompt/internal/env"
 	"github.com/jwalton/kitsch-prompt/internal/modules"
 	"github.com/spf13/cobra"
@@ -20,24 +19,8 @@ var promptCmd = &cobra.Command{
 
 		runtimeEnv := env.NewEnv(jobs, cmdDuration, status, keymap)
 
-		yamlConfig := `
-prompt:
-  type: block
-  join: " "
-  modules:
-    - type: time
-      style: brightBlack
-    - type: directory
-      style: brightBlue
-      template: "[{{.directory}}]"
-    - type: git
-      style: brightYellow
-    - type: prompt
-      style: brightBlue
-`
-
+		configuration, err := readConfig()
 		var module modules.Module
-		configuration, err := config.ReadConfig(yamlConfig)
 		if err == nil {
 			module, err = configuration.GetPromptModule()
 		}

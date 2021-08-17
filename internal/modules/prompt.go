@@ -24,9 +24,9 @@ type PromptModule struct {
 	RootPrompt string
 	// RootStyle will be used in place of `Style` if the current user is root.
 	// If this style is empty, will fall back to Style.
-	RootStyle styleLib.Style
+	RootStyle styleLib.Style `yaml:"rootStyle"`
 	// ErrorStyle will be used when the previous command failed.
-	ErrorStyle styleLib.Style
+	ErrorStyle styleLib.Style `yaml:"errorStyle"`
 }
 
 // Execute the prompt module.
@@ -50,11 +50,11 @@ func (mod PromptModule) Execute(env env.Env) ModuleResult {
 	var style styleLib.Style
 	if status != 0 {
 		style = mod.ErrorStyle
-	} else if !isRoot {
-		style = mod.Style
 		if style.IsEmpty() {
 			style = mod.Style
 		}
+	} else if !isRoot {
+		style = mod.Style
 	} else {
 		style = mod.RootStyle
 		if style.IsEmpty() {

@@ -23,6 +23,7 @@ func TestDirectory(t *testing.T) {
 		Data: map[string]interface{}{
 			"rawDirectory": "/tmp/test",
 			"directory":    "/tmp/test",
+			"default":      "/tmp/test",
 		},
 		Text: "/tmp/test",
 	}, result)
@@ -44,6 +45,7 @@ func TestHomeDirectory(t *testing.T) {
 		Data: map[string]interface{}{
 			"rawDirectory": "/Users/jwalton",
 			"directory":    "~",
+			"default":      "~",
 		},
 		Text: "~",
 	}, result)
@@ -65,6 +67,7 @@ func TestHomeDirectorySubdirectory(t *testing.T) {
 		Data: map[string]interface{}{
 			"rawDirectory": "/Users/jwalton/foo",
 			"directory":    "~/foo",
+			"default":      "~/foo",
 		},
 		Text: "~/foo",
 	}, result)

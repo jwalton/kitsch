@@ -19,8 +19,8 @@ func (utils *GitUtils) Stats() (GitStats, error) {
 type GitStats struct {
 	// Index contains counts of files in the index.
 	Index GitFileStats
-	// Files contains counts of unstaged changes in the work tree.
-	Files GitFileStats
+	// Unstaged contains counts of unstaged changes in the work tree.
+	Unstaged GitFileStats
 	// Unmerged is a count of unmerged files.
 	Unmerged int
 }
@@ -70,10 +70,10 @@ func (status *statusWriter) Write(p []byte) (n int, err error) {
 			if (x == 'D' && y == 'D') || (x == 'A' && y == 'A') || x == 'U' || y == 'U' {
 				status.stats.Unmerged++
 			} else if x == '?' {
-				status.stats.Files.Added++
+				status.stats.Unstaged.Added++
 			} else {
 				countStats(&status.stats.Index, x)
-				countStats(&status.stats.Files, y)
+				countStats(&status.stats.Unstaged, y)
 			}
 
 			status.linePos++
