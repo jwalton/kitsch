@@ -18,11 +18,10 @@
 package modules
 
 import (
-	"bytes"
-	"text/template"
+	"fmt"
 
-	"github.com/Masterminds/sprig/v3"
 	"github.com/jwalton/kitsch-prompt/internal/env"
+	"github.com/jwalton/kitsch-prompt/internal/modtemplate"
 	"github.com/jwalton/kitsch-prompt/internal/style"
 	styleLib "github.com/jwalton/kitsch-prompt/internal/style"
 )
@@ -84,10 +83,16 @@ func executeModule(
 	// suffix, _, suffixEndStyle, _, suffixErr := config.SuffixStyle.Apply(config.Suffix)
 
 	if config.Template != "" {
-		tmpl, err := compileTemplate("module-template", config.Template)
-		// FIX: Should add this error to a list of warnings for this module.
-		if err == nil {
-			text = templateToString(tmpl, data)
+		tmpl, err := modtemplate.CompileTemplate("module-template", config.Template)
+		if err != nil {
+			// FIX: Should add this error to a list of warnings for this module.
+			fmt.Printf("Error compiling template: %v", err)
+		} else {
+			text, err = modtemplate.TemplateToString(tmpl, data)
+			if err != nil {
+				fmt.Printf("Error executing template: %v", err)
+				text = defaultText
+			}
 		}
 	}
 
@@ -102,30 +107,6 @@ func executeModule(
 		StartStyle: startStyle,
 		EndStyle:   endStyle,
 	}
-}
-
-var springTemplateFunctions = sprig.TxtFuncMap()
-
-// Compilte a module template and add default template functions.
-func compileTemplate(name string, templateString string) (*template.Template, error) {
-	tmpl, err := template.
-		New(name).
-		Funcs(springTemplateFunctions).
-		Funcs(styleLib.TxtFuncMap()).
-		Parse(templateString)
-	if err != nil {
-		return nil, err
-	}
-	return tmpl, nil
-}
-
-func templateToString(template *template.Template, data interface{}) string {
-	var b bytes.Buffer
-	err := template.Execute(&b, data)
-	if err != nil {
-		return err.Error()
-	}
-	return b.String()
 }
 
 // defaultString returns value if it is non-empty, or def otherwise.

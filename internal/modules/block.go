@@ -4,6 +4,7 @@ import (
 	"text/template"
 
 	"github.com/jwalton/kitsch-prompt/internal/env"
+	"github.com/jwalton/kitsch-prompt/internal/modtemplate"
 	"gopkg.in/yaml.v3"
 )
 
@@ -65,7 +66,7 @@ func (mod BlockModule) joinChildren(children []ModuleResult) string {
 
 	if mod.Join != "" {
 		var err error
-		join, err = compileTemplate("join", mod.Join)
+		join, err = modtemplate.CompileTemplate("join", mod.Join)
 		if err != nil {
 			join = nil
 		}
@@ -74,11 +75,16 @@ func (mod BlockModule) joinChildren(children []ModuleResult) string {
 	for index, child := range children {
 		if join != nil && index != 0 {
 			prev := children[index-1]
-			result += templateToString(join, map[string]interface{}{
+			joiner, err := modtemplate.TemplateToString(join, map[string]interface{}{
 				"prevStyle": prev.EndStyle,
 				"nextStyle": child.StartStyle,
 				"index":     index,
 			})
+			if err != nil {
+				// TODO: Add warning
+				joiner = " "
+			}
+			result += joiner
 		}
 
 		result += child.Text

@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/jwalton/kitsch-prompt/sampleconfig"
+	"github.com/jwalton/kitsch-prompt/internal/config"
 	"github.com/spf13/cobra"
 )
 
@@ -56,8 +56,8 @@ func initConfig() {
 	// TODO: Read in config file.
 }
 
-func readConfig() (sampleconfig.Config, error) {
-	var configuration sampleconfig.Config
+func readConfig() (config.Config, error) {
+	var configuration config.Config
 	var err error
 
 	if cfgFile != "" {
@@ -68,12 +68,12 @@ func readConfig() (sampleconfig.Config, error) {
 		}
 	} else {
 		fmt.Println("Using default configuration.")
-		configuration, err = sampleconfig.LoadDefaultConfig()
+		configuration, err = config.LoadDefaultConfig()
 	}
 
 	if err != nil {
 		fmt.Println("Error: could not read config file " + cfgFile)
-		configuration, err = sampleconfig.LoadDefaultConfig()
+		configuration, err = config.LoadDefaultConfig()
 	}
 
 	return configuration, err

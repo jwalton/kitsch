@@ -17,7 +17,7 @@ var promptCmd = &cobra.Command{
 		status, _ := cmd.Flags().GetInt("status")
 		keymap, _ := cmd.Flags().GetString("keymap")
 
-		runtimeEnv := env.NewEnv(jobs, cmdDuration, status, keymap)
+		runtimeEnv := env.New(jobs, cmdDuration, status, keymap)
 
 		configuration, err := readConfig()
 		var module modules.Module

@@ -52,8 +52,8 @@ type defaultEnv struct {
 	git            *gitutils.GitUtils
 }
 
-// NewEnv creates a new instance of Env.
-func NewEnv(
+// New creates a new instance of Env.
+func New(
 	jobs int,
 	cmdDuration int,
 	status int,
