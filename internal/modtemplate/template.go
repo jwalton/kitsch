@@ -52,7 +52,7 @@ func CompileTemplate(name string, templateString string) (*template.Template, er
 	return tmpl, nil
 }
 
-// TmeplateToString renders a template to a string.
+// TemplateToString renders a template to a string.
 func TemplateToString(template *template.Template, data interface{}) (string, error) {
 	var b bytes.Buffer
 	err := template.Execute(&b, data)

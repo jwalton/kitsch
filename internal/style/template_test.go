@@ -30,11 +30,19 @@ func TestStyleFunc(t *testing.T) {
 	tmpl := testCompileTemplate("test", `{{ . | style "red" }}`)
 	assert.Equal(t, "\u001B[31mfoo\u001B[39m", testTemplateToString(tmpl, "foo"))
 
-	tmpl2 := testCompileTemplate("test", `{{ . | style "red" "bgBlue"}}`)
-	assert.Equal(t, "\u001B[44m\u001B[31mfoo\u001B[39m\u001B[49m", testTemplateToString(tmpl2, "foo"))
+	tmpl = testCompileTemplate("test", `{{ . | style "red" "bgBlue"}}`)
+	assert.Equal(t, "\u001B[44m\u001B[31mfoo\u001B[39m\u001B[49m", testTemplateToString(tmpl, "foo"))
 
-	tmpl3 := testCompileTemplate("test", `{{ . | style "red bgBlue"}}`)
-	assert.Equal(t, "\u001B[44m\u001B[31mfoo\u001B[39m\u001B[49m", testTemplateToString(tmpl3, "foo"))
+	tmpl = testCompileTemplate("test", `{{ . | style "red bgBlue"}}`)
+	assert.Equal(t, "\u001B[44m\u001B[31mfoo\u001B[39m\u001B[49m", testTemplateToString(tmpl, "foo"))
+
+	// Should work with no styles.
+	tmpl = testCompileTemplate("test", `{{ style . }}`)
+	assert.Equal(t, "foo", testTemplateToString(tmpl, "foo"))
+
+	// Should not crash if there's no arguments at all.
+	tmpl = testCompileTemplate("test", `{{ style }}`)
+	assert.Equal(t, "", testTemplateToString(tmpl, "foo"))
 }
 
 func TestFgColorFunc(t *testing.T) {

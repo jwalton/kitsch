@@ -5,6 +5,7 @@ import (
 	"text/template"
 )
 
+// toText converts a value to a string.
 func toText(text interface{}) string {
 	textString, ok := text.(string)
 	if !ok {
@@ -13,7 +14,7 @@ func toText(text interface{}) string {
 	return textString
 }
 
-// Apply a foreground color to the given text.
+// fgColor applyies a foreground color to the given text.
 func fgColor(color string, text interface{}) string {
 	textString := toText(text)
 	color = ToFgColor(color)
@@ -26,7 +27,7 @@ func fgColor(color string, text interface{}) string {
 	return textString
 }
 
-// BgColor applies a color as a background color to the given text.
+// bgColor applies a color as a background color to the given text.
 func bgColor(color string, text interface{}) string {
 	textString := toText(text)
 	color = ToBgColor(color)
@@ -41,8 +42,15 @@ func bgColor(color string, text interface{}) string {
 }
 
 // style a string in the given styles.
+//
+// This should be called with zero or more styles, followed by the text to
+// style.
 func style(args ...interface{}) string {
 	argc := len(args)
+	if argc == 0 {
+		return ""
+	}
+
 	textString := toText(args[argc-1])
 	styles := args[:argc-1]
 
