@@ -15,11 +15,11 @@ var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "kitsch",
+	Use:   "kitsch-prompt",
 	Short: "Ridiculously customizable shell prompt",
 	Long: heredoc.Doc(`
-		kitsch is a program for displaying a shell prompt.  If you're seeing this,
-		it's because you're trying to run "kitsch" without a command.  If you
+		kitsch-prompt is a program for displaying a shell prompt.  If you're seeing this,
+		it's because you're trying to run "kitsch-prompt" without a command.  If you
 		want to install kitsch:
 
 		  TODO: installation example goes here.
@@ -27,10 +27,10 @@ var rootCmd = &cobra.Command{
 		Examples:
 
 		  # Check your configuration for errors
-		  kitsch check
+		  kitsch-prompt check
 
 		  # Display what your prompt would look like using a certain config
-		  kitsch show --config ./config.yaml --dry-run
+		  kitsch-prompt show --config ./config.yaml --dry-run
 	`),
 }
 

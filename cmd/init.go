@@ -14,17 +14,34 @@ var initCmd = &cobra.Command{
 	ValidArgs: []string{"bash", "zsh"},
 	Args:      cobra.ExactValidArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		script, err := initscripts.InitScript(args[0])
+		shell := args[0]
 
+		printFullInit, err := cmd.Flags().GetBool("print-full-init")
 		if err != nil {
-			cmd.PrintErrln(err.Error())
+			cmd.PrintErrln(err)
 			os.Exit(1)
 		}
 
-		fmt.Println(script)
+		if !printFullInit {
+			executable, err := os.Executable()
+			if err != nil {
+				executable = cmd.Parent().CommandPath()
+			}
+			fmt.Printf("source <(\"%s\" init %s --print-full-init)\n", executable, shell)
+		} else {
+			script, err := initscripts.InitScript(shell)
+			if err != nil {
+				cmd.PrintErrln(err.Error())
+				os.Exit(1)
+			}
+
+			fmt.Println(script)
+		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(initCmd)
+
+	initCmd.Flags().Bool("print-full-init", false, "Print the main initialization script")
 }
