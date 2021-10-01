@@ -5,6 +5,7 @@ import (
 
 	"github.com/jwalton/kitsch-prompt/internal/env"
 	"github.com/jwalton/kitsch-prompt/internal/modules"
+	"github.com/jwalton/kitsch-prompt/internal/shellprompt"
 	"github.com/spf13/cobra"
 )
 
@@ -16,6 +17,7 @@ var promptCmd = &cobra.Command{
 		cmdDuration, _ := cmd.Flags().GetInt("cmd-duration")
 		status, _ := cmd.Flags().GetInt("status")
 		keymap, _ := cmd.Flags().GetString("keymap")
+		shell, _ := cmd.Flags().GetString("shell")
 
 		runtimeEnv := env.New(jobs, cmdDuration, status, keymap)
 
@@ -29,14 +31,16 @@ var promptCmd = &cobra.Command{
 			fmt.Println(err)
 			fmt.Print("$ ")
 		} else {
-			result := module.Execute(runtimeEnv)
-			fmt.Println(result.Text)
+			prompt := module.Execute(runtimeEnv)
+			withEscapes := shellprompt.AddZeroWidthCharacterEscapes(shell, prompt.Text)
+			fmt.Println(withEscapes)
 		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(promptCmd)
+	promptCmd.Flags().String("shell", "", "The type of shell")
 	promptCmd.Flags().IntP("cmd-duration", "d", 0, "The execution duration of the last command, in milliseconds")
 	promptCmd.Flags().StringP("keymap", "k", "", "The keymap of fish/zsh")
 	promptCmd.Flags().IntP("jobs", "j", 0, "The number of currently running jobs")

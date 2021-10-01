@@ -83,8 +83,6 @@ fi
 
 __kitschprompt_get_time && KITSCH_START_TIME=$KITSCH_CAPTURED_TIME
 
-export KITSCH_SHELL="zsh"
-
 # Set up the session key that will be used to store logs
 KITSCH_SESSION_KEY="$RANDOM$RANDOM$RANDOM$RANDOM$RANDOM"; # Random generates a number b/w 0 - 32767
 KITSCH_SESSION_KEY="${KITSCH_SESSION_KEY}0000000000000000" # Pad it to 16+ chars.
@@ -93,4 +91,4 @@ export KITSCH_SESSION_KEY=${KITSCH_SESSION_KEY:0:16}; # Trim to 16-digits if exc
 VIRTUAL_ENV_DISABLE_PROMPT=1
 
 setopt promptsubst
-PROMPT='$({{ .kitschcommand }} prompt --keymap="$KEYMAP" --status="$KITSCH_CMD_STATUS" --cmd-duration="$KITSCH_DURATION" --jobs="$KITSCH_JOBS_COUNT")'
+PROMPT='$({{ .kitschcommand }} prompt --shell zsh --keymap="$KEYMAP" --status="$KITSCH_CMD_STATUS" --cmd-duration="$KITSCH_DURATION" --jobs="$KITSCH_JOBS_COUNT")'
