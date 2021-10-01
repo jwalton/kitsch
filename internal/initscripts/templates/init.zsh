@@ -11,6 +11,12 @@
 
 zmodload zsh/parameter  # Needed to access jobstates variable for KITSCH_JOBS_COUNT
 
+# If you try to install kitsch-prompt overtop of starship, they clash.  Remove
+# any starship config if it's there.
+precmd_functions[$precmd_functions[(i)starship_precmd]]=()
+preexec_functions[$preexec_functions[(i)preexec_functions]]=()
+starship_zle-keymap-select() {}
+
 # Defines a function `__kitschprompt_get_time` that sets the time since epoch in millis in KITSCH_CAPTURED_TIME.
 if [[ $ZSH_VERSION == ([1-4]*) ]]; then
     # ZSH <= 5; Does not have a built-in variable so we will rely on Starship's inbuilt time function.
