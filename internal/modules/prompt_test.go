@@ -14,11 +14,11 @@ func TestPrompt(t *testing.T) {
 
 	result := mod.Execute(env)
 	assert.Equal(t, ModuleResult{
-		Text: "$",
+		Text: "$ ",
 		Data: map[string]interface{}{
 			"isRoot":  false,
 			"status":  0,
-			"default": "$",
+			"default": "$ ",
 		},
 		StartStyle: style.Style{},
 		EndStyle:   style.Style{},
@@ -31,11 +31,11 @@ func TestRootPrompt(t *testing.T) {
 
 	result := mod.Execute(env)
 	assert.Equal(t, ModuleResult{
-		Text: "#",
+		Text: "# ",
 		Data: map[string]interface{}{
 			"isRoot":  true,
 			"status":  0,
-			"default": "#",
+			"default": "# ",
 		},
 		StartStyle: style.Style{},
 		EndStyle:   style.Style{},

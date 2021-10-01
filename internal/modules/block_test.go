@@ -25,7 +25,7 @@ func TestBlock(t *testing.T) {
 	}
 
 	result := blockMod.Execute(env)
-	assert.Equal(t, "jwalton $", result.Text)
+	assert.Equal(t, "jwalton $ ", result.Text)
 }
 
 func TestBlockStyles(t *testing.T) {
@@ -49,5 +49,5 @@ func TestBlockStyles(t *testing.T) {
 	}
 
 	result := blockMod.Execute(env)
-	assert.Equal(t, "jwalton redblue $", result.Text)
+	assert.Equal(t, "jwalton redblue $ ", result.Text)
 }

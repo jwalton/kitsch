@@ -62,7 +62,7 @@ func (mod PromptModule) Execute(env env.Env) ModuleResult {
 		}
 	}
 
-	return executeModule(mod.CommonConfig, data, style, text)
+	return executeModule(mod.CommonConfig, data, style, text+" ")
 }
 
 func init() {
