@@ -18,6 +18,8 @@ type DummyEnv struct {
 	TestStatus int
 	// TestKeymap is the return value for Keymap().
 	TestKeymap string
+	// TestGit is the return value for Git().
+	TestGit *gitutils.GitUtils
 }
 
 // Getenv returns the value of the specifed environment variable.
@@ -87,5 +89,5 @@ func (env *DummyEnv) Keymap() string {
 // Git returns a git instance for the current repo, or nil if the current
 // working directory is not part of a git repo, or git is uninstalled.
 func (env *DummyEnv) Git() *gitutils.GitUtils {
-	return nil
+	return env.TestGit
 }

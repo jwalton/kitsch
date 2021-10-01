@@ -116,11 +116,3 @@ func defaultString(value string, def string) string {
 	}
 	return def
 }
-
-// defaultNumber returns the passed in value if it is non-0, or def otherwise.
-func defaultNumber(value int, def int) int {
-	if value != 0 {
-		return value
-	}
-	return def
-}

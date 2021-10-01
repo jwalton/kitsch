@@ -25,6 +25,9 @@ type DirectoryModule struct {
 	// HomeSymbol is the symbol to replace the home directory with in directory
 	// strings.  Defaults to "~".
 	HomeSymbol string
+	// TruncateToRepo controls whether we truncate to the root directory of the
+	// git repo or not.
+	TruncateToRepo bool
 	// TruncationLength is the number of parent folders that the current directory
 	// should be truncated to.
 	TruncationLength int
@@ -33,45 +36,60 @@ type DirectoryModule struct {
 	TruncationSymbol string
 }
 
+func (mod DirectoryModule) truncateToFolder(path string, truncatePath string) string {
+	charsToStrip := len(truncatePath)
+
+	truncatePathEndsWithSeparator := len(truncatePath) > 0 && truncatePath[len(truncatePath)-1] == os.PathSeparator
+	if truncatePathEndsWithSeparator {
+		// Leave the separator
+		charsToStrip--
+	}
+
+	return path[charsToStrip:]
+}
+
 // Execute the directory module.
 func (mod DirectoryModule) Execute(env env.Env) ModuleResult {
+	truncationSymbol := defaultString(mod.TruncationSymbol, defaultTruncationSymbol)
+	isTruncated := false
+
 	rawDirectory := env.Getwd()
 
-	// TODO: Truncate to root of git repo if we're in a git repo.
 	directory := rawDirectory
 
-	home := env.UserHomeDir()
-	isHome := strings.HasPrefix(directory, home)
+	git := env.Git()
+	if mod.TruncateToRepo && git != nil && strings.HasPrefix(directory, git.RepoRoot) {
+		// Truncate to root of git repo if we're in a git repo.
+		truncateToParts := strings.Split(git.RepoRoot, string(os.PathSeparator))
+		truncateToPath := strings.Join(truncateToParts[:len(truncateToParts)-1], string(os.PathSeparator))
+		directory = truncationSymbol + mod.truncateToFolder(directory, truncateToPath)
+		isTruncated = true
+	} else {
+		// Truncate to the user's home directory, if we're in their home directory.
+		home := env.UserHomeDir()
+		isHome := strings.HasPrefix(directory, home)
 
-	if isHome {
-		// Strip the leading home directory
-		homeHasSeparator := len(home) > 0 && home[len(home)-1] == os.PathSeparator
-		if homeHasSeparator {
-			// Make sure we leave the leading separator in "directory".
-			directory = directory[len(home)-1:]
-		} else {
-			directory = directory[len(home):]
+		if isHome {
+			// Truncate to the home directory.
+			directory = defaultString(mod.HomeSymbol, defaultHomeSymbol) + mod.truncateToFolder(directory, home)
+			isTruncated = true
 		}
 	}
 
-	truncationLength := defaultNumber(mod.TruncationLength, defaultTruncationLength)
+	// Truncate path `truncationLength`.
+	if mod.TruncationLength > 0 {
+		parts := strings.Split(directory, string(os.PathSeparator))
 
-	// Truncate directory to `truncationLength`.
-	//
-	// Note if `isHome`, we add one to truncationLength, because there's no sense
-	// truncating "~" to "…".
-	parts := strings.Split(directory, string(os.PathSeparator))
-	isTruncated := isHome && (len(parts) > truncationLength+1) || !isHome && (len(parts) > truncationLength)
-	if isTruncated {
-		parts = parts[len(parts)-truncationLength:]
-		truncationSymbol := defaultString(mod.TruncationSymbol, defaultTruncationSymbol)
-		directory = truncationSymbol + string(os.PathSeparator) + strings.Join(parts, string(os.PathSeparator))
-	}
+		// Add one to truncationLength if isTruncated, because there's no sense truncating "~" to "…".
+		truncationLength := mod.TruncationLength
+		if isTruncated {
+			truncationLength++
+		}
 
-	// If this is the home directory, and we haven't truncated the path, add the
-	// home symbol back.
-	if isHome && !isTruncated {
-		directory = defaultString(mod.HomeSymbol, defaultHomeSymbol) + directory
+		if len(parts) > truncationLength {
+			parts = parts[len(parts)-mod.TruncationLength:]
+			directory = truncationSymbol + string(os.PathSeparator) + strings.Join(parts, string(os.PathSeparator))
+		}
 	}
 
 	// TODO: Add read-only icon if read-only directory.
@@ -86,7 +104,11 @@ func (mod DirectoryModule) Execute(env env.Env) ModuleResult {
 
 func init() {
 	registerFactory("directory", func(node *yaml.Node) (Module, error) {
-		var module DirectoryModule
+		var module DirectoryModule = DirectoryModule{
+			TruncationSymbol: defaultTruncationSymbol,
+			TruncationLength: defaultTruncationLength,
+			TruncateToRepo:   true,
+		}
 		err := node.Decode(&module)
 		return &module, err
 	})

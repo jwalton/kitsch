@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/jwalton/kitsch-prompt/internal/env"
+	"github.com/jwalton/kitsch-prompt/internal/gitutils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -74,7 +75,9 @@ func TestHomeDirectorySubdirectory(t *testing.T) {
 }
 
 func TestHomeDirectorySubdirectoryTruncated(t *testing.T) {
-	mod := DirectoryModule{}
+	mod := DirectoryModule{
+		TruncationLength: 3,
+	}
 
 	env := &env.DummyEnv{
 		Env: map[string]string{
@@ -92,8 +95,10 @@ func TestHomeDirectorySubdirectoryTruncated(t *testing.T) {
 	assert.Equal(t, "~/foo/bar/baz", mod.Execute(env).Text)
 }
 
-func TestHomeDirectoryTruncated(t *testing.T) {
-	mod := DirectoryModule{}
+func TestDirectoryTruncateToHome(t *testing.T) {
+	mod := DirectoryModule{
+		TruncationLength: 3,
+	}
 
 	env := &env.DummyEnv{
 		Env: map[string]string{
@@ -104,4 +109,22 @@ func TestHomeDirectoryTruncated(t *testing.T) {
 	}
 
 	assert.Equal(t, "…/bar/baz/qux", mod.Execute(env).Text)
+}
+
+func TestDirectoryTruncateToGitRepo(t *testing.T) {
+	mod := DirectoryModule{
+		TruncateToRepo:   true,
+		TruncationLength: 3,
+	}
+
+	env := &env.DummyEnv{
+		Env: map[string]string{
+			"USER": "jwalton",
+			"HOME": "/Users/jwalton",
+		},
+		CWD:     "/Users/jwalton/dev/kitsch-prompt/src",
+		TestGit: &gitutils.GitUtils{RepoRoot: "/Users/jwalton/dev/kitsch-prompt"},
+	}
+
+	assert.Equal(t, "…/kitsch-prompt/src", mod.Execute(env).Text)
 }
