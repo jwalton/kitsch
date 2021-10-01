@@ -8,6 +8,7 @@ require (
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/jwalton/gchalk v1.1.0
 	github.com/jwalton/go-ansiparser v0.2.0
+	github.com/jwalton/go-supportscolor v1.0.0
 	github.com/kr/text v0.2.0 // indirect
 	github.com/spf13/cobra v1.1.3
 	github.com/stretchr/testify v1.7.0
