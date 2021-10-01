@@ -5,21 +5,26 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/jwalton/kitsch-prompt/internal/config"
 	"github.com/spf13/cobra"
 )
 
+const programName = "kitsch-prompt"
+
+var cfgFolder string
 var cfgFile string
+var defaultConfigFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "kitsch-prompt",
+	Use:   programName,
 	Short: "Ridiculously customizable shell prompt",
 	Long: heredoc.Doc(`
-		kitsch-prompt is a program for displaying a shell prompt.  If you're seeing this,
-		it's because you're trying to run "kitsch-prompt" without a command.  If you
+		` + programName + ` is a program for displaying a shell prompt.  If you're seeing this,
+		it's because you're trying to run "` + programName + `" without a command.  If you
 		want to install kitsch:
 
 		  TODO: installation example goes here.
@@ -27,10 +32,10 @@ var rootCmd = &cobra.Command{
 		Examples:
 
 		  # Check your configuration for errors
-		  kitsch-prompt check
+		  ` + programName + ` check
 
 		  # Display what your prompt would look like using a certain config
-		  kitsch-prompt show --config ./config.yaml --dry-run
+		  ` + programName + ` show --config ./config.yaml --dry-run
 	`),
 }
 
@@ -44,37 +49,53 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
-	// FIXME: Move config files into .config, or somewhere sensible on windows.
-	// FIXME: set a deafult.
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.pixdl.yaml)")
+	var err error
+	cfgFolder, err = getConfigFolder()
+	if err != nil {
+		cfgFolder = "~"
+	}
+	defaultConfigFile = filepath.Join(cfgFolder, "prompt.yaml")
+
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is "+defaultConfigFile+")")
 	rootCmd.PersistentFlags().Bool("verbose", false, "Use verbose output")
 }
 
-// initConfig reads in config file and ENV variables if set.
-func initConfig() {
-	// TODO: Read in config file.
-}
-
-func readConfig() (config.Config, error) {
-	var configuration config.Config
+func readConfig() (*config.Config, error) {
+	var configuration *config.Config
 	var err error
 
 	if cfgFile != "" {
-		var yamlData []byte
-		yamlData, err = os.ReadFile(cfgFile)
-		if err == nil {
-			err = configuration.LoadFromYaml(yamlData)
+		configuration, err = config.LoadConfigFromFile(cfgFile)
+		if err != nil {
+			fmt.Println("Error loading config file: ", err)
 		}
-	} else {
-		fmt.Println("Using default configuration.")
-		configuration, err = config.LoadDefaultConfig()
 	}
 
-	if err != nil {
-		fmt.Println("Error: could not read config file " + cfgFile)
+	if configuration == nil && cfgFile != defaultConfigFile {
+		configuration, err = config.LoadConfigFromFile(defaultConfigFile)
+		if err != nil && !os.IsNotExist(err) {
+			fmt.Println("Error loading config file: ", err)
+		}
+	}
+
+	if configuration == nil {
 		configuration, err = config.LoadDefaultConfig()
 	}
 
 	return configuration, err
+}
+
+// getConfigFolder returns the folder that contains configuration
+// information (e.g. "~/.config/kitsch-prompt" on Mac or Linux,
+// "C:\Users\<User>\AppData\Roaming\kitsch-prompt\kitsch-prompt" on PC).
+func getConfigFolder() (string, error) {
+	configDir := config.GetConfigFolder(programName, programName)
+
+	// Create the folder if it doesn't exist.
+	err := os.MkdirAll(configDir, 0750)
+	if err != nil {
+		return "", fmt.Errorf("error creating config folder %v: %w", configDir, err)
+	}
+
+	return configDir, nil
 }

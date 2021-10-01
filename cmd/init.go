@@ -16,6 +16,11 @@ var initCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		shell := args[0]
 
+		cfgOptions := ""
+		if cfgFile != "" {
+			cfgOptions = fmt.Sprintf("--config \"%s\" ", cfgFile)
+		}
+
 		printFullInit, err := cmd.Flags().GetBool("print-full-init")
 		if err != nil {
 			cmd.PrintErrln(err)
@@ -27,9 +32,9 @@ var initCmd = &cobra.Command{
 			if err != nil {
 				executable = cmd.Parent().CommandPath()
 			}
-			fmt.Printf("source <(\"%s\" init %s --print-full-init)\n", executable, shell)
+			fmt.Printf("source <(\"%s\" init %s %s--print-full-init)\n", executable, shell, cfgOptions)
 		} else {
-			script, err := initscripts.InitScript(shell)
+			script, err := initscripts.InitScript(shell, cfgFile)
 			if err != nil {
 				cmd.PrintErrln(err.Error())
 				os.Exit(1)

@@ -13,14 +13,15 @@ var zshTemplate string
 
 // InitScript returns the kitsch-prompt initalization script for the given
 // shell type.
-func InitScript(shell string) (string, error) {
-	kitschcommand, err := os.Executable()
+func InitScript(shell string, configFile string) (string, error) {
+	kitschCommand, err := os.Executable()
 	if err != nil {
-		kitschcommand = "kitsch-prompt"
+		kitschCommand = "kitsch-prompt"
 	}
 
 	data := map[string]string{
-		"kitschcommand": kitschcommand,
+		"kitschCommand": kitschCommand,
+		"configFile":    configFile,
 	}
 
 	switch shell {

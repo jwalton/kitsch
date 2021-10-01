@@ -10,7 +10,7 @@
       "request": "launch",
       "mode": "debug",
       "program": "${workspaceFolder}",
-      "args": ["prompt", "--config", "${workspaceFolder}/sampleconfig/default.yaml"],
+      "args": ["prompt"],
       "cwd": "${workspaceFolder}"
     },
     {

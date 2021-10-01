@@ -21,7 +21,7 @@ starship_zle-keymap-select() {}
 if [[ $ZSH_VERSION == ([1-4]*) ]]; then
     # ZSH <= 5; Does not have a built-in variable so we will rely on Starship's inbuilt time function.
     __kitschprompt_get_time() {
-        KITSCH_CAPTURED_TIME=$({{ .kitschcommand }} time)
+        KITSCH_CAPTURED_TIME=$({{ .kitschCommand }} time)
     }
 else
     zmodload zsh/datetime
@@ -97,4 +97,4 @@ export KITSCH_SESSION_KEY=${KITSCH_SESSION_KEY:0:16}; # Trim to 16-digits if exc
 VIRTUAL_ENV_DISABLE_PROMPT=1
 
 setopt promptsubst
-PROMPT='$({{ .kitschcommand }} prompt --shell zsh --keymap="$KEYMAP" --status="$KITSCH_CMD_STATUS" --cmd-duration="$KITSCH_DURATION" --jobs="$KITSCH_JOBS_COUNT")'
+PROMPT='$({{ .kitschCommand }} prompt {{with .configFile}}--config {{.}} {{end}}--shell zsh --keymap="$KEYMAP" --status="$KITSCH_CMD_STATUS" --cmd-duration="$KITSCH_DURATION" --jobs="$KITSCH_JOBS_COUNT")'
