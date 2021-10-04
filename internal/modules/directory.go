@@ -16,9 +16,9 @@ const defaultTruncationSymbol = "…"
 //
 // Provides the following template variables:
 //
-// • rawDirectory - The unmodified current working directory.
+// • RawPath - The unmodified current working directory.
 //
-// • directory - The directory to show.
+// • Path - The directory to show.
 //
 type DirectoryModule struct {
 	CommonConfig `yaml:",inline"`
@@ -53,32 +53,32 @@ func (mod DirectoryModule) Execute(env env.Env) ModuleResult {
 	truncationSymbol := defaultString(mod.TruncationSymbol, defaultTruncationSymbol)
 	isTruncated := false
 
-	rawDirectory := env.Getwd()
+	RawPath := env.Getwd()
 
-	directory := rawDirectory
+	path := RawPath
 
 	git := env.Git()
-	if mod.TruncateToRepo && git != nil && strings.HasPrefix(directory, git.RepoRoot) {
+	if mod.TruncateToRepo && git != nil && strings.HasPrefix(path, git.RepoRoot) {
 		// Truncate to root of git repo if we're in a git repo.
 		truncateToParts := strings.Split(git.RepoRoot, string(os.PathSeparator))
 		truncateToPath := strings.Join(truncateToParts[:len(truncateToParts)-1], string(os.PathSeparator))
-		directory = truncationSymbol + mod.truncateToFolder(directory, truncateToPath)
+		path = truncationSymbol + mod.truncateToFolder(path, truncateToPath)
 		isTruncated = true
 	} else {
 		// Truncate to the user's home directory, if we're in their home directory.
 		home := env.UserHomeDir()
-		isHome := strings.HasPrefix(directory, home)
+		isHome := strings.HasPrefix(path, home)
 
 		if isHome {
 			// Truncate to the home directory.
-			directory = defaultString(mod.HomeSymbol, defaultHomeSymbol) + mod.truncateToFolder(directory, home)
+			path = defaultString(mod.HomeSymbol, defaultHomeSymbol) + mod.truncateToFolder(path, home)
 			isTruncated = true
 		}
 	}
 
 	// Truncate path `truncationLength`.
 	if mod.TruncationLength > 0 {
-		parts := strings.Split(directory, string(os.PathSeparator))
+		parts := strings.Split(path, string(os.PathSeparator))
 
 		// Add one to truncationLength if isTruncated, because there's no sense truncating "~" to "…".
 		truncationLength := mod.TruncationLength
@@ -88,18 +88,18 @@ func (mod DirectoryModule) Execute(env env.Env) ModuleResult {
 
 		if len(parts) > truncationLength {
 			parts = parts[len(parts)-mod.TruncationLength:]
-			directory = truncationSymbol + string(os.PathSeparator) + strings.Join(parts, string(os.PathSeparator))
+			path = truncationSymbol + string(os.PathSeparator) + strings.Join(parts, string(os.PathSeparator))
 		}
 	}
 
 	// TODO: Add read-only icon if read-only directory.
 
 	data := map[string]interface{}{
-		"rawDirectory": rawDirectory,
-		"directory":    directory,
+		"RawPath": RawPath,
+		"Path":    path,
 	}
 
-	return executeModule(mod.CommonConfig, data, mod.Style, directory)
+	return executeModule(mod.CommonConfig, data, mod.Style, path)
 }
 
 func init() {

@@ -16,7 +16,7 @@ import (
 //
 // Provides the following template variables:
 //
-// • state - A `{ State, Step, Total, Base, Branch }` object.  All of these
+// • State - A `{ State, Step, Total, Base, Branch }` object.  All of these
 //   values are strings.  State is the current state of the repo (e.g. "MERGING"
 //   if in the middle of a merge).  Step and Total represent the number of steps
 //   left to complete the current operation (e.g. the number of commits left
@@ -24,11 +24,11 @@ import (
 //   in progress.  Base is the name of the base branch we are merging from or
 //   rebasing from.  Branch is the name of the current branch or hash.
 //
-// • ahead - The number of commits ahead of the upstream branch.
+// • Ahead - The number of commits ahead of the upstream branch.
 //
-// • behind - The number of commits behind the upstream branch.
+// • Behind - The number of commits behind the upstream branch.
 //
-// • symbol - The symbol to use to indicate the current state of the repo.
+// • Symbol - The symbol to use to indicate the current state of the repo.
 //
 type GitModule struct {
 	CommonConfig `yaml:",inline"`
@@ -68,10 +68,10 @@ func (mod GitModule) Execute(env env.Env) ModuleResult {
 	}
 
 	data := map[string]interface{}{
-		"state":  state,
-		"ahead":  ahead,
-		"behind": behind,
-		"symbol": symbol,
+		"State":  state,
+		"Ahead":  ahead,
+		"Behind": behind,
+		"Symbol": symbol,
 	}
 
 	defaultOutput := mod.renderDefault(symbol, state, upstream, ahead, behind)

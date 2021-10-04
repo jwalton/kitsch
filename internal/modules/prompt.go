@@ -12,9 +12,9 @@ import (
 //
 // The prompt module provides the following template variables:
 //
-// • isRoot - True if the user is root, false otherwise.
+// • IsRoot - True if the user is root, false otherwise.
 //
-// • status - An `int` which represents the return status of the last command.
+// • Status - An `int` which represents the return status of the last command.
 //
 type PromptModule struct {
 	CommonConfig `yaml:",inline"`
@@ -35,8 +35,8 @@ func (mod PromptModule) Execute(env env.Env) ModuleResult {
 	status := env.Status()
 
 	data := map[string]interface{}{
-		"isRoot": isRoot,
-		"status": status,
+		"IsRoot": isRoot,
+		"Status": status,
 	}
 
 	// TODO: Use env.Keymap() here.

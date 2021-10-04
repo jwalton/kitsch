@@ -40,10 +40,10 @@ func (mod UsernameModule) Execute(env env.Env) ModuleResult {
 	show := isSSH || isRoot || mod.ShowAlways
 
 	data := map[string]interface{}{
-		"username": username,
-		"isRoot":   isRoot,
-		"isSSH":    isSSH,
-		"show":     show,
+		"Username": username,
+		"IsRoot":   isRoot,
+		"IsSSH":    isSSH,
+		"Show":     show,
 	}
 
 	defaultText := ""

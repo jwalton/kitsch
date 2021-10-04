@@ -6,7 +6,7 @@ prompt:
       style: brightBlack
     - type: directory
       style: brightBlue
-      template: "[{{.directory}}]"
+      template: "[{{.Path}}]"
     - type: block
       modules:
       - type: text

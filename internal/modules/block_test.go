@@ -39,7 +39,7 @@ func TestBlockStyles(t *testing.T) {
 
 	blockMod := BlockModule{
 		Modules: ModuleList{[]Module{usernameMod, promptMod}},
-		Join:    " {{.prevStyle.FG}}{{.nextStyle.FG}} ",
+		Join:    " {{.PrevStyle.FG}}{{.NextStyle.FG}} ",
 	}
 
 	env := &env.DummyEnv{

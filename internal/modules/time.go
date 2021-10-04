@@ -43,8 +43,8 @@ func (mod TimeModule) Execute(env env.Env) ModuleResult {
 	formattedTime := now.Format(layout)
 
 	data := map[string]interface{}{
-		"time":    now,
-		"timeStr": formattedTime,
+		"Time":    now,
+		"TimeStr": formattedTime,
 	}
 
 	return executeModule(mod.CommonConfig, data, mod.Style, formattedTime)

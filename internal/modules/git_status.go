@@ -27,15 +27,15 @@ import (
 //
 // Provides the following template variables:
 //
-// • index - An `{ added, modified, deleted, total }` object.  Each is an `int`
+// • Index - An `{ Added, Modified, Deleted, Total }` object.  Each is an `int`
 //   representing the number of files in the index in that state.
 //
-// • files - An `{ added, modified, deleted, total }` object.  Each is an `int`
+// • Unstaged - An `{ Added, Modified, Deleted, Total }` object.  Each is an `int`
 //   representing the number of unstaged files in that state.
 //
-// • unmerged - An `int` representing the number of unmerged files.
+// • Unmerged - An `int` representing the number of unmerged files.
 //
-// • stashCount - An `int` representing the number of stashes.
+// • StashCount - An `int` representing the number of stashes.
 //
 type GitStatusModule struct {
 	CommonConfig `yaml:",inline"`
@@ -61,22 +61,20 @@ func (mod GitStatusModule) Execute(env env.Env) ModuleResult {
 	stashCount := git.GetStashCount()
 
 	data := map[string]interface{}{
-		"stats": map[string]interface{}{
-			"index": map[string]interface{}{
-				"added":    stats.Index.Added,
-				"modified": stats.Index.Modified,
-				"deleted":  stats.Index.Deleted,
-				"total":    stats.Index.Added + stats.Index.Modified + stats.Index.Deleted,
-			},
-			"unstaged": map[string]interface{}{
-				"added":    stats.Unstaged.Added,
-				"modified": stats.Unstaged.Modified,
-				"deleted":  stats.Unstaged.Deleted,
-				"total":    stats.Unstaged.Added + stats.Unstaged.Modified + stats.Unstaged.Deleted,
-			},
-			"unmerged":   stats.Unmerged,
-			"stashCount": stashCount,
+		"Index": map[string]interface{}{
+			"Added":    stats.Index.Added,
+			"Modified": stats.Index.Modified,
+			"Deleted":  stats.Index.Deleted,
+			"Total":    stats.Index.Added + stats.Index.Modified + stats.Index.Deleted,
 		},
+		"Unstaged": map[string]interface{}{
+			"Added":    stats.Unstaged.Added,
+			"Modified": stats.Unstaged.Modified,
+			"Deleted":  stats.Unstaged.Deleted,
+			"Total":    stats.Unstaged.Added + stats.Unstaged.Modified + stats.Unstaged.Deleted,
+		},
+		"Unmerged":   stats.Unmerged,
+		"StashCount": stashCount,
 	}
 
 	defaultOutput := mod.renderDefault(stats, stashCount)

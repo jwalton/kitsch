@@ -22,9 +22,9 @@ func TestDirectory(t *testing.T) {
 	result := mod.Execute(env)
 	assert.Equal(t, ModuleResult{
 		Data: map[string]interface{}{
-			"rawDirectory": "/tmp/test",
-			"directory":    "/tmp/test",
-			"default":      "/tmp/test",
+			"RawPath": "/tmp/test",
+			"Path":    "/tmp/test",
+			"Default": "/tmp/test",
 		},
 		Text: "/tmp/test",
 	}, result)
@@ -44,9 +44,9 @@ func TestHomeDirectory(t *testing.T) {
 	result := mod.Execute(env)
 	assert.Equal(t, ModuleResult{
 		Data: map[string]interface{}{
-			"rawDirectory": "/Users/jwalton",
-			"directory":    "~",
-			"default":      "~",
+			"RawPath": "/Users/jwalton",
+			"Path":    "~",
+			"Default": "~",
 		},
 		Text: "~",
 	}, result)
@@ -66,9 +66,9 @@ func TestHomeDirectorySubdirectory(t *testing.T) {
 	result := mod.Execute(env)
 	assert.Equal(t, ModuleResult{
 		Data: map[string]interface{}{
-			"rawDirectory": "/Users/jwalton/foo",
-			"directory":    "~/foo",
-			"default":      "~/foo",
+			"RawPath": "/Users/jwalton/foo",
+			"Path":    "~/foo",
+			"Default": "~/foo",
 		},
 		Text: "~/foo",
 	}, result)

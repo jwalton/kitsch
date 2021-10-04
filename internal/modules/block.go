@@ -25,11 +25,11 @@ type BlockModule struct {
 	// Join is a template to use to join together modules.  This will be executed
 	// with the following parameters:
 	//
-	// • prevStyle - The style of last character of the previous module.
+	// • PrevStyle - The style of last character of the previous module.
 	//
-	// • nextStyle - The style of the first character of the next module.
+	// • NextStyle - The style of the first character of the next module.
 	//
-	// • index - The index of the next module in the Modules array.
+	// • Index - The index of the next module in the Modules array.
 	//
 	Join string
 }
@@ -47,7 +47,7 @@ func (mod BlockModule) Execute(env env.Env) ModuleResult {
 	defaultText := mod.joinChildren(children)
 
 	data := map[string]interface{}{
-		"children": children,
+		"Children": children,
 	}
 
 	result := executeModule(mod.CommonConfig, data, mod.Style, defaultText)
@@ -76,9 +76,9 @@ func (mod BlockModule) joinChildren(children []ModuleResult) string {
 		if join != nil && index != 0 {
 			prev := children[index-1]
 			joiner, err := modtemplate.TemplateToString(join, map[string]interface{}{
-				"prevStyle": prev.EndStyle,
-				"nextStyle": child.StartStyle,
-				"index":     index,
+				"PrevStyle": prev.EndStyle,
+				"NextStyle": child.StartStyle,
+				"Index":     index,
 			})
 			if err != nil {
 				// TODO: Add warning

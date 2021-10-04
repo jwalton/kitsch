@@ -13,10 +13,10 @@ type TextModule struct {
 	Text string `yaml:"text"`
 }
 
-// Execute the directory module.
+// Execute the module.
 func (mod TextModule) Execute(env env.Env) ModuleResult {
 	data := map[string]interface{}{
-		"text": mod.Text,
+		"Text": mod.Text,
 	}
 
 	return executeModule(mod.CommonConfig, data, mod.Style, mod.Text)
