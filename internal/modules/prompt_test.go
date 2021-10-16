@@ -10,51 +10,54 @@ import (
 
 func TestPrompt(t *testing.T) {
 	mod := PromptModule{}
-	env := &env.DummyEnv{}
+	context := testContext("jwalton")
 
-	result := mod.Execute(env)
+	result := mod.Execute(context)
+
 	assert.Equal(t, ModuleResult{
 		Text: "$ ",
 		Data: map[string]interface{}{
 			"IsRoot":  false,
-			"Status":  0,
 			"Default": "$ ",
 		},
-		StartStyle: style.Style{},
-		EndStyle:   style.Style{},
+		StartStyle: style.CharacterColors{},
+		EndStyle:   style.CharacterColors{},
 	}, result)
 }
 
 func TestRootPrompt(t *testing.T) {
 	mod := PromptModule{}
-	env := &env.DummyEnv{Root: true}
+	context := testContext("jwalton")
+	context.Environment = &env.DummyEnv{Root: true}
 
-	result := mod.Execute(env)
+	result := mod.Execute(context)
+
 	assert.Equal(t, ModuleResult{
 		Text: "# ",
 		Data: map[string]interface{}{
 			"IsRoot":  true,
-			"Status":  0,
 			"Default": "# ",
 		},
-		StartStyle: style.Style{},
-		EndStyle:   style.Style{},
+		StartStyle: style.CharacterColors{},
+		EndStyle:   style.CharacterColors{},
 	}, result)
 }
 
 func TestStyle(t *testing.T) {
 	mod := PromptModule{
 		CommonConfig: CommonConfig{
-			Style: style.Style{FG: "blue"},
+			Style: "blue",
 		},
-		RootStyle: style.Style{FG: "red"},
+		RootStyle: "red",
 	}
 
-	stdEnv := &env.DummyEnv{Root: false}
-	result := mod.Execute(stdEnv)
+	context := testContext("jwalton")
+	context.Environment = &env.DummyEnv{Root: false}
 
-	rootEnv := &env.DummyEnv{Root: true}
-	rootResult := mod.Execute(rootEnv)
+	result := mod.Execute(context)
+
+	context.Environment = &env.DummyEnv{Root: true}
+	rootResult := mod.Execute(context)
 
 	assert.Equal(t, "blue", result.StartStyle.FG)
 	assert.Equal(t, "blue", result.EndStyle.FG)

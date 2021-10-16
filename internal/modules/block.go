@@ -3,8 +3,8 @@ package modules
 import (
 	"text/template"
 
-	"github.com/jwalton/kitsch-prompt/internal/env"
 	"github.com/jwalton/kitsch-prompt/internal/modtemplate"
+	"github.com/jwalton/kitsch-prompt/internal/style"
 	"gopkg.in/yaml.v3"
 )
 
@@ -25,9 +25,9 @@ type BlockModule struct {
 	// Join is a template to use to join together modules.  This will be executed
 	// with the following parameters:
 	//
-	// • PrevStyle - The style of last character of the previous module.
+	// • PrevColors - The FG and BG color of last character of the previous module.
 	//
-	// • NextStyle - The style of the first character of the next module.
+	// • NextColors - The FG and BG of the first character of the next module.
 	//
 	// • Index - The index of the next module in the Modules array.
 	//
@@ -35,38 +35,53 @@ type BlockModule struct {
 }
 
 // Execute the block module.
-func (mod BlockModule) Execute(env env.Env) ModuleResult {
+func (mod BlockModule) Execute(context *Context) ModuleResult {
 	children := make([]ModuleResult, 0, len(mod.Modules.Modules))
 	for _, module := range mod.Modules.Modules {
-		result := module.Execute(env)
+		result := module.Execute(context)
 		if len(result.Text) != 0 {
 			children = append(children, result)
 		}
 	}
 
-	defaultText := mod.joinChildren(children)
+	defaultText := mod.joinChildren(context, children)
 
 	data := map[string]interface{}{
 		"Children": children,
 	}
 
-	result := executeModule(mod.CommonConfig, data, mod.Style, defaultText)
+	result := executeModule(context, mod.CommonConfig, data, mod.Style, defaultText)
 
 	if len(children) > 0 {
-		result.StartStyle = mod.Style.Mix(children[0].StartStyle)
-		result.EndStyle = mod.Style.Mix(children[len(children)-1].EndStyle)
+		lastChild := len(children) - 1
+		result.StartStyle = style.CharacterColors{
+			FG: defaultString(result.StartStyle.FG, children[0].StartStyle.FG),
+			BG: defaultString(result.StartStyle.BG, children[0].StartStyle.BG),
+		}
+		result.EndStyle = style.CharacterColors{
+			FG: defaultString(result.EndStyle.FG, children[lastChild].EndStyle.FG),
+			BG: defaultString(result.EndStyle.BG, children[lastChild].EndStyle.BG),
+		}
 	}
 
 	return result
 }
 
-func (mod BlockModule) joinChildren(children []ModuleResult) string {
+// blockJoinData is the data passed to the join template.
+type blockJoinData struct {
+	Global     *Globals
+	PrevColors style.CharacterColors
+	NextColors style.CharacterColors
+	Index      int
+}
+
+func (mod BlockModule) joinChildren(context *Context, children []ModuleResult) string {
 	result := ""
 	var join *template.Template = nil
 
 	if mod.Join != "" {
 		var err error
-		join, err = modtemplate.CompileTemplate("join", mod.Join)
+		join, err = modtemplate.CompileTemplate(&context.Styles, "join", mod.Join)
 		if err != nil {
 			join = nil
 		}
@@ -75,13 +90,14 @@ func (mod BlockModule) joinChildren(children []ModuleResult) string {
 	for index, child := range children {
 		if join != nil && index != 0 {
 			prev := children[index-1]
-			joiner, err := modtemplate.TemplateToString(join, map[string]interface{}{
-				"PrevStyle": prev.EndStyle,
-				"NextStyle": child.StartStyle,
-				"Index":     index,
+			joiner, err := modtemplate.TemplateToString(join, blockJoinData{
+				Global:     &context.Globals,
+				PrevColors: prev.EndStyle,
+				NextColors: child.StartStyle,
+				Index:      index,
 			})
 			if err != nil {
-				// TODO: Add warning
+				context.Environment.Warn(err.Error())
 				joiner = " "
 			}
 			result += joiner

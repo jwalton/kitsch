@@ -8,6 +8,7 @@ import (
 
 // Powerline is a helper object for constructing powerline prompts.
 type Powerline struct {
+	styles *style.Registry
 	// color is the current background color.
 	color           string
 	separatorPrefix string
@@ -15,8 +16,9 @@ type Powerline struct {
 }
 
 // New creates a noew Powerline helper object for use in a template.
-func New(prefix string, suffix string) *Powerline {
+func New(styles *style.Registry, prefix string, suffix string) *Powerline {
 	return &Powerline{
+		styles:          styles,
 		color:           "",
 		separatorPrefix: prefix,
 		separatorSuffix: suffix,
@@ -38,17 +40,17 @@ func (pl *Powerline) updateColor(color string) string {
 		return ""
 	}
 
-	prefixStyle, err := style.Parse(style.ToBgColor(lastColor))
+	prefixStyle, err := pl.styles.Get(style.ToBgColor(lastColor))
 	if err != nil {
 		return ""
 	}
-	suffixStyle, err := style.Parse(lastColor + " " + style.ToBgColor(color))
+	suffixStyle, err := pl.styles.Get(lastColor + " " + style.ToBgColor(color))
 	if err != nil {
 		return ""
 	}
 
-	prefix, _, _, _ := prefixStyle.Apply(pl.separatorPrefix)
-	suffix, _, _, _ := suffixStyle.Apply(pl.separatorSuffix)
+	prefix := prefixStyle.Apply(pl.separatorPrefix)
+	suffix := suffixStyle.Apply(pl.separatorSuffix)
 
 	return prefix + suffix
 }
@@ -59,15 +61,12 @@ func (pl *Powerline) print(text string) string {
 		return text
 	}
 
-	style, err := style.Parse(style.ToBgColor(pl.color))
+	style, err := pl.styles.Get(style.ToBgColor(pl.color))
 	if err != nil {
 		return text
 	}
 
-	styledSegment, _, _, err := style.Apply(text)
-	if err != nil {
-		return text
-	}
+	styledSegment := style.Apply(text)
 
 	return styledSegment
 }
@@ -78,8 +77,12 @@ func (pl *Powerline) Segment(color string, text string) string {
 }
 
 // TxtFuncMap returns template functions for styling text.
-func TxtFuncMap() template.FuncMap {
+func TxtFuncMap(styles *style.Registry) template.FuncMap {
 	return template.FuncMap{
-		"makePowerline": New,
+		"makePowerline": func(prefix string, suffix string) func(string, string) string {
+			return func(color string, text string) string {
+				return New(styles, prefix, suffix).Segment(color, text)
+			}
+		},
 	}
 }

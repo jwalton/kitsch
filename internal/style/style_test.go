@@ -3,74 +3,38 @@ package style
 import (
 	"testing"
 
+	"github.com/jwalton/gchalk"
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/yaml.v3"
 )
 
-func TestParse(t *testing.T) {
-	style, err := Parse("blue")
-	assert.Nil(t, err, "err should be nil")
-	assert.Equal(t, Style{FG: "blue", BG: "", Modifiers: nil}, style)
-
-	style, err = Parse("bg:blue")
-	assert.Nil(t, err, "err should be nil")
-	assert.Equal(t, Style{FG: "", BG: "blue", Modifiers: nil}, style)
-
-	style, err = Parse("bgBlue")
-	assert.Nil(t, err, "err should be nil")
-	assert.Equal(t, Style{FG: "", BG: "blue", Modifiers: nil}, style)
-
-	style, err = Parse("red bg:blue bold")
-	assert.Nil(t, err, "err should be nil")
-	assert.Equal(t, Style{FG: "red", BG: "blue", Modifiers: []string{"bold"}}, style)
-
-	style, err = Parse("#fff bg:#dead00")
-	assert.Nil(t, err, "err should be nil")
-	assert.Equal(t, Style{FG: "#fff", BG: "#dead00", Modifiers: nil}, style)
+func testStyleRegistry() Registry {
+	gchalkInstance := gchalk.New()
+	gchalkInstance.SetLevel(gchalk.LevelAnsi16m)
+	styles := Registry{gchalkInstance: gchalkInstance}
+	return styles
 }
 
-func TestUnmarshall(t *testing.T) {
-	var style Style
+func TestApply(t *testing.T) {
+	styles := testStyleRegistry()
 
-	err := style.UnmarshalInterface(map[string]interface{}{
-		"fg":        "blue",
-		"bg":        "red",
-		"modifiers": []string{"bold"},
-	})
-	assert.Nil(t, err, "err should be nil")
-	assert.Equal(t, Style{FG: "blue", BG: "red", Modifiers: []string{"bold"}}, style)
+	style, err := styles.Get("red")
+	assert.NoError(t, err)
+	assert.Equal(t, "\u001b[31mtest\u001b[39m", style.Apply("test"))
 
-	err = style.UnmarshalInterface("bgBlue bold")
-	assert.Nil(t, err, "err should be nil")
-	assert.Equal(t, Style{FG: "", BG: "blue", Modifiers: []string{"bold"}}, style)
-}
+	style, err = styles.Get("bold")
+	assert.NoError(t, err)
+	assert.Equal(t, "\u001b[1mtest\u001b[22m", style.Apply("test"))
 
-type yamlTestStruct struct {
-	Style Style `yaml:"style"`
-}
+	style, err = styles.Get("#fff")
+	assert.NoError(t, err)
+	assert.Equal(t, "\u001b[38;2;255;255;255mtest\u001b[39m", style.Apply("test"))
 
-func TestUnmarshallYaml(t *testing.T) {
-	text := `
-style:
-  fg: blue
-  bg: red
-  modifiers:
-    - bold
-`
+	style, err = styles.Get("bg:#fff")
+	assert.NoError(t, err)
+	assert.Equal(t, "\u001b[48;2;255;255;255mtest\u001b[49m", style.Apply("test"))
 
-	var result yamlTestStruct
-	err := yaml.Unmarshal([]byte(text), &result)
-	assert.Nil(t, err, "err should be nil")
-	assert.Equal(t, Style{FG: "blue", BG: "red", Modifiers: []string{"bold"}}, result.Style)
-}
-
-func TestUnmarshallYamlString(t *testing.T) {
-	text := `
-style: bgBlue bold
-`
-
-	var result yamlTestStruct
-	err := yaml.Unmarshal([]byte(text), &result)
-	assert.Nil(t, err, "err should be nil")
-	assert.Equal(t, Style{FG: "", BG: "blue", Modifiers: []string{"bold"}}, result.Style)
+	styles.AddCustomColor("$foreground", "white")
+	style, err = styles.Get("$foreground")
+	assert.NoError(t, err)
+	assert.Equal(t, "\u001b[37mtest\u001b[39m", style.Apply("test"))
 }

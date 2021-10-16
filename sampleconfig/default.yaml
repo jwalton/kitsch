@@ -1,3 +1,5 @@
+colors:
+  $foreground: brightBlue
 prompt:
   type: block
   join: " "
@@ -5,8 +7,8 @@ prompt:
     - type: time
       style: brightBlack
     - type: directory
-      style: brightBlue
-      template: "[{{.Path}}]"
+      style: $foreground
+      template: "[{{.Data.Path}}]"
     - type: block
       modules:
       - type: text

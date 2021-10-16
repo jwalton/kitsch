@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jwalton/kitsch-prompt/internal/env"
 	"github.com/jwalton/kitsch-prompt/internal/gitutils"
-	"github.com/jwalton/kitsch-prompt/internal/style"
 	"gopkg.in/yaml.v3"
 )
 
@@ -40,18 +38,18 @@ import (
 type GitStatusModule struct {
 	CommonConfig `yaml:",inline"`
 	// IndexStyle is the style to use for the index status.
-	IndexStyle style.Style `yaml:"indexStyle"`
+	IndexStyle string `yaml:"indexStyle"`
 	// UnstagedStyle is the style to use for the unstaged file status.
-	UnstagedStyle style.Style `yaml:"unstagedStyle"`
+	UnstagedStyle string `yaml:"unstagedStyle"`
 	// UnmergedStyle is the style to use for the unmerged files count.
-	UnmergedStyle style.Style `yaml:"unmergedStyle"`
+	UnmergedStyle string `yaml:"unmergedStyle"`
 	// StashStyle is the style to use for the stash count.
-	StashStyle style.Style `yaml:"stashStyle"`
+	StashStyle string `yaml:"stashStyle"`
 }
 
 // Execute runs a git module.
-func (mod GitStatusModule) Execute(env env.Env) ModuleResult {
-	git := env.Git()
+func (mod GitStatusModule) Execute(context *Context) ModuleResult {
+	git := context.Environment.Git()
 
 	if git == nil {
 		return ModuleResult{}
@@ -77,12 +75,13 @@ func (mod GitStatusModule) Execute(env env.Env) ModuleResult {
 		"StashCount": stashCount,
 	}
 
-	defaultOutput := mod.renderDefault(stats, stashCount)
+	defaultOutput := mod.renderDefault(context, stats, stashCount)
 
-	return executeModule(mod.CommonConfig, data, mod.Style, defaultOutput)
+	return executeModule(context, mod.CommonConfig, data, mod.Style, defaultOutput)
 }
 
 func (mod GitStatusModule) renderDefault(
+	context *Context,
 	stats gitutils.GitStats,
 	stashCount int,
 ) string {
@@ -90,8 +89,13 @@ func (mod GitStatusModule) renderDefault(
 	indexTotal := stats.Index.Added + stats.Index.Modified + stats.Index.Deleted
 	filesTotal := stats.Unstaged.Added + stats.Unstaged.Modified + stats.Unstaged.Deleted
 
+	indexStyle := defaultStyle(context, mod.IndexStyle, "green")
+	unstagedStyle := defaultStyle(context, mod.UnstagedStyle, "red")
+	unmergedStyle := defaultStyle(context, mod.UnmergedStyle, "brightMagenta")
+	stashStyle := defaultStyle(context, mod.StashStyle, "brightRed")
+
 	if (indexTotal) > 0 {
-		indexStats, _, _, _ := mod.IndexStyle.Default(style.Style{FG: "green"}).Apply(mod.renderStats(stats.Index))
+		indexStats := indexStyle.Apply(mod.renderStats(stats.Index))
 		parts = append(parts, indexStats)
 	}
 
@@ -100,17 +104,17 @@ func (mod GitStatusModule) renderDefault(
 	}
 
 	if (filesTotal) > 0 {
-		fileStats, _, _, _ := mod.UnstagedStyle.Default(style.Style{FG: "red"}).Apply(mod.renderStats(stats.Unstaged))
+		fileStats := unstagedStyle.Apply(mod.renderStats(stats.Unstaged))
 		parts = append(parts, fileStats)
 	}
 
 	if stats.Unmerged > 0 {
-		unmergedStats, _, _, _ := mod.UnmergedStyle.Default(style.Style{FG: "brightMagenta"}).Apply(fmt.Sprintf("%d!", stats.Unmerged))
+		unmergedStats := unmergedStyle.Apply(fmt.Sprintf("%d!", stats.Unmerged))
 		parts = append(parts, unmergedStats)
 	}
 
 	if stashCount > 0 {
-		stashCountStr, _, _, _ := mod.StashStyle.Default(style.Style{FG: "brightRed"}).Apply(fmt.Sprintf("(%d)", stashCount))
+		stashCountStr := stashStyle.Apply(fmt.Sprintf("(%d)", stashCount))
 		parts = append(parts, stashCountStr)
 	}
 

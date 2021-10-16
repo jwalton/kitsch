@@ -1,6 +1,6 @@
 prompt:
   type: block
-  join: '{{ style .PrevStyle " " }}{{ "\ue0b0 " | fgColor .PrevStyle.BG | bgColor .NextStyle.BG }}'
+  join: '{{ bgColor .PrevColors.BG " " }}{{ "\ue0b0 " | fgColor .PrevColors.BG | bgColor .NextColors.BG }}'
   modules:
     - type: time
       style: bg#222 brightWhite
@@ -16,7 +16,6 @@ prompt:
       style: bgBlack
       errorStyle: bgRed brightWhite
       prompt: "\ue0b0"
-      rootPrompt: "#"
-      template: "{{ if (ne .Status 0) }}{{ .Status }}{{ end }}"
+      template: "{{ if (ne .Global.Status 0) }} {{.Global.Status}} {{ end }}"
     - type: text
       text: " "

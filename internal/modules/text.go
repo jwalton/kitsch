@@ -1,7 +1,6 @@
 package modules
 
 import (
-	"github.com/jwalton/kitsch-prompt/internal/env"
 	"gopkg.in/yaml.v3"
 )
 
@@ -14,12 +13,12 @@ type TextModule struct {
 }
 
 // Execute the module.
-func (mod TextModule) Execute(env env.Env) ModuleResult {
+func (mod TextModule) Execute(context *Context) ModuleResult {
 	data := map[string]interface{}{
 		"Text": mod.Text,
 	}
 
-	return executeModule(mod.CommonConfig, data, mod.Style, mod.Text)
+	return executeModule(context, mod.CommonConfig, data, mod.Style, mod.Text)
 }
 
 func init() {

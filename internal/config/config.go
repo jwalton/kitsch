@@ -16,7 +16,8 @@ import (
 
 // Config represents a configuration file.
 type Config struct {
-	Styles map[string]yaml.Node `yaml:"styles"`
+	// Colors is a collection of custom colors.
+	Colors map[string]string `yaml:"colors"`
 	// Prompt is the module to use to display the prompt.
 	Prompt yaml.Node
 }

@@ -3,7 +3,6 @@ package modules
 import (
 	"time"
 
-	"github.com/jwalton/kitsch-prompt/internal/env"
 	"gopkg.in/yaml.v3"
 )
 
@@ -32,7 +31,7 @@ type TimeModule struct {
 }
 
 // Execute the time module.
-func (mod TimeModule) Execute(env env.Env) ModuleResult {
+func (mod TimeModule) Execute(context *Context) ModuleResult {
 	now := time.Now()
 
 	layout := mod.Layout
@@ -47,7 +46,7 @@ func (mod TimeModule) Execute(env env.Env) ModuleResult {
 		"TimeStr": formattedTime,
 	}
 
-	return executeModule(mod.CommonConfig, data, mod.Style, formattedTime)
+	return executeModule(context, mod.CommonConfig, data, mod.Style, formattedTime)
 }
 
 func init() {

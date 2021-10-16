@@ -4,7 +4,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/jwalton/kitsch-prompt/internal/env"
 	"gopkg.in/yaml.v3"
 )
 
@@ -15,8 +14,6 @@ const defaultTruncationSymbol = "…"
 // DirectoryModule shows the current working directory.
 //
 // Provides the following template variables:
-//
-// • RawPath - The unmodified current working directory.
 //
 // • Path - The directory to show.
 //
@@ -49,15 +46,13 @@ func (mod DirectoryModule) truncateToFolder(path string, truncatePath string) st
 }
 
 // Execute the directory module.
-func (mod DirectoryModule) Execute(env env.Env) ModuleResult {
+func (mod DirectoryModule) Execute(context *Context) ModuleResult {
 	truncationSymbol := defaultString(mod.TruncationSymbol, defaultTruncationSymbol)
 	isTruncated := false
 
-	RawPath := env.Getwd()
+	path := context.Globals.CWD
 
-	path := RawPath
-
-	git := env.Git()
+	git := context.Environment.Git()
 	if mod.TruncateToRepo && git != nil && strings.HasPrefix(path, git.RepoRoot) {
 		// Truncate to root of git repo if we're in a git repo.
 		truncateToParts := strings.Split(git.RepoRoot, string(os.PathSeparator))
@@ -66,7 +61,7 @@ func (mod DirectoryModule) Execute(env env.Env) ModuleResult {
 		isTruncated = true
 	} else {
 		// Truncate to the user's home directory, if we're in their home directory.
-		home := env.UserHomeDir()
+		home := context.Globals.Home
 		isHome := strings.HasPrefix(path, home)
 
 		if isHome {
@@ -95,11 +90,10 @@ func (mod DirectoryModule) Execute(env env.Env) ModuleResult {
 	// TODO: Add read-only icon if read-only directory.
 
 	data := map[string]interface{}{
-		"RawPath": RawPath,
-		"Path":    path,
+		"Path": path,
 	}
 
-	return executeModule(mod.CommonConfig, data, mod.Style, path)
+	return executeModule(context, mod.CommonConfig, data, mod.Style, path)
 }
 
 func init() {

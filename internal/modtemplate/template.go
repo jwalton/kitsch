@@ -16,7 +16,7 @@ const recursionMaxNums = 1000
 var sprigTemplateFunctions = sprig.TxtFuncMap()
 
 // CompileTemplate compiles a module template and adds default template functions.
-func CompileTemplate(name string, templateString string) (*template.Template, error) {
+func CompileTemplate(styles *style.Registry, name string, templateString string) (*template.Template, error) {
 
 	tmpl := template.New(name)
 
@@ -43,8 +43,8 @@ func CompileTemplate(name string, templateString string) (*template.Template, er
 	tmpl, err := tmpl.
 		Funcs(funcMap).
 		Funcs(sprigTemplateFunctions).
-		Funcs(style.TxtFuncMap()).
-		Funcs(powerline.TxtFuncMap()).
+		Funcs(style.TxtFuncMap(styles)).
+		Funcs(powerline.TxtFuncMap(styles)).
 		Parse(templateString)
 	if err != nil {
 		return nil, err

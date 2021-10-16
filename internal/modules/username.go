@@ -1,8 +1,6 @@
 package modules
 
 import (
-	"github.com/jwalton/kitsch-prompt/internal/env"
-	styleLib "github.com/jwalton/kitsch-prompt/internal/style"
 	"gopkg.in/yaml.v3"
 )
 
@@ -29,36 +27,33 @@ type UsernameModule struct {
 	ShowAlways bool
 	// RootStyle will be used in place of `Style` if the current user is root.
 	// If this style is empty, will fall back to `Style`.
-	RootStyle styleLib.Style
+	RootStyle string
 }
 
 // Execute the username module.
-func (mod UsernameModule) Execute(env env.Env) ModuleResult {
-	username := env.GetUsername()
-	isRoot := env.IsRoot()
-	isSSH := env.HasSomeEnv("SSH_CLIENT", "SSH_CONNECTION", "SSH_TTY")
+func (mod UsernameModule) Execute(context *Context) ModuleResult {
+	isRoot := context.Environment.IsRoot()
+	isSSH := context.Environment.HasSomeEnv("SSH_CLIENT", "SSH_CONNECTION", "SSH_TTY")
 	show := isSSH || isRoot || mod.ShowAlways
 
 	data := map[string]interface{}{
-		"Username": username,
+		"Username": context.Globals.Username,
 		"IsRoot":   isRoot,
 		"IsSSH":    isSSH,
 		"Show":     show,
 	}
 
 	defaultText := ""
-	var style styleLib.Style
+	style := mod.Style
 
 	if show {
-		defaultText = username
-		if isRoot && !mod.RootStyle.IsEmpty() {
+		defaultText = context.Globals.Username
+		if isRoot && mod.RootStyle != "" {
 			style = mod.RootStyle
-		} else {
-			style = mod.Style
 		}
 	}
 
-	return executeModule(mod.CommonConfig, data, style, defaultText)
+	return executeModule(context, mod.CommonConfig, data, style, defaultText)
 }
 
 func init() {

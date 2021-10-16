@@ -3,217 +3,126 @@
 package style
 
 import (
-	"fmt"
-	"regexp"
 	"strings"
 
-	"github.com/jwalton/gchalk/pkg/ansistyles"
+	"github.com/jwalton/gchalk"
 )
 
-var hexColorRegex = regexp.MustCompile(`([a-fA-F\d]{6}|[a-fA-F\d]{3})`)
+type stylerFn func(string) string
 
-const bgPrefix = "bg:"
-
-// Style represents ANSI styling to apply to a string of text in terminal output.
-// Style keeps track of a foreground color, a background color, and any addiitional
-// modifiers which should be applied to the string.
+// Style represents a compiled style that can be applied to a string.
+// Styles are constructed by calling into StyleRegistry.Get().  Once created,
+// a Style is immutable.
 type Style struct {
-	// FG is the foreground color of this style.  This can be any string that
-	// `gchalk.Style()` accepts (e.g. "red", "brightBlack") or a hex string (e.g. "#2080ff").
+	descriptor styleDescriptor
+	styler     stylerFn
+	builder    *gchalk.Builder
+}
+
+// CharacterColors represent the color for a single character.
+type CharacterColors struct {
+	// FG is the foreground color.  This is either a color name like "red", or
+	// a hex color.
 	FG string
-	// BG is the background color of this style.
+	// BG is the background color.
 	BG string
-	// Modifiers is an array of modifiers (e.g. "bold").  These can be any
-	// modifier accepted by `gchalk.Style()`.
-	Modifiers []string
 }
 
-// IsEmpty returns true if this instance of Style is the default empty instance,
-// which applies no styling.
-func (style *Style) IsEmpty() bool {
-	return style.FG == "" && style.BG == "" && len(style.Modifiers) == 0
-}
-
-func (style *Style) reset() {
-	style.FG = ""
-	style.BG = ""
-	style.Modifiers = nil
-}
-
-// Mix will mix another style onto this style.  Styles from "nested" will override
-// styles from the current style.  This is used in the case where we nest styles -
-// this style is the parent style, and "nested" is the nested style.
-//
-// For example, if this style is `{BG: "red", FG: "white"}` and `nested` is
-// `{BG: "blue"}`, this would return `{BG: "blue", FG: "white"}`, which is
-// what style you get if you tried to nest content with the "nested" style inside
-// this style.
-//
-func (style *Style) Mix(nested Style) Style {
-	return Style{
-		FG:        defaultString(nested.FG, style.FG),
-		BG:        defaultString(nested.BG, style.BG),
-		Modifiers: mixModifiers(style.Modifiers, nested.Modifiers),
-	}
-}
-
-// Default will return the given style if and only if the receiver is empty.
-func (style *Style) Default(defaultStyle Style) Style {
-	if style.IsEmpty() {
-		return defaultStyle
-	}
-	return *style
-}
-
-// defaultString returns value if it is non-empty, or def otherwise.
-func defaultString(value string, def string) string {
-	if value != "" {
-		return value
-	}
-	return def
-}
-
-func mixModifiers(base []string, nested []string) []string {
-	if len(base) == 0 {
-		return nested
-	}
-	if len(nested) == 0 {
-		return base
-	}
-
-	styles := make(map[string]struct{}, len(base)+len(nested))
-	for _, style := range nested {
-		styles[style] = struct{}{}
-	}
-	_, nestedReset := styles["reset"]
-	if nestedReset {
-		// If there's a reset in the nested styles, just return the nested styles.
-		return nested
-	}
-
-	for _, style := range base {
-		styles[style] = struct{}{}
-	}
-	_, baseReset := styles["reset"]
-	if baseReset {
-		// If there's a reset in the base styles, return
-		return append(base, nested...)
-	}
-
-	result := make([]string, 0, len(styles))
-	for style := range styles {
-		result = append(result, style)
-	}
-
-	return result
-}
-
-// Parse parses a style string from the kitsch configuration, and returns
-// a `Style` object, which can be passed to `applyStyles()`.
-//
-// Valid style strings include:
-//
-// • Any color name accepted by `gchalk.Style()` (e.g. "red", "blue", "brightBlue").
-//
-// • A hex color code (e.g. "#FFF" or "#320fc9").
-//
-// • Any of the above, but starting with "bg:" to style the background.
-//
-// • Any modifier accepted by `gchalk.Style()` (e.g. "bold", "dim", "inverse").
-//
-// Multiple style strings can be separated by spaces.
-//
-func Parse(styleString string) (Style, error) {
-	result := Style{}
-	return result, result.parse(styleString)
-}
-
-func (style *Style) parse(styleString string) error {
-	var err error
-
-	style.reset()
-
-	substrings := strings.Split(styleString, " ")
-	for _, str := range substrings {
-		if len(str) > 0 {
-			styleErr := parseStyleSubstring(str, false, style)
-			if styleErr != nil && err == nil {
-				err = styleErr
-			}
-		}
-	}
-
-	return err
-}
-
-// ParseMust is like Parse() but panics if the styleString is invalid.
-func ParseMust(styleString string) Style {
-	result, err := Parse(styleString)
-
+func compileStyle(
+	baseBuilder *gchalk.Builder,
+	customColors map[string]string,
+	styleString string,
+) (Style, error) {
+	descriptor, err := parseStyle(customColors, styleString)
 	if err != nil {
-		panic(err)
+		return Style{}, err
 	}
+	var styler stylerFn
+	builder := baseBuilder
 
-	return result
-}
+	compileColor := func(token string, background bool) error {
+		var err error
 
-// isBgColor returns true if the passed in style is a background color,
-// and returns the color with the bg prefix stripped.
-func isBgColor(styleStr string) (string, bool) {
-	if strings.HasPrefix(styleStr, bgPrefix) {
-		// Handle case where `styleStr` starts with "bg:".
-		return styleStr[3:], true
-	} else if strings.HasPrefix(styleStr, "bg") {
-		return strings.ToLower(styleStr[2:3]) + styleStr[3:], true
-	}
-	return "", false
-}
-
-// parseStyleSubstring is a helper function for `ParseStyle` which parses an individual
-// style string.
-func parseStyleSubstring(styleStr string, isBackground bool, style *Style) error {
-	// TODO: Add `bg#abcdef` support to gchalk.  Maybe add `bg:red` support, too.
-	// It would be nice if `gchalk.style()` supported these and FG hex colors.
-	if color, isBg := isBgColor(styleStr); isBg {
-		// Handle case where `styleStr` starts with "bg:" or "bg".
-		return parseStyleSubstring(color, true, style)
-	} else if validateColor(styleStr) {
-		if isBackground {
-			style.BG = styleStr
-		} else {
-			style.FG = styleStr
+		if token == "" {
+			return nil
 		}
-	} else if _, ok := ansistyles.Modifier[styleStr]; ok {
-		style.Modifiers = append(style.Modifiers, styleStr)
+
+		if strings.HasPrefix(token, linearGradientPrefix) {
+			// TODO - linear-gradient
+		} else {
+			if background {
+				// TODO: Must be a better way!  :/
+				token = "bg" + strings.ToUpper(token[0:1]) + token[1:]
+			}
+			builder, err = builder.WithStyle(token)
+		}
+
+		return err
+	}
+
+	err = compileColor(descriptor.fg, false)
+	if err != nil {
+		return Style{}, err
+	}
+
+	err = compileColor(descriptor.bg, true)
+	if err != nil {
+		return Style{}, err
+	}
+
+	for _, modifier := range descriptor.modifiers {
+		builder, err = builder.WithStyle(modifier)
+		if err != nil {
+			return Style{}, err
+		}
+	}
+
+	return Style{
+		descriptor: descriptor,
+		styler:     styler,
+		builder:    builder,
+	}, nil
+}
+
+// Apply applies this style to the given text.
+func (style *Style) Apply(text string) string {
+	if style == nil {
+		return text
+	}
+	if style.builder != nil {
+		text = style.builder.Paint(text)
+	}
+	if style.styler != nil {
+		text = style.styler(text)
+	}
+	return text
+}
+
+// ApplyGetColors applies this style to the given text, and returns the first and last colors of the styled text.
+func (style *Style) ApplyGetColors(text string) (result string, first CharacterColors, last CharacterColors) {
+	if style == nil {
+		return text, first, last
+	}
+	if style.builder != nil {
+		text = style.builder.Paint(text)
+	}
+	if style.styler != nil {
+		text = style.styler(text)
+	}
+
+	if strings.HasPrefix(style.descriptor.fg, linearGradientPrefix) {
+		// TODO - linear-gradient
 	} else {
-		return fmt.Errorf("cannot parse style \"%s\"", styleStr)
-	}
-	return nil
-}
-
-// validateColor retunrs true if the given string if a valid style.FG or style.BG.
-func validateColor(color string) bool {
-	_, validAnsiStyle := ansistyles.Color[color]
-	return validAnsiStyle || hexColorRegex.MatchString(color)
-}
-
-// ToFgColor converts a color to a foreground color.
-func ToFgColor(color string) string {
-	if color == "" {
-		color = "black"
-	} else if fgColor, isBg := isBgColor(color); isBg {
-		color = fgColor
-	}
-	return color
-}
-
-// ToBgColor converts a color to a background color.
-func ToBgColor(color string) string {
-	if color == "" {
-		color = "black"
-	} else if !strings.HasPrefix(color, "bg") {
-		color = "bg:" + color
+		first.FG = style.descriptor.fg
+		last.FG = style.descriptor.fg
 	}
 
-	return color
+	if strings.HasPrefix(style.descriptor.bg, linearGradientPrefix) {
+		// TODO - linear-gradient
+	} else {
+		first.BG = style.descriptor.bg
+		last.BG = style.descriptor.bg
+	}
+
+	return text, first, last
 }

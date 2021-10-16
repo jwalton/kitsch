@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/jwalton/gchalk"
 	"github.com/jwalton/go-supportscolor"
 	"github.com/jwalton/kitsch-prompt/internal/env"
 	"github.com/jwalton/kitsch-prompt/internal/modules"
 	"github.com/jwalton/kitsch-prompt/internal/shellprompt"
+	"github.com/jwalton/kitsch-prompt/internal/style"
 	"github.com/spf13/cobra"
 )
 
@@ -35,19 +37,35 @@ var promptCmd = &cobra.Command{
 		gchalk.SetLevel(level.Level)
 		gchalk.Stderr.SetLevel(level.Level)
 
-		runtimeEnv := env.New(jobs, cmdDuration, status, keymap)
-
 		configuration, err := readConfig()
 		var module modules.Module
 		if err == nil {
 			module, err = configuration.GetPromptModule()
 		}
 
+		globals := modules.NewGlobals(status, cmdDuration, keymap)
+		runtimeEnv := env.New(globals.CWD, jobs)
+
+		// Load custom colors
+		styles := style.Registry{}
+		for colorName, color := range configuration.Colors {
+			if !strings.HasPrefix(colorName, "$") {
+				runtimeEnv.Warn("Custom color \"" + colorName + "should start with $")
+			}
+			styles.AddCustomColor(colorName, color)
+		}
+
 		if err != nil {
 			fmt.Println(err)
 			fmt.Print("$ ")
 		} else {
-			prompt := module.Execute(runtimeEnv)
+			context := modules.Context{
+				Environment: runtimeEnv,
+				Globals:     globals,
+				Styles:      styles,
+			}
+
+			prompt := module.Execute(&context)
 			withEscapes := shellprompt.AddZeroWidthCharacterEscapes(shell, prompt.Text)
 			fmt.Println(withEscapes)
 		}

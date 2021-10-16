@@ -1,8 +1,6 @@
 package modules
 
 import (
-	"github.com/jwalton/kitsch-prompt/internal/env"
-	styleLib "github.com/jwalton/kitsch-prompt/internal/style"
 	"gopkg.in/yaml.v3"
 )
 
@@ -24,22 +22,20 @@ type PromptModule struct {
 	RootPrompt string
 	// RootStyle will be used in place of `Style` if the current user is root.
 	// If this style is empty, will fall back to Style.
-	RootStyle styleLib.Style `yaml:"rootStyle"`
+	RootStyle string `yaml:"rootStyle"`
 	// ErrorStyle will be used when the previous command failed.
-	ErrorStyle styleLib.Style `yaml:"errorStyle"`
+	ErrorStyle string `yaml:"errorStyle"`
 }
 
 // Execute the prompt module.
-func (mod PromptModule) Execute(env env.Env) ModuleResult {
-	isRoot := env.IsRoot()
-	status := env.Status()
+func (mod PromptModule) Execute(context *Context) ModuleResult {
+	isRoot := context.Environment.IsRoot()
 
 	data := map[string]interface{}{
 		"IsRoot": isRoot,
-		"Status": status,
 	}
 
-	// TODO: Use env.Keymap() here.
+	// TODO: Use globals.Keymap here.
 	var text string
 	if !isRoot {
 		text = defaultString(mod.Prompt, "$")
@@ -47,22 +43,16 @@ func (mod PromptModule) Execute(env env.Env) ModuleResult {
 		text = defaultString(mod.RootPrompt, "#")
 	}
 
-	var style styleLib.Style
-	if status != 0 {
-		style = mod.ErrorStyle
-		if style.IsEmpty() {
-			style = mod.Style
-		}
+	var style string
+	if context.Globals.Status != 0 {
+		style = defaultString(mod.ErrorStyle, mod.Style)
 	} else if !isRoot {
 		style = mod.Style
 	} else {
-		style = mod.RootStyle
-		if style.IsEmpty() {
-			style = mod.Style
-		}
+		style = defaultString(mod.RootStyle, mod.Style)
 	}
 
-	return executeModule(mod.CommonConfig, data, style, text+" ")
+	return executeModule(context, mod.CommonConfig, data, style, text+" ")
 }
 
 func init() {

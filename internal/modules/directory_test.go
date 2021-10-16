@@ -11,18 +11,12 @@ import (
 func TestDirectory(t *testing.T) {
 	mod := DirectoryModule{}
 
-	env := &env.DummyEnv{
-		Env: map[string]string{
-			"USER": "jwalton",
-			"HOME": "/Users/jwalton",
-		},
-		CWD: "/tmp/test",
-	}
+	context := testContext("jwalton")
+	context.Globals.CWD = "/tmp/test"
 
-	result := mod.Execute(env)
+	result := mod.Execute(context)
 	assert.Equal(t, ModuleResult{
 		Data: map[string]interface{}{
-			"RawPath": "/tmp/test",
 			"Path":    "/tmp/test",
 			"Default": "/tmp/test",
 		},
@@ -33,18 +27,12 @@ func TestDirectory(t *testing.T) {
 func TestHomeDirectory(t *testing.T) {
 	mod := DirectoryModule{}
 
-	env := &env.DummyEnv{
-		Env: map[string]string{
-			"USER": "jwalton",
-			"HOME": "/Users/jwalton",
-		},
-		CWD: "/Users/jwalton",
-	}
+	context := testContext("jwalton")
+	context.Globals.CWD = context.Globals.Home
 
-	result := mod.Execute(env)
+	result := mod.Execute(context)
 	assert.Equal(t, ModuleResult{
 		Data: map[string]interface{}{
-			"RawPath": "/Users/jwalton",
 			"Path":    "~",
 			"Default": "~",
 		},
@@ -55,18 +43,12 @@ func TestHomeDirectory(t *testing.T) {
 func TestHomeDirectorySubdirectory(t *testing.T) {
 	mod := DirectoryModule{}
 
-	env := &env.DummyEnv{
-		Env: map[string]string{
-			"USER": "jwalton",
-			"HOME": "/Users/jwalton",
-		},
-		CWD: "/Users/jwalton/foo",
-	}
+	context := testContext("jwalton")
+	context.Globals.CWD = "/Users/jwalton/foo"
 
-	result := mod.Execute(env)
+	result := mod.Execute(context)
 	assert.Equal(t, ModuleResult{
 		Data: map[string]interface{}{
-			"RawPath": "/Users/jwalton/foo",
 			"Path":    "~/foo",
 			"Default": "~/foo",
 		},
@@ -79,20 +61,15 @@ func TestHomeDirectorySubdirectoryTruncated(t *testing.T) {
 		TruncationLength: 3,
 	}
 
-	env := &env.DummyEnv{
-		Env: map[string]string{
-			"USER": "jwalton",
-			"HOME": "/Users/jwalton",
-		},
-		CWD: "/Users/jwalton/foo/bar/baz/qux",
-	}
+	context := testContext("jwalton")
+	context.Globals.CWD = "/Users/jwalton/foo/bar/baz/qux"
 
-	assert.Equal(t, "…/bar/baz/qux", mod.Execute(env).Text)
+	assert.Equal(t, "…/bar/baz/qux", mod.Execute(context).Text)
 
 	// Here we would normally truncate, but there's no point truncating when
 	// we're just going to replace the home symbol with the truncation symbol.
-	env.CWD = "/Users/jwalton/foo/bar/baz"
-	assert.Equal(t, "~/foo/bar/baz", mod.Execute(env).Text)
+	context.Globals.CWD = "/Users/jwalton/foo/bar/baz"
+	assert.Equal(t, "~/foo/bar/baz", mod.Execute(context).Text)
 }
 
 func TestDirectoryTruncateToHome(t *testing.T) {
@@ -100,15 +77,10 @@ func TestDirectoryTruncateToHome(t *testing.T) {
 		TruncationLength: 3,
 	}
 
-	env := &env.DummyEnv{
-		Env: map[string]string{
-			"USER": "jwalton",
-			"HOME": "/Users/jwalton",
-		},
-		CWD: "/tmp/foo/bar/baz/qux",
-	}
+	context := testContext("jwalton")
+	context.Globals.CWD = "/tmp/foo/bar/baz/qux"
 
-	assert.Equal(t, "…/bar/baz/qux", mod.Execute(env).Text)
+	assert.Equal(t, "…/bar/baz/qux", mod.Execute(context).Text)
 }
 
 func TestDirectoryTruncateToGitRepo(t *testing.T) {
@@ -117,14 +89,15 @@ func TestDirectoryTruncateToGitRepo(t *testing.T) {
 		TruncationLength: 3,
 	}
 
-	env := &env.DummyEnv{
+	context := testContext("jwalton")
+	context.Globals.CWD = "/Users/jwalton/dev/kitsch-prompt/src"
+	context.Environment = &env.DummyEnv{
 		Env: map[string]string{
 			"USER": "jwalton",
 			"HOME": "/Users/jwalton",
 		},
-		CWD:     "/Users/jwalton/dev/kitsch-prompt/src",
 		TestGit: &gitutils.GitUtils{RepoRoot: "/Users/jwalton/dev/kitsch-prompt"},
 	}
 
-	assert.Equal(t, "…/kitsch-prompt/src", mod.Execute(env).Text)
+	assert.Equal(t, "…/kitsch-prompt/src", mod.Execute(context).Text)
 }

@@ -9,42 +9,49 @@ import (
 
 func TestExecuteModule(t *testing.T) {
 	data := map[string]interface{}{}
-	moduleStyle := style.Style{}
 
 	result := executeModule(
+		testContext("jwalton"),
 		CommonConfig{},
 		data,
-		moduleStyle,
+		"",
 		"test",
 	)
 
-	assert.Equal(t, ModuleResult{
-		Text:       "test",
-		Data:       data,
-		StartStyle: moduleStyle,
-		EndStyle:   moduleStyle,
-	}, result)
+	assert.Equal(t,
+		ModuleResult{
+			Text:       "test",
+			Data:       data,
+			StartStyle: style.CharacterColors{},
+			EndStyle:   style.CharacterColors{},
+		},
+		result,
+	)
 }
 
 func TestExecuteModuleWithTemplate(t *testing.T) {
 	data := map[string]interface{}{
-		"text": "Text Text",
+		"Text": "Text Text",
 	}
-	moduleStyle := style.Style{}
+	moduleStyle := ""
 
 	result := executeModule(
+		testContext("jwalton"),
 		CommonConfig{
-			Template: "--{{.text}}--",
+			Template: "--{{.Data.Text}}--",
 		},
 		data,
 		moduleStyle,
 		"test",
 	)
 
-	assert.Equal(t, ModuleResult{
-		Text:       "--Text Text--",
-		Data:       data,
-		StartStyle: moduleStyle,
-		EndStyle:   moduleStyle,
-	}, result)
+	assert.Equal(t,
+		ModuleResult{
+			Text:       "--Text Text--",
+			Data:       data,
+			StartStyle: style.CharacterColors{},
+			EndStyle:   style.CharacterColors{},
+		},
+		result,
+	)
 }

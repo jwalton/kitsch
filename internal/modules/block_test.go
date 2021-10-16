@@ -3,8 +3,6 @@ package modules
 import (
 	"testing"
 
-	"github.com/jwalton/kitsch-prompt/internal/env"
-	"github.com/jwalton/kitsch-prompt/internal/style"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,36 +16,24 @@ func TestBlock(t *testing.T) {
 		Join:    " ",
 	}
 
-	env := &env.DummyEnv{
-		Env: map[string]string{
-			"USER": "jwalton",
-		},
-	}
-
-	result := blockMod.Execute(env)
+	result := blockMod.Execute(testContext("jwalton"))
 	assert.Equal(t, "jwalton $ ", result.Text)
 }
 
 func TestBlockStyles(t *testing.T) {
 	usernameMod := UsernameModule{
-		CommonConfig: CommonConfig{Style: style.Style{FG: "red"}},
+		CommonConfig: CommonConfig{Style: "red"},
 		ShowAlways:   true,
 	}
 	promptMod := PromptModule{
-		CommonConfig: CommonConfig{Style: style.Style{FG: "blue"}},
+		CommonConfig: CommonConfig{Style: "blue"},
 	}
 
 	blockMod := BlockModule{
 		Modules: ModuleList{[]Module{usernameMod, promptMod}},
-		Join:    " {{.PrevStyle.FG}}{{.NextStyle.FG}} ",
+		Join:    " {{.PrevColors.FG}}{{.NextColors.FG}} ",
 	}
 
-	env := &env.DummyEnv{
-		Env: map[string]string{
-			"USER": "jwalton",
-		},
-	}
-
-	result := blockMod.Execute(env)
+	result := blockMod.Execute(testContext("jwalton"))
 	assert.Equal(t, "jwalton redblue $ ", result.Text)
 }

@@ -7,6 +7,7 @@ import (
 	"os/user"
 	"runtime"
 
+	"github.com/jwalton/gchalk"
 	"github.com/jwalton/kitsch-prompt/internal/gitutils"
 )
 
@@ -14,9 +15,6 @@ import (
 type Env interface {
 	// Getenv returns the value of the specifed environment variable.
 	Getenv(key string) string
-	// GetUsername returns the current user's username.  Returns the empty string
-	// if the username cannot be determined.
-	GetUsername() string
 	// IsRoot returns true if the current user is root.
 	IsRoot() bool
 	// HasSomeEnv returns true if at least one of the specified environment variables
@@ -26,57 +24,35 @@ type Env interface {
 	//
 	// would return true if this is an SSH session.
 	HasSomeEnv(...string) bool
-	// Getwd returns the current working directory.
-	Getwd() string
-	// UserHomeDir returns the current user's home directory.
-	UserHomeDir() string
 	// Jobs returns the number of jobs running in the background.
 	Jobs() int
-	// CmdDuration returns the duration of the last run command, in milliseconds.
-	CmdDuration() int
-	// Status returns the exit code of the last command run.
-	Status() int
-	// Keymap returns the zsh/fish keymap.
-	Keymap() string
 	// Git returns a git instance for the current repo, or nil if the current
 	// working directory is not part of a git repo, or git is uninstalled.
 	Git() *gitutils.GitUtils
+	// Warn is used to print configuration warnings to the user.
+	Warn(string)
 }
 
 type defaultEnv struct {
+	cwd            string
 	jobs           int
-	cmdDuration    int
-	status         int
-	keymap         string
 	gitInitialized bool
 	git            *gitutils.GitUtils
 }
 
 // New creates a new instance of Env.
 func New(
+	cwd string,
 	jobs int,
-	cmdDuration int,
-	status int,
-	keymap string,
 ) Env {
 	return &defaultEnv{
-		jobs:        jobs,
-		cmdDuration: cmdDuration,
-		status:      status,
-		keymap:      keymap,
+		cwd:  cwd,
+		jobs: jobs,
 	}
 }
 
 func (*defaultEnv) Getenv(key string) string {
 	return os.Getenv(key)
-}
-
-func (*defaultEnv) GetUsername() string {
-	user, err := user.Current()
-	if err != nil {
-		return ""
-	}
-	return user.Name
 }
 
 func (*defaultEnv) IsRoot() bool {
@@ -101,46 +77,20 @@ func (*defaultEnv) HasSomeEnv(keys ...string) bool {
 	return false
 }
 
-func (*defaultEnv) Getwd() string {
-	dir, err := os.Getwd()
-	if err != nil {
-		return "."
-	}
-	return dir
-}
-
-func (*defaultEnv) UserHomeDir() string {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return "~"
-	}
-	return home
-}
-
 func (env *defaultEnv) Jobs() int {
 	return env.jobs
-}
-
-func (env *defaultEnv) CmdDuration() int {
-	return env.cmdDuration
-}
-
-// Status returns the exit code of the last command run.
-func (env *defaultEnv) Status() int {
-	return env.status
-}
-
-// Keymap returns the zsh/fish keymap
-func (env *defaultEnv) Keymap() string {
-	return env.keymap
 }
 
 // Git returns a git instance for the current repo, or nil if the current
 // working directory is not part of a git repo, or git is uninstalled.
 func (env *defaultEnv) Git() *gitutils.GitUtils {
 	if !env.gitInitialized {
-		env.git = gitutils.New("git", env.Getwd())
+		env.git = gitutils.New("git", env.cwd)
 		env.gitInitialized = true
 	}
 	return env.git
+}
+
+func (env *defaultEnv) Warn(message string) {
+	println(gchalk.Stderr.BrightYellow("Warning: " + message))
 }

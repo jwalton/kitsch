@@ -3,9 +3,7 @@ package modules
 import (
 	"fmt"
 
-	"github.com/jwalton/kitsch-prompt/internal/env"
 	"github.com/jwalton/kitsch-prompt/internal/gitutils"
-	"github.com/jwalton/kitsch-prompt/internal/style"
 	"gopkg.in/yaml.v3"
 )
 
@@ -31,13 +29,16 @@ import (
 // • Symbol - The symbol to use to indicate the current state of the repo.
 //
 type GitModule struct {
-	CommonConfig `yaml:",inline"`
+	CommonConfig     `yaml:",inline"`
+	BranchStyle      string
+	AheadStyle       string
+	BehindStyle      string
+	AheadBehindStyle string
 }
 
 // Execute runs a git module.
-func (mod GitModule) Execute(env env.Env) ModuleResult {
-	cwd := env.Getwd()
-	git := gitutils.New("git", cwd)
+func (mod GitModule) Execute(context *Context) ModuleResult {
+	git := gitutils.New("git", context.Globals.CWD)
 
 	if git == nil {
 		return ModuleResult{}
@@ -67,35 +68,42 @@ func (mod GitModule) Execute(env env.Env) ModuleResult {
 		}
 	}
 
-	data := map[string]interface{}{
-		"State":  state,
-		"Ahead":  ahead,
-		"Behind": behind,
-		"Symbol": symbol,
+	branchStyle := defaultString(mod.BranchStyle, "brightCyan")
+	if upstream != "" {
+		if ahead > 0 && behind > 0 {
+			branchStyle = defaultString(mod.AheadBehindStyle, "brightYellow")
+		} else if ahead > 0 {
+			branchStyle = defaultString(mod.AheadStyle, "brightGreen")
+		} else if behind > 0 {
+			branchStyle = defaultString(mod.BehindStyle, "brightRed")
+		}
 	}
 
-	defaultOutput := mod.renderDefault(symbol, state, upstream, ahead, behind)
+	data := map[string]interface{}{
+		"State":       state,
+		"Ahead":       ahead,
+		"Behind":      behind,
+		"Symbol":      symbol,
+		"BranchStyle": branchStyle,
+	}
 
-	return executeModule(mod.CommonConfig, data, mod.Style, defaultOutput)
+	defaultOutput := mod.renderDefault(context, branchStyle, symbol, state, upstream, ahead, behind)
+
+	return executeModule(context, mod.CommonConfig, data, mod.Style, defaultOutput)
 }
 
 func (mod GitModule) renderDefault(
+	context *Context,
+	branchStyleStr string,
 	symbol string,
 	state gitutils.RepositoryState,
 	upstream string,
 	ahead int,
 	behind int,
 ) string {
-	// TODO: Make these styles configurable.
-	branchStyle := style.Style{FG: "brightCyan"}
-	if upstream != "" {
-		if ahead > 0 && behind > 0 {
-			branchStyle = style.Style{FG: "brightYellow"}
-		} else if ahead > 0 {
-			branchStyle = style.Style{FG: "brightGreen"}
-		} else if behind > 0 {
-			branchStyle = style.Style{FG: "brightRed"}
-		}
+	branchStyle, err := context.Styles.Get(branchStyleStr)
+	if err != nil {
+		context.Environment.Warn(err.Error())
 	}
 
 	branch := state.Base + " " + symbol
@@ -105,7 +113,7 @@ func (mod GitModule) renderDefault(
 			branch = fmt.Sprintf("%s %s/%s", branch, state.Step, state.Total)
 		}
 	}
-	branch, _, _, _ = branchStyle.Apply(branch)
+	branch = branchStyle.Apply(branch)
 
 	return branch
 }
