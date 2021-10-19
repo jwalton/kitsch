@@ -38,3 +38,25 @@ func TestApply(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "\u001b[37mtest\u001b[39m", style.Apply("test"))
 }
+
+func TestGradient(t *testing.T) {
+	styles := testStyleRegistry()
+
+	styles.AddCustomColor("$blue", "#0000ff")
+	styles.AddCustomColor("$gradient", "linear-gradient($blue, #fff)")
+	_, err := styles.Get("$gradient")
+	assert.NoError(t, err)
+
+	styles.AddCustomColor("$gradient2", "linear-gradient($gradient, #fff)")
+	_, err = styles.Get("$gradient2")
+	assert.EqualError(t,
+		err,
+		`error compiling style "$gradient2": color $gradient="linear-gradient($blue, #fff)" cannot be used in linear-gradient: invalid hex color "linear-gradient($blue, #fff)"`,
+	)
+
+	_, err = styles.Get("linear-gradient(red, blue)")
+	assert.EqualError(t,
+		err,
+		`error compiling style "linear-gradient(red, blue)": expected color at position 1, got "red"`,
+	)
+}

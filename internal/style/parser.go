@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/jwalton/gchalk/pkg/ansistyles"
+	colortools "github.com/jwalton/kitsch-prompt/internal/colortools"
 )
 
 const linearGradientPrefix = "linear-gradient("
@@ -98,41 +99,13 @@ func isColor(color string) bool {
 		return true
 	}
 
-	hexColor := parseHexColor(color)
-	if hexColor != "" {
-		return true
-	}
-
 	if strings.HasPrefix(color, linearGradientPrefix) {
 		return true
 	}
 
-	return false
-}
-
-func isHexDigit(c byte) bool {
-	return c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F'
-}
-
-func parseHexColor(str string) string {
-	index := 0
-
-	// Find the "#"
-	if index < len(str) && str[index] == '#' {
-		index++
-	}
-
-	hexStart := index
-	for index < len(str) && isHexDigit(str[index]) {
-		index++
-	}
-
-	colorStr := str[hexStart:index]
-	if len(colorStr) != 3 && len(colorStr) != 6 {
-		return ""
-	}
-
-	return colorStr
+	// FIXME: Allow non-hex colors here.
+	isHexColor := colortools.ValidateHexColor(color)
+	return isHexColor
 }
 
 // parseStyleToken adds a token to the style descriptor.  The token can be

@@ -1,6 +1,8 @@
 package style
 
-import "strings"
+import (
+	"strings"
+)
 
 const bgPrefix = "bg:"
 

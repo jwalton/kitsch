@@ -66,7 +66,8 @@ func (pl *Powerline) print(text string) string {
 		return text
 	}
 
-	styledSegment := style.Apply(text)
+	// TODO: Should use the last color from Apply as the next color.
+	styledSegment, _, _ := style.ApplyGetColors(text)
 
 	return styledSegment
 }

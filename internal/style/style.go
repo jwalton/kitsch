@@ -6,17 +6,19 @@ import (
 	"strings"
 
 	"github.com/jwalton/gchalk"
+	"github.com/jwalton/go-ansiparser"
+	"github.com/jwalton/kitsch-prompt/internal/ansigradient"
+	"github.com/jwalton/kitsch-prompt/internal/colortools"
 )
-
-type stylerFn func(string) string
 
 // Style represents a compiled style that can be applied to a string.
 // Styles are constructed by calling into StyleRegistry.Get().  Once created,
 // a Style is immutable.
 type Style struct {
 	descriptor styleDescriptor
-	styler     stylerFn
 	builder    *gchalk.Builder
+	fgGradient ansigradient.Gradient
+	bgGradient ansigradient.Gradient
 }
 
 // CharacterColors represent the color for a single character.
@@ -37,8 +39,11 @@ func compileStyle(
 	if err != nil {
 		return Style{}, err
 	}
-	var styler stylerFn
+
 	builder := baseBuilder
+
+	var fgGradient ansigradient.Gradient
+	var bgGradient ansigradient.Gradient
 
 	compileColor := func(token string, background bool) error {
 		var err error
@@ -48,7 +53,12 @@ func compileStyle(
 		}
 
 		if strings.HasPrefix(token, linearGradientPrefix) {
-			// TODO - linear-gradient
+			cssGradient := token[len(linearGradientPrefix) : len(token)-1]
+			if background {
+				bgGradient, err = ansigradient.CSSLinearGradientWithMap(customColors, cssGradient)
+			} else {
+				fgGradient, err = ansigradient.CSSLinearGradientWithMap(customColors, cssGradient)
+			}
 		} else {
 			if background {
 				// TODO: Must be a better way!  :/
@@ -79,8 +89,9 @@ func compileStyle(
 
 	return Style{
 		descriptor: descriptor,
-		styler:     styler,
 		builder:    builder,
+		fgGradient: fgGradient,
+		bgGradient: bgGradient,
 	}, nil
 }
 
@@ -92,9 +103,7 @@ func (style *Style) Apply(text string) string {
 	if style.builder != nil {
 		text = style.builder.Paint(text)
 	}
-	if style.styler != nil {
-		text = style.styler(text)
-	}
+	text = ansigradient.ApplyGradientsRaw(text, style.fgGradient, style.bgGradient, gchalk.GetLevel())
 	return text
 }
 
@@ -103,26 +112,30 @@ func (style *Style) ApplyGetColors(text string) (result string, first CharacterC
 	if style == nil {
 		return text, first, last
 	}
-	if style.builder != nil {
-		text = style.builder.Paint(text)
-	}
-	if style.styler != nil {
-		text = style.styler(text)
+	result = style.Apply(text)
+
+	// TODO: This is not very efficient, because we end up parsing the string
+	// twice.  Consider making it so `ApplyGradients` lets us pass in a
+	// pre-parsed string?
+	printLength := 0
+	if style.fgGradient != nil || style.bgGradient != nil {
+		parsed := ansiparser.Parse(text)
+		printLength = ansiparser.TokensPrintLength(parsed)
 	}
 
-	if strings.HasPrefix(style.descriptor.fg, linearGradientPrefix) {
-		// TODO - linear-gradient
+	first.FG, last.FG = getCharacterColors(style.descriptor.fg, style.fgGradient, printLength)
+	first.BG, last.BG = getCharacterColors(style.descriptor.bg, style.bgGradient, printLength)
+
+	return result, first, last
+}
+
+func getCharacterColors(colorString string, gradient ansigradient.Gradient, printLength int) (first string, last string) {
+	if gradient != nil {
+		first = colortools.ColorToHex(gradient.ColorAt(printLength, -1))
+		last = colortools.ColorToHex(gradient.ColorAt(printLength, printLength+1))
 	} else {
-		first.FG = style.descriptor.fg
-		last.FG = style.descriptor.fg
+		first = colorString
+		last = colorString
 	}
-
-	if strings.HasPrefix(style.descriptor.bg, linearGradientPrefix) {
-		// TODO - linear-gradient
-	} else {
-		first.BG = style.descriptor.bg
-		last.BG = style.descriptor.bg
-	}
-
-	return text, first, last
+	return first, last
 }
