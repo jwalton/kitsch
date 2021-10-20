@@ -115,10 +115,14 @@ func (utils *GitUtils) getBranchName() (base string, branch string) {
 
 	// If that fails, get the SHA
 	if err != nil || base == "" {
-		base = fileutils.ReadFile(filepath.Join(utils.RepoRoot, ".git", "HEAD"))
+		base, err = utils.git("rev-parse", "--head")
 		if base != "" {
 			base = "(" + strings.TrimSpace(base)[0:7] + "...)"
 		}
+	}
+
+	if err != nil {
+		base = "???"
 	}
 
 	return base, branch

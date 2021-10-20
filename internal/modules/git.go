@@ -2,6 +2,7 @@ package modules
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/jwalton/kitsch-prompt/internal/gitutils"
 	"gopkg.in/yaml.v3"
@@ -30,7 +31,6 @@ import (
 //
 type GitModule struct {
 	CommonConfig     `yaml:",inline"`
-	BranchStyle      string
 	AheadStyle       string
 	BehindStyle      string
 	AheadBehindStyle string
@@ -38,7 +38,7 @@ type GitModule struct {
 
 // Execute runs a git module.
 func (mod GitModule) Execute(context *Context) ModuleResult {
-	git := gitutils.New("git", context.Globals.CWD)
+	git := context.Environment.Git()
 
 	if git == nil {
 		return ModuleResult{}
@@ -68,54 +68,59 @@ func (mod GitModule) Execute(context *Context) ModuleResult {
 		}
 	}
 
-	branchStyle := defaultString(mod.BranchStyle, "brightCyan")
+	style := defaultString(mod.Style, "brightCyan")
 	if upstream != "" {
 		if ahead > 0 && behind > 0 {
-			branchStyle = defaultString(mod.AheadBehindStyle, "brightYellow")
+			style = defaultString(mod.AheadBehindStyle, "brightYellow")
 		} else if ahead > 0 {
-			branchStyle = defaultString(mod.AheadStyle, "brightGreen")
+			style = defaultString(mod.AheadStyle, "brightGreen")
 		} else if behind > 0 {
-			branchStyle = defaultString(mod.BehindStyle, "brightRed")
+			style = defaultString(mod.BehindStyle, "brightRed")
 		}
 	}
 
 	data := map[string]interface{}{
-		"State":       state,
-		"Ahead":       ahead,
-		"Behind":      behind,
-		"Symbol":      symbol,
-		"BranchStyle": branchStyle,
+		"State":  state,
+		"Ahead":  ahead,
+		"Behind": behind,
+		"Symbol": symbol,
 	}
 
-	defaultOutput := mod.renderDefault(context, branchStyle, symbol, state, upstream, ahead, behind)
+	defaultOutput := mod.renderDefault(context, symbol, state, upstream, ahead, behind)
 
-	return executeModule(context, mod.CommonConfig, data, mod.Style, defaultOutput)
+	return executeModule(context, mod.CommonConfig, data, style, defaultOutput)
 }
 
 func (mod GitModule) renderDefault(
 	context *Context,
-	branchStyleStr string,
 	symbol string,
 	state gitutils.RepositoryState,
 	upstream string,
 	ahead int,
 	behind int,
 ) string {
-	branchStyle, err := context.Styles.Get(branchStyleStr)
-	if err != nil {
-		context.Environment.Warn(err.Error())
+	out := strings.Builder{}
+
+	out.WriteString(state.Base)
+
+	if behind > 0 {
+		out.WriteString(fmt.Sprintf(" ↓%d", behind))
+	}
+	if ahead > 0 {
+		out.WriteString(fmt.Sprintf(" ↑%d", ahead))
+	}
+	if behind == 0 && ahead == 0 {
+		out.WriteString(" " + symbol)
 	}
 
-	branch := state.Base + " " + symbol
 	if state.State != gitutils.StateNone {
-		branch = branch + "|" + string(state.State)
+		out.WriteString("|" + string(state.State))
 		if state.Total != "" {
-			branch = fmt.Sprintf("%s %s/%s", branch, state.Step, state.Total)
+			out.WriteString(fmt.Sprintf(" %s/%s", state.Step, state.Total))
 		}
 	}
-	branch = branchStyle.Apply(branch)
 
-	return branch
+	return out.String()
 }
 
 func init() {

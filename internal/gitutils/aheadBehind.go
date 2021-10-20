@@ -24,6 +24,6 @@ func (utils *GitUtils) GetAheadBehind(branch string, compareToBranch string) (ah
 		return 0, 0, err
 	}
 
-	fmt.Sscanf(aheadBehind, "%i %i", &ahead, &behind)
+	fmt.Sscanf(aheadBehind, "%d %d", &ahead, &behind)
 	return ahead, behind, nil
 }
