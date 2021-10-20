@@ -39,6 +39,14 @@ func (item *ModuleSpec) UnmarshalYAML(node *yaml.Node) error {
 		return fmt.Errorf("no value provided")
 	}
 
+	// Special case where node is a bare string.
+	if node.Kind == yaml.ScalarNode && node.Tag == "!!str" {
+		item.Module = TextModule{
+			Text: node.Value,
+		}
+		return nil
+	}
+
 	if node.Kind != yaml.MappingNode {
 		return fmt.Errorf("expected a map at (%d:%d)", node.Line, node.Column)
 	}
