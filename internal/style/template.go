@@ -41,12 +41,12 @@ func TxtFuncMap(styles *Registry) template.FuncMap {
 	}
 
 	// style a string in the given style.
-	style := func(styleStr string, text string) string {
-		styled := text
+	style := func(styleStr string, text interface{}) string {
+		styled := toText(text)
 
 		style, err := styles.Get(styleStr)
 		if err == nil {
-			styled = style.Apply(text)
+			styled = style.Apply(styled)
 		}
 
 		return styled
