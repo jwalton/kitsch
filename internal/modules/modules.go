@@ -167,7 +167,7 @@ func executeModule(
 				Default: defaultText,
 			})
 			if err != nil {
-				fmt.Printf("Error executing template: %v", err)
+				context.Environment.Warn(fmt.Sprintf("Error executing template:\n%s\n%v", config.Template, err))
 				text = defaultText
 			}
 		}

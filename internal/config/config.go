@@ -3,7 +3,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 
 	// embed required for sample configs below.
@@ -50,7 +49,7 @@ func LoadDefaultConfig() (*Config, error) {
 	err := config.LoadFromYaml(sampleconfig.DefaultConfig)
 	if err != nil {
 		// Default config should not have errors!
-		fmt.Println("kitch: Error in default configuration", err)
+		println("kitch: Error in default configuration", err)
 		return nil, err
 	}
 	return &config, nil
