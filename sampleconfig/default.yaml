@@ -1,5 +1,5 @@
 colors:
-  $foreground: brightBlue
+  $foreground: "linear-gradient(#0ff, #08f)"
 prompt:
   type: block
   join: " "
@@ -10,17 +10,12 @@ prompt:
       style: $foreground
       template: "[{{.Data.Path}}]"
     - type: block
+      style: brightYellow
       modules:
-      - type: text
-        style: brightYellow
-        text: "["
-      - type: git
-      - type: text
-        text: " "
-      - type: git_status
-      - type: text
-        style: brightYellow
-        text: "]"
+        - type: git
+        - type: git_status
+      join: " "
+      template: "{{ with .Data.Default }}[{{ . }}]{{end}}"
     - type: prompt
       style: brightBlue
       errorStyle: brightRed
