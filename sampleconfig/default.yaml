@@ -15,7 +15,7 @@ prompt:
         - type: git
         - type: git_status
       join: " "
-      template: "{{ with .Data.Default }}[{{ . }}]{{end}}"
+      template: "{{ with .Default }}[{{ . }}]{{end}}"
     - type: prompt
       style: brightBlue
       errorStyle: brightRed

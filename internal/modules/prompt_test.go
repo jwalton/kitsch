@@ -15,10 +15,10 @@ func TestPrompt(t *testing.T) {
 	result := mod.Execute(context)
 
 	assert.Equal(t, ModuleResult{
-		Text: "$ ",
+		Default: "$ ",
+		Text:    "$ ",
 		Data: map[string]interface{}{
-			"IsRoot":  false,
-			"Default": "$ ",
+			"IsRoot": false,
 		},
 		StartStyle: style.CharacterColors{},
 		EndStyle:   style.CharacterColors{},
@@ -33,10 +33,10 @@ func TestRootPrompt(t *testing.T) {
 	result := mod.Execute(context)
 
 	assert.Equal(t, ModuleResult{
-		Text: "# ",
+		Default: "# ",
+		Text:    "# ",
 		Data: map[string]interface{}{
-			"IsRoot":  true,
-			"Default": "# ",
+			"IsRoot": true,
 		},
 		StartStyle: style.CharacterColors{},
 		EndStyle:   style.CharacterColors{},
