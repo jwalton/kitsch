@@ -1,0 +1,23 @@
+colors:
+  $timeBg: "linear-gradient(#555, #222)"
+  $timeFg: "brightWhite"
+  $directoryBg: "linear-gradient(#088, #008)"
+  $directoryFg: "#cff"
+prompt:
+  type: block
+  modules:
+    - type: time
+    - type: directory
+    - type: git
+    - type: git_status
+    - type: prompt
+  template: |
+    {{- $pl := makePowerline " " "\ue0b0" " " -}}
+    {{- $global := .Global -}}
+    {{- with .Data.Modules -}}
+      {{- .time.Default | style "$timeFg" | $pl.Segment "$timeBg" -}}
+      {{- .directory.Default | style "$directoryFg" | $pl.Segment "$directoryBg" -}}
+      {{- if .git }}{{ list .git.Default .git_status.Default | join " " | style "#cff" | $pl.Segment "#440" }}{{ end -}}
+      {{- if (ne $global.Status 0) }}{{ $global.Status | style "brightWhite" | $pl.Segment "red" }}{{ end -}}
+    {{- end -}}
+    {{- $pl.Finish -}}{{- " " -}}

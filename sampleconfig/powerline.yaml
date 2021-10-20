@@ -1,11 +1,16 @@
+colors:
+  $timeBg: "linear-gradient(#555, #222)"
+  $timeFg: "brightWhite"
+  $directoryBg: "linear-gradient(#088, #008)"
+  $directoryFg: "#cff"
 prompt:
   type: block
   join: '{{ bgColor .PrevColors.BG " " }}{{ "\ue0b0 " | fgColor .PrevColors.BG | bgColor .NextColors.BG }}'
   modules:
     - type: time
-      style: bg#222 brightWhite
+      style: bg:$timeBg $timeFg
     - type: directory
-      style: "bgBlue #cff"
+      style: "bg:$directoryBg $directoryFg"
     - type: block
       style: bg#440
       join: " "
@@ -16,6 +21,6 @@ prompt:
       style: bgBlack
       errorStyle: bgRed brightWhite
       prompt: "\ue0b0"
-      template: "{{ if (ne .Global.Status 0) }} {{.Global.Status}} {{ end }}"
+      template: "{{ if (ne .Global.Status 0) }}{{.Global.Status}}{{ end }}"
     - type: text
       text: " "

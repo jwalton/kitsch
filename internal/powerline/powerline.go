@@ -8,82 +8,79 @@ import (
 
 // Powerline is a helper object for constructing powerline prompts.
 type Powerline struct {
-	styles *styling.Registry
-	// color is the current background color.
-	color           string
+	styles          *styling.Registry
+	lastColor       styling.CharacterColors
 	separatorPrefix string
+	separator       string
 	separatorSuffix string
 }
 
 // New creates a noew Powerline helper object for use in a template.
-func New(styles *styling.Registry, prefix string, suffix string) *Powerline {
+func New(styles *styling.Registry, prefix string, separator string, suffix string) *Powerline {
 	return &Powerline{
 		styles:          styles,
-		color:           "",
+		lastColor:       styling.CharacterColors{FG: "", BG: ""},
 		separatorPrefix: prefix,
+		separator:       separator,
 		separatorSuffix: suffix,
 	}
 }
 
-// updateColor updates the current color of this powerline object, and
-// returns a powerline separator.
-func (pl *Powerline) updateColor(color string) string {
-	if color == "" {
-		color = "black"
-	}
-
-	lastColor := pl.color
-	pl.color = styling.ToFgColor(color)
-
-	// First segment and segments where color doesn't change get no separator.
-	if lastColor == "" || lastColor == color {
-		return ""
-	}
-
-	prefixStyle, err := pl.styles.Get(styling.ToBgColor(lastColor))
-	if err != nil {
-		return ""
-	}
-	suffixStyle, err := pl.styles.Get(lastColor + " " + styling.ToBgColor(color))
-	if err != nil {
-		return ""
-	}
-
-	prefix := prefixStyle.Apply(pl.separatorPrefix)
-	suffix := suffixStyle.Apply(pl.separatorSuffix)
-
-	return prefix + suffix
-}
-
-// print prints some text into the current powerline segment.
-func (pl *Powerline) print(text string) string {
-	if pl.color == "" {
-		return text
-	}
-
-	style, err := pl.styles.Get(styling.ToBgColor(pl.color))
-	if err != nil {
-		return text
-	}
-
-	// TODO: Should use the last color from Apply as the next color.
-	styledSegment, _, _ := style.ApplyGetColors(text)
-
-	return styledSegment
-}
-
 // Segment prints a new Powerline segment with the given background color and text.
 func (pl *Powerline) Segment(color string, text string) string {
-	return pl.updateColor(color) + pl.print(text)
+	result := ""
+
+	style, err := pl.styles.Get(styling.ToBgColor(color))
+	if err != nil {
+		return err.Error() + text
+	}
+	coloredText, firstColor, lastColor := style.ApplyGetColors(text)
+
+	// Print the separator
+	if pl.lastColor.BG != "" {
+		prefixStyle, err := pl.styles.Get(firstColor.BG + " " + styling.ToBgColor(pl.lastColor.BG))
+		if err == nil {
+			result += prefixStyle.Apply(pl.separatorPrefix)
+		}
+
+		suffixStyle, err := pl.styles.Get(styling.ToBgColor(firstColor.BG) + " " + pl.lastColor.BG)
+		if err == nil {
+			result += suffixStyle.Apply(pl.separator + pl.separatorSuffix)
+		}
+	}
+
+	result += coloredText
+	pl.lastColor = lastColor
+	if pl.lastColor.BG == "" {
+		pl.lastColor.BG = "black"
+	}
+
+	return result
+}
+
+func (pl *Powerline) Finish() string {
+	result := ""
+
+	if pl.lastColor.BG != "" {
+		prefixStyle, err := pl.styles.Get("black " + styling.ToBgColor(pl.lastColor.BG))
+		if err == nil {
+			result += prefixStyle.Apply(pl.separatorPrefix)
+		}
+
+		suffixStyle, err := pl.styles.Get("bg:black " + pl.lastColor.BG)
+		if err == nil {
+			result += suffixStyle.Apply(pl.separator)
+		}
+	}
+
+	return result
 }
 
 // TxtFuncMap returns template functions for styling text.
 func TxtFuncMap(styles *styling.Registry) template.FuncMap {
 	return template.FuncMap{
-		"makePowerline": func(prefix string, suffix string) func(string, string) string {
-			return func(color string, text string) string {
-				return New(styles, prefix, suffix).Segment(color, text)
-			}
+		"makePowerline": func(prefix string, separator string, suffix string) *Powerline {
+			return New(styles, prefix, separator, suffix)
 		},
 	}
 }
