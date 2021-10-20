@@ -19,15 +19,7 @@ type Config struct {
 	// Colors is a collection of custom colors.
 	Colors map[string]string `yaml:"colors"`
 	// Prompt is the module to use to display the prompt.
-	Prompt yaml.Node
-}
-
-// GetPromptModule returns the root prompt module for the configuration.
-func (c *Config) GetPromptModule() (modules.Module, error) {
-	if c == nil || c.Prompt.IsZero() {
-		return nil, fmt.Errorf("configuration is missing prompt")
-	}
-	return modules.CreateModule(&c.Prompt)
+	Prompt modules.ModuleSpec
 }
 
 // LoadFromYaml loads the configuration file from a YAML file.

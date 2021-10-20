@@ -15,13 +15,16 @@ import (
 //
 // Provides the following template variables:
 //
-// • children - The results of executing each child module.  Only modules that
+// • ModuleArray - The results of executing each child module.  Only modules that
 //   actually generated output will be included.
+//
+// • Modules - A map of results from executing each child module, indexed by
+//   module ID.  Only modules that actually generated output will be included.
 //
 type BlockModule struct {
 	CommonConfig `yaml:",inline"`
 	// Modules is a list of child modules to be rendered under this block
-	Modules ModuleList
+	Modules []ModuleSpec `yaml:"modules"`
 	// Join is a template to use to join together modules.  This will be executed
 	// with the following parameters:
 	//
@@ -36,31 +39,37 @@ type BlockModule struct {
 
 // Execute the block module.
 func (mod BlockModule) Execute(context *Context) ModuleResult {
-	children := make([]ModuleResult, 0, len(mod.Modules.Modules))
-	for _, module := range mod.Modules.Modules {
-		result := module.Execute(context)
+	resultsArray := make([]ModuleResult, 0, len(mod.Modules))
+	resultsByID := make(map[string]ModuleResult, len(mod.Modules))
+
+	for _, item := range mod.Modules {
+		result := item.Module.Execute(context)
 		if len(result.Text) != 0 {
-			children = append(children, result)
+			resultsArray = append(resultsArray, result)
+			if item.ID != "" {
+				resultsByID[item.ID] = result
+			}
 		}
 	}
 
-	defaultText := mod.joinChildren(context, children)
+	defaultText := mod.joinChildren(context, resultsArray)
 
 	data := map[string]interface{}{
-		"Children": children,
+		"Modules":     resultsByID,
+		"ModuleArray": resultsArray,
 	}
 
 	result := executeModule(context, mod.CommonConfig, data, mod.Style, defaultText)
 
-	if len(children) > 0 {
-		lastChild := len(children) - 1
+	if len(resultsArray) > 0 {
+		lastChild := len(resultsArray) - 1
 		result.StartStyle = style.CharacterColors{
-			FG: defaultString(result.StartStyle.FG, children[0].StartStyle.FG),
-			BG: defaultString(result.StartStyle.BG, children[0].StartStyle.BG),
+			FG: defaultString(result.StartStyle.FG, resultsArray[0].StartStyle.FG),
+			BG: defaultString(result.StartStyle.BG, resultsArray[0].StartStyle.BG),
 		}
 		result.EndStyle = style.CharacterColors{
-			FG: defaultString(result.EndStyle.FG, children[lastChild].EndStyle.FG),
-			BG: defaultString(result.EndStyle.BG, children[lastChild].EndStyle.BG),
+			FG: defaultString(result.EndStyle.FG, resultsArray[lastChild].EndStyle.FG),
+			BG: defaultString(result.EndStyle.BG, resultsArray[lastChild].EndStyle.BG),
 		}
 	}
 

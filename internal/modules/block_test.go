@@ -12,8 +12,11 @@ func TestBlock(t *testing.T) {
 	}
 	promptMod := PromptModule{}
 	blockMod := BlockModule{
-		Modules: ModuleList{[]Module{usernameMod, promptMod}},
-		Join:    " ",
+		Modules: []ModuleSpec{
+			{ID: "", Module: usernameMod},
+			{ID: "", Module: promptMod},
+		},
+		Join: " ",
 	}
 
 	result := blockMod.Execute(testContext("jwalton"))
@@ -30,10 +33,34 @@ func TestBlockStyles(t *testing.T) {
 	}
 
 	blockMod := BlockModule{
-		Modules: ModuleList{[]Module{usernameMod, promptMod}},
-		Join:    " {{.PrevColors.FG}}{{.NextColors.FG}} ",
+		Modules: []ModuleSpec{
+			{ID: "", Module: usernameMod},
+			{ID: "", Module: promptMod},
+		},
+		Join: " {{.PrevColors.FG}}{{.NextColors.FG}} ",
 	}
 
 	result := blockMod.Execute(testContext("jwalton"))
 	assert.Equal(t, "jwalton redblue $ ", result.Text)
+}
+
+// TestBlockSubIDs verifies that the results of child modules can be indexed by ID.
+func TestBlockSubIDs(t *testing.T) {
+	usernameMod := UsernameModule{
+		ShowAlways: true,
+	}
+	promptMod := PromptModule{}
+	blockMod := BlockModule{
+		CommonConfig: CommonConfig{
+			Template: "{{ with .Data.Modules.a }}{{ .Data.Username }}{{ end }}",
+		},
+		Modules: []ModuleSpec{
+			{ID: "a", Module: usernameMod},
+			{ID: "", Module: promptMod},
+		},
+	}
+
+	result := blockMod.Execute(testContext("oriana"))
+
+	assert.Equal(t, "oriana", result.Text)
 }

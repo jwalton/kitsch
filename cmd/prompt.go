@@ -38,9 +38,9 @@ var promptCmd = &cobra.Command{
 		gchalk.Stderr.SetLevel(level.Level)
 
 		configuration, err := readConfig()
-		var module modules.Module
-		if err == nil {
-			module, err = configuration.GetPromptModule()
+		if err != nil {
+			println(gchalk.Red("Fatal error parsing configuration: ", err.Error()))
+			os.Exit(1)
 		}
 
 		globals := modules.NewGlobals(status, cmdDuration, keymap)
@@ -65,7 +65,7 @@ var promptCmd = &cobra.Command{
 				Styles:      styles,
 			}
 
-			prompt := module.Execute(&context)
+			prompt := configuration.Prompt.Module.Execute(&context)
 			withEscapes := shellprompt.AddZeroWidthCharacterEscapes(shell, prompt.Text)
 			fmt.Println(withEscapes)
 		}
