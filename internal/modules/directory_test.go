@@ -16,7 +16,6 @@ func TestDirectory(t *testing.T) {
 
 	result := mod.Execute(context)
 	assert.Equal(t, ModuleResult{
-		Default: "/tmp/test",
 		Data: map[string]interface{}{
 			"Path": "/tmp/test",
 		},
@@ -32,7 +31,6 @@ func TestHomeDirectory(t *testing.T) {
 
 	result := mod.Execute(context)
 	assert.Equal(t, ModuleResult{
-		Default: "~",
 		Data: map[string]interface{}{
 			"Path": "~",
 		},
@@ -48,7 +46,6 @@ func TestHomeDirectorySubdirectory(t *testing.T) {
 
 	result := mod.Execute(context)
 	assert.Equal(t, ModuleResult{
-		Default: "~/foo",
 		Data: map[string]interface{}{
 			"Path": "~/foo",
 		},

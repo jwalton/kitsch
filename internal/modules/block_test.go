@@ -16,7 +16,6 @@ func TestBlock(t *testing.T) {
 			{ID: "", Module: usernameMod},
 			{ID: "", Module: promptMod},
 		},
-		Join: " ",
 	}
 
 	result := blockMod.Execute(testContext("jwalton"))

@@ -28,6 +28,11 @@ func New(styles *styling.Registry, prefix string, separator string, suffix strin
 
 // Segment prints a new Powerline segment with the given background color and text.
 func (pl *Powerline) Segment(color string, text string) string {
+	// If the segment is empty, skip it.
+	if text == "" {
+		return ""
+	}
+
 	result := ""
 
 	style, err := pl.styles.Get(styling.ToBgColor(color))

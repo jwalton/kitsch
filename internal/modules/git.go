@@ -31,9 +31,9 @@ import (
 //
 type GitModule struct {
 	CommonConfig     `yaml:",inline"`
-	AheadStyle       string
-	BehindStyle      string
-	AheadBehindStyle string
+	AheadStyle       string `yaml:"aheadStyle"`
+	BehindStyle      string `yaml:"behindStyle"`
+	AheadBehindStyle string `yaml:"aheadBehindStyle"`
 }
 
 // Execute runs a git module.

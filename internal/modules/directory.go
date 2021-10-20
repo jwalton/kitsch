@@ -21,16 +21,16 @@ type DirectoryModule struct {
 	CommonConfig `yaml:",inline"`
 	// HomeSymbol is the symbol to replace the home directory with in directory
 	// strings.  Defaults to "~".
-	HomeSymbol string
+	HomeSymbol string `yaml:"homeSymbol"`
 	// TruncateToRepo controls whether we truncate to the root directory of the
 	// git repo or not.
-	TruncateToRepo bool
+	TruncateToRepo bool `yaml:"truncateToRepo"`
 	// TruncationLength is the number of parent folders that the current directory
 	// should be truncated to.
-	TruncationLength int
+	TruncationLength int `yaml:"truncationLength"`
 	// TruncationSymbol will be added to the start of the string in place of any
 	// paths that were removed.  Defaults to "…".
-	TruncationSymbol string
+	TruncationSymbol string `yaml:"truncationSymbol"`
 }
 
 func (mod DirectoryModule) truncateToFolder(path string, truncatePath string) string {

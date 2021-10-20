@@ -17,9 +17,9 @@ import (
 type PromptModule struct {
 	CommonConfig `yaml:",inline"`
 	// Prompt is what to display as the prompt.  Defaults to "$".
-	Prompt string
+	Prompt string `yaml:"prompt"`
 	// RootPrompt is what to display as the prompt if the current user is root.  Defaults to "#".
-	RootPrompt string
+	RootPrompt string `yaml:"rootPrompt"`
 	// RootStyle will be used in place of `Style` if the current user is root.
 	// If this style is empty, will fall back to Style.
 	RootStyle string `yaml:"rootStyle"`

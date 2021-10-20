@@ -1,6 +1,6 @@
 colors:
   $timeBg: "linear-gradient(#555, #222)"
-  $timeFg: "brightWhite"
+  $timeFg: "#fff"
   $directoryBg: "linear-gradient(#088, #008)"
   $directoryFg: "#cff"
 prompt:
@@ -13,7 +13,6 @@ prompt:
       style: "bg:$directoryBg $directoryFg"
     - type: block
       style: bg#440
-      join: " "
       modules:
         - type: git
         - type: git_status

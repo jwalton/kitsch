@@ -20,7 +20,6 @@ func TestExecuteModule(t *testing.T) {
 
 	assert.Equal(t,
 		ModuleResult{
-			Default:    "test",
 			Text:       "test",
 			Data:       data,
 			StartStyle: styling.CharacterColors{},
@@ -48,7 +47,6 @@ func TestExecuteModuleWithTemplate(t *testing.T) {
 
 	assert.Equal(t,
 		ModuleResult{
-			Default:    "test",
 			Text:       "--Text Text--",
 			Data:       data,
 			StartStyle: styling.CharacterColors{},

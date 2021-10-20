@@ -24,10 +24,10 @@ type UsernameModule struct {
 	// ShowAlways will cause the username to always be shown.  If false (the default),
 	// then the username will only be shown if the user is root, or the current
 	// session is an SSH session.
-	ShowAlways bool
+	ShowAlways bool `yaml:"showAlways"`
 	// RootStyle will be used in place of `Style` if the current user is root.
 	// If this style is empty, will fall back to `Style`.
-	RootStyle string
+	RootStyle string `yaml:"rootStyle"`
 }
 
 // Execute the username module.

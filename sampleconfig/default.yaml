@@ -2,20 +2,21 @@ colors:
   $foreground: "linear-gradient(#0ff, #08f)"
 prompt:
   type: block
-  join: " "
   modules:
     - type: time
       style: brightBlack
-    - type: directory
+    - type: block
       style: $foreground
-      template: "[{{.Data.Path}}]"
+      template: "{{ with .Text }}[{{ . }}]{{end}}"
+      modules:
+        - type: username
+        - type: directory
     - type: block
       style: brightYellow
       modules:
         - type: git
         - type: git_status
-      join: " "
-      template: "{{ with .Default }}[{{ . }}]{{end}}"
+      template: "{{ with .Text }}[{{ . }}]{{end}}"
     - type: prompt
       style: brightBlue
       errorStyle: brightRed

@@ -3,21 +3,34 @@ colors:
   $timeFg: "brightWhite"
   $directoryBg: "linear-gradient(#088, #008)"
   $directoryFg: "#cff"
+  $gitFg: "#000"
+  $gitBg: "#ff0"
+  $gitBgAhead: "#0F9"
+  $gitBgBehind: "#F60"
+  $gitFgNormal: "#000"
 prompt:
   type: block
   modules:
     - type: time
     - type: directory
     - type: git
+      style: $gitFg
+      aheadStyle: $gitFg
+      behindStyle: $gitFg
+      aheadBehindStyle: $gitFg
     - type: git_status
     - type: prompt
   template: |
     {{- $pl := makePowerline " " "\ue0b0" " " -}}
     {{- $global := .Global -}}
     {{- with .Data.Modules -}}
-      {{- .time.Default | style "$timeFg" | $pl.Segment "$timeBg" -}}
-      {{- .directory.Default | style "$directoryFg" | $pl.Segment "$directoryBg" -}}
-      {{- if .git }}{{ list .git.Default .git_status.Default | join " " | style "#cff" | $pl.Segment "#440" }}{{ end -}}
+      {{- .time.Text | style "$timeFg" | $pl.Segment "$timeBg" -}}
+      {{- .directory.Text | style "$directoryFg" | $pl.Segment "$directoryBg" -}}
+      {{- if .git -}}
+        {{- $gitBg := or (and (gt .git.Data.Behind 0) "$gitBgBehind") (and (gt .git.Data.Ahead 0) "$gitBgAhead") "$gitBg" -}}
+        {{- list "\ue0a0" .git.Text | join " " | style "$gitFg" | $pl.Segment $gitBg -}}
+      {{- end -}}
+      {{- .git_status.Text | $pl.Segment "#440" -}}
       {{- if (ne $global.Status 0) }}{{ $global.Status | style "brightWhite" | $pl.Segment "red" }}{{ end -}}
     {{- end -}}
     {{- $pl.Finish -}}{{- " " -}}

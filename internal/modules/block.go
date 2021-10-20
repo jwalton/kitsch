@@ -25,8 +25,8 @@ type BlockModule struct {
 	CommonConfig `yaml:",inline"`
 	// Modules is a list of child modules to be rendered under this block
 	Modules []ModuleSpec `yaml:"modules"`
-	// Join is a template to use to join together modules.  This will be executed
-	// with the following parameters:
+	// Join is a template to use to join together modules.  Defaults to " ".
+	// This will be executed with the following parameters:
 	//
 	// • PrevColors - The FG and BG color of last character of the previous module.
 	//
@@ -120,7 +120,7 @@ func (mod BlockModule) joinChildren(context *Context, children []ModuleResult) s
 
 func init() {
 	registerFactory("block", func(node *yaml.Node) (Module, error) {
-		var module BlockModule
+		module := BlockModule{Join: " "}
 		err := node.Decode(&module)
 		return &module, err
 	})
