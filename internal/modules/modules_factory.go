@@ -67,7 +67,12 @@ func (item *ModuleSpec) UnmarshalYAML(node *yaml.Node) error {
 		return err
 	}
 
-	item.ID = id
+	if id != "" {
+		item.ID = id
+	} else {
+		item.ID = moduleType
+	}
+
 	item.Module = module
 	return nil
 }
