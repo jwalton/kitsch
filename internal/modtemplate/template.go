@@ -8,7 +8,7 @@ import (
 
 	"github.com/Masterminds/sprig/v3"
 	"github.com/jwalton/kitsch-prompt/internal/powerline"
-	"github.com/jwalton/kitsch-prompt/internal/style"
+	"github.com/jwalton/kitsch-prompt/internal/styling"
 )
 
 const recursionMaxNums = 1000
@@ -16,7 +16,7 @@ const recursionMaxNums = 1000
 var sprigTemplateFunctions = sprig.TxtFuncMap()
 
 // CompileTemplate compiles a module template and adds default template functions.
-func CompileTemplate(styles *style.Registry, name string, templateString string) (*template.Template, error) {
+func CompileTemplate(styles *styling.Registry, name string, templateString string) (*template.Template, error) {
 
 	tmpl := template.New(name)
 
@@ -43,7 +43,7 @@ func CompileTemplate(styles *style.Registry, name string, templateString string)
 	tmpl, err := tmpl.
 		Funcs(funcMap).
 		Funcs(sprigTemplateFunctions).
-		Funcs(style.TxtFuncMap(styles)).
+		Funcs(styling.TxtFuncMap(styles)).
 		Funcs(powerline.TxtFuncMap(styles)).
 		Parse(templateString)
 	if err != nil {

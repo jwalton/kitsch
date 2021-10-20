@@ -3,12 +3,12 @@ package powerline
 import (
 	"text/template"
 
-	"github.com/jwalton/kitsch-prompt/internal/style"
+	"github.com/jwalton/kitsch-prompt/internal/styling"
 )
 
 // Powerline is a helper object for constructing powerline prompts.
 type Powerline struct {
-	styles *style.Registry
+	styles *styling.Registry
 	// color is the current background color.
 	color           string
 	separatorPrefix string
@@ -16,7 +16,7 @@ type Powerline struct {
 }
 
 // New creates a noew Powerline helper object for use in a template.
-func New(styles *style.Registry, prefix string, suffix string) *Powerline {
+func New(styles *styling.Registry, prefix string, suffix string) *Powerline {
 	return &Powerline{
 		styles:          styles,
 		color:           "",
@@ -33,18 +33,18 @@ func (pl *Powerline) updateColor(color string) string {
 	}
 
 	lastColor := pl.color
-	pl.color = style.ToFgColor(color)
+	pl.color = styling.ToFgColor(color)
 
 	// First segment and segments where color doesn't change get no separator.
 	if lastColor == "" || lastColor == color {
 		return ""
 	}
 
-	prefixStyle, err := pl.styles.Get(style.ToBgColor(lastColor))
+	prefixStyle, err := pl.styles.Get(styling.ToBgColor(lastColor))
 	if err != nil {
 		return ""
 	}
-	suffixStyle, err := pl.styles.Get(lastColor + " " + style.ToBgColor(color))
+	suffixStyle, err := pl.styles.Get(lastColor + " " + styling.ToBgColor(color))
 	if err != nil {
 		return ""
 	}
@@ -61,7 +61,7 @@ func (pl *Powerline) print(text string) string {
 		return text
 	}
 
-	style, err := pl.styles.Get(style.ToBgColor(pl.color))
+	style, err := pl.styles.Get(styling.ToBgColor(pl.color))
 	if err != nil {
 		return text
 	}
@@ -78,7 +78,7 @@ func (pl *Powerline) Segment(color string, text string) string {
 }
 
 // TxtFuncMap returns template functions for styling text.
-func TxtFuncMap(styles *style.Registry) template.FuncMap {
+func TxtFuncMap(styles *styling.Registry) template.FuncMap {
 	return template.FuncMap{
 		"makePowerline": func(prefix string, suffix string) func(string, string) string {
 			return func(color string, text string) string {

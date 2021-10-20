@@ -11,7 +11,7 @@ import (
 	"github.com/jwalton/kitsch-prompt/internal/env"
 	"github.com/jwalton/kitsch-prompt/internal/modules"
 	"github.com/jwalton/kitsch-prompt/internal/shellprompt"
-	"github.com/jwalton/kitsch-prompt/internal/style"
+	"github.com/jwalton/kitsch-prompt/internal/styling"
 	"github.com/spf13/cobra"
 )
 
@@ -47,7 +47,7 @@ var promptCmd = &cobra.Command{
 		runtimeEnv := env.New(globals.CWD, jobs)
 
 		// Load custom colors
-		styles := style.Registry{}
+		styles := styling.Registry{}
 		for colorName, color := range configuration.Colors {
 			if !strings.HasPrefix(colorName, "$") {
 				runtimeEnv.Warn("Custom color \"" + colorName + "should start with $")

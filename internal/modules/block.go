@@ -4,7 +4,7 @@ import (
 	"text/template"
 
 	"github.com/jwalton/kitsch-prompt/internal/modtemplate"
-	"github.com/jwalton/kitsch-prompt/internal/style"
+	"github.com/jwalton/kitsch-prompt/internal/styling"
 	"gopkg.in/yaml.v3"
 )
 
@@ -63,11 +63,11 @@ func (mod BlockModule) Execute(context *Context) ModuleResult {
 
 	if len(resultsArray) > 0 {
 		lastChild := len(resultsArray) - 1
-		result.StartStyle = style.CharacterColors{
+		result.StartStyle = styling.CharacterColors{
 			FG: defaultString(result.StartStyle.FG, resultsArray[0].StartStyle.FG),
 			BG: defaultString(result.StartStyle.BG, resultsArray[0].StartStyle.BG),
 		}
-		result.EndStyle = style.CharacterColors{
+		result.EndStyle = styling.CharacterColors{
 			FG: defaultString(result.EndStyle.FG, resultsArray[lastChild].EndStyle.FG),
 			BG: defaultString(result.EndStyle.BG, resultsArray[lastChild].EndStyle.BG),
 		}
@@ -79,8 +79,8 @@ func (mod BlockModule) Execute(context *Context) ModuleResult {
 // blockJoinData is the data passed to the join template.
 type blockJoinData struct {
 	Global     *Globals
-	PrevColors style.CharacterColors
-	NextColors style.CharacterColors
+	PrevColors styling.CharacterColors
+	NextColors styling.CharacterColors
 	Index      int
 }
 

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/jwalton/kitsch-prompt/internal/env"
-	"github.com/jwalton/kitsch-prompt/internal/style"
+	"github.com/jwalton/kitsch-prompt/internal/styling"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,8 +20,8 @@ func TestPrompt(t *testing.T) {
 		Data: map[string]interface{}{
 			"IsRoot": false,
 		},
-		StartStyle: style.CharacterColors{},
-		EndStyle:   style.CharacterColors{},
+		StartStyle: styling.CharacterColors{},
+		EndStyle:   styling.CharacterColors{},
 	}, result)
 }
 
@@ -38,8 +38,8 @@ func TestRootPrompt(t *testing.T) {
 		Data: map[string]interface{}{
 			"IsRoot": true,
 		},
-		StartStyle: style.CharacterColors{},
-		EndStyle:   style.CharacterColors{},
+		StartStyle: styling.CharacterColors{},
+		EndStyle:   styling.CharacterColors{},
 	}, result)
 }
 

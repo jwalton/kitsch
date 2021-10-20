@@ -1,6 +1,6 @@
 // Package style is for parsing style strings from the kitsch configuration,
 // and for applying styles to strings.
-package style
+package styling
 
 import (
 	"strings"

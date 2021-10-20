@@ -24,8 +24,7 @@ import (
 
 	"github.com/jwalton/kitsch-prompt/internal/env"
 	"github.com/jwalton/kitsch-prompt/internal/modtemplate"
-	"github.com/jwalton/kitsch-prompt/internal/style"
-	styleLib "github.com/jwalton/kitsch-prompt/internal/style"
+	"github.com/jwalton/kitsch-prompt/internal/styling"
 )
 
 // ModuleResult represents the output of a module.
@@ -43,10 +42,10 @@ type ModuleResult struct {
 	// module - if the style for the module says the string should be colored
 	// blue, but a template is used to change the color of the first character
 	// to red, this will still say it is blue.
-	StartStyle style.CharacterColors
+	StartStyle styling.CharacterColors
 	// EndStyle is similar to StartStyle, but contains the colors  of the last
 	// character in Text.
-	EndStyle style.CharacterColors
+	EndStyle styling.CharacterColors
 }
 
 // Globals is a collection of "global" values that are passed to all modules.
@@ -102,7 +101,7 @@ type Context struct {
 	// Environment is the environment to fetch data from.
 	Environment env.Env
 	// Styles is the style registry to use to create styles.
-	Styles styleLib.Registry
+	Styles styling.Registry
 	// Globals is a collection of "global" values that are passed to all modules.
 	// These values are available to templates via the ".Globals" property.
 	Globals Globals
@@ -149,8 +148,8 @@ func executeModule(
 
 	text := defaultText
 
-	var startStyle styleLib.CharacterColors
-	var endStyle styleLib.CharacterColors
+	var startStyle styling.CharacterColors
+	var endStyle styling.CharacterColors
 
 	// prefix, prefixStartStyle, _, prefixErr := config.PrefixStyle.Apply(config.Prefix)
 	// suffix, _, suffixEndStyle, _, suffixErr := config.SuffixStyle.Apply(config.Suffix)
@@ -194,7 +193,7 @@ func defaultString(value string, def string) string {
 	return def
 }
 
-func defaultStyle(context *Context, styleString string, defStyle string) *style.Style {
+func defaultStyle(context *Context, styleString string, defStyle string) *styling.Style {
 	style, err := context.Styles.Get(styleString)
 	if err != nil {
 		context.Environment.Warn(err.Error())

@@ -3,7 +3,7 @@ package modules
 import (
 	"testing"
 
-	"github.com/jwalton/kitsch-prompt/internal/style"
+	"github.com/jwalton/kitsch-prompt/internal/styling"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,8 +23,8 @@ func TestExecuteModule(t *testing.T) {
 			Default:    "test",
 			Text:       "test",
 			Data:       data,
-			StartStyle: style.CharacterColors{},
-			EndStyle:   style.CharacterColors{},
+			StartStyle: styling.CharacterColors{},
+			EndStyle:   styling.CharacterColors{},
 		},
 		result,
 	)
@@ -51,8 +51,8 @@ func TestExecuteModuleWithTemplate(t *testing.T) {
 			Default:    "test",
 			Text:       "--Text Text--",
 			Data:       data,
-			StartStyle: style.CharacterColors{},
-			EndStyle:   style.CharacterColors{},
+			StartStyle: styling.CharacterColors{},
+			EndStyle:   styling.CharacterColors{},
 		},
 		result,
 	)
