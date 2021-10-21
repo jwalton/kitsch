@@ -26,31 +26,18 @@ func ApplyGradientsRaw(str string, foreground Gradient, background Gradient, lev
 	parsed := ansiparser.Parse(str)
 	printLength := ansiparser.TokensPrintLength(parsed)
 
-	var fgColors []color.RGBA
-	var bgColors []color.RGBA
+	var fgColors ColorGenerator
+	var bgColors ColorGenerator
 	if foreground != nil {
-		fgColors = foreground.Colors(printLength)
+		// TODO: Rename this
+		fgColors = foreground.Generator(printLength)
 	}
 	if background != nil {
-		bgColors = background.Colors(printLength)
+		bgColors = background.Generator(printLength)
 	}
 
+	// TODO: Rename this
 	return renderRGBAs(parsed, fgColors, bgColors, level)
-}
-
-// ColorString will apply the given background and foreground colors to the given string.
-//
-// ColorString will attempt to automatically detect the current color support level
-// based on stdout - this can be overridden globally by calling `SetLevel()` or `ColorizeStringRaw()`.
-func ColorString(str string, foreground []color.RGBA, background []color.RGBA) string {
-	return ColorStringRaw(str, foreground, background, GetLevel())
-}
-
-// ColorStringRaw will apply the given background and foreground colors to the given string.
-// Unlike ColorString, this will not attempt to automatically detect the current color support level.
-func ColorStringRaw(str string, foreground []color.RGBA, background []color.RGBA, level ColorLevel) string {
-	parsed := ansiparser.Parse(str)
-	return renderRGBAs(parsed, foreground, background, level)
 }
 
 var compareColors = [](func(color.RGBA, color.RGBA) bool){
@@ -103,8 +90,8 @@ type colorizeContext struct {
 // version to the `out` writer.
 func renderRGBAs(
 	parsed []ansiparser.AnsiToken,
-	fgColors []color.RGBA,
-	bgColors []color.RGBA,
+	fgColors ColorGenerator,
+	bgColors ColorGenerator,
 	level ColorLevel,
 ) string {
 	out := strings.Builder{}
@@ -114,13 +101,6 @@ func renderRGBAs(
 	// Which color to use for the next character.
 	colorIndex := 0
 	context := colorizeContext{level: level}
-
-	if len(fgColors) == 0 {
-		fgColors = nil
-	}
-	if len(bgColors) == 0 {
-		bgColors = nil
-	}
 
 	prevFg := ""
 	prevBg := ""
@@ -195,8 +175,8 @@ func colorizeASCIIString(
 	context *colorizeContext,
 	str string,
 	colorIndex int,
-	fgColors []color.RGBA,
-	bgColors []color.RGBA,
+	fgColors ColorGenerator,
+	bgColors ColorGenerator,
 	out *strings.Builder,
 ) {
 	for charIndex := range str {
@@ -210,13 +190,13 @@ func colorizeASCIIString(
 func renderColorCodes(
 	context *colorizeContext,
 	colorIndex int,
-	fgColors []color.RGBA,
-	bgColors []color.RGBA,
+	fgColors ColorGenerator,
+	bgColors ColorGenerator,
 	out *strings.Builder,
 ) {
 	// Write the forground color, if any.
-	if colorIndex < len(fgColors) {
-		nextColor := fgColors[colorIndex]
+	if fgColors != nil {
+		nextColor := fgColors.ColorAt(float64(colorIndex) + 0.5)
 		if context.lastFgColor.A == 0 || !compareColors[context.level](nextColor, context.lastFgColor) {
 			context.lastFgColor = nextColor
 			fgColorize[context.level](out, nextColor)
@@ -224,8 +204,8 @@ func renderColorCodes(
 	}
 
 	// Write the background color, if any.
-	if colorIndex < len(bgColors) {
-		nextColor := bgColors[colorIndex]
+	if bgColors != nil {
+		nextColor := bgColors.ColorAt(float64(colorIndex) + 0.5)
 		if context.lastBgColor.A == 0 || !compareColors[context.level](nextColor, context.lastBgColor) {
 			context.lastBgColor = nextColor
 			bgColorize[context.level](out, nextColor)

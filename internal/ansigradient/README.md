@@ -30,11 +30,6 @@ text := ansigradient.ApplyGradients("Red-to-blue text", linearGradient, nil);
 
 // Apply a gradient to the background of a string of text.
 text := ansigradient.ApplyGradients("Red-to-blue text", nil, linearGradient);
-
-// Convert a gradient to an array of Colors, then apply those colors to the text:
-str := "Red-to-blue text"
-colors := linearGradient.Colors(len(str))
-text := ansigradient.ColorString(colors, nil, str)
 ```
 
 Stops can optionally have an "offset" which will say where along the text that color will begin - an offset of `0px` or `0%` is right before the first color, and `100%` is right at the end of the last character.  The actual color of any character is computed as if the character were one pixel wide and is based on the "center" of that character (i.e. the first character gets it's color from linearly-interpolating the color at 0.5px).  As with CSS, we can also provide a stop with no color - this is used as a hint for where the midpoint between two colors should be:
@@ -43,7 +38,7 @@ Stops can optionally have an "offset" which will say where along the text that c
 gradient := ansigradient.CSSLinearGradientMust("#FF0000 20%, 30%, #0000FF 80%")
 ```
 
-The "ApplyGradients" and "ColorString" functions will attempt to auto-detect terminal color support based on what stdout supports.  For details about how this works, see the [supportscolor](https://github.com/jwalton/go-supportscolor) package.  You can override the level with `SetLevel()`, or if you want to apply colors to a string ignoring the current color level, you can do so with "ApplyGradientsRaw" and "ColorStringRaw":
+The "ApplyGradients" function will attempt to auto-detect terminal color support based on what stdout supports.  For details about how this works, see the [supportscolor](https://github.com/jwalton/go-supportscolor) package.  You can override the level with `SetLevel()`, or if you want to apply colors to a string ignoring the current color level, you can do so with "ApplyGradientsRaw":
 
 ```go
 // Set the default color level:

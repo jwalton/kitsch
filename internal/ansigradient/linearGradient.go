@@ -73,7 +73,7 @@ func CSSLinearGradientWithMap(colorMap map[string]string, stops string) (Gradien
 	return result, nil
 }
 
-// CSSLinearGradientMust is a convenince function for creating a gradient from CSS
+// CSSLinearGradientMust is a convenience function for creating a gradient from CSS
 // stops.  Calling this is equivalent to calling CSSLinearGradient, but will
 // panic on a parsing error.
 func CSSLinearGradientMust(stops string) Gradient {
@@ -88,7 +88,6 @@ func CSSLinearGradientMust(stops string) Gradient {
 // that the first and last stop have a defined color and offset, and will
 // interpolate any missing colors, and - if possible - missing stop offsets.
 func (gradient *LinearGradient) cleanStops() {
-
 	// If the first/last stops do not have a specified offset, set them to 0% and 100%.
 	if gradient.stops[0].HasUndefinedOffset() {
 		gradient.stops[0].Offset = 0
@@ -204,38 +203,7 @@ func getStopOffset(stops []gradientStop, stopIndex int, length int) float64 {
 // ColorAt will, given the length of a string, return a function that will
 // return the color at any point along the length of that string.
 func (gradient LinearGradient) ColorAt(length int, index int) color.RGBA {
-	if index < 0 {
-		return gradient.stops[0].Color
-	}
-
-	// Keep track of which stop we're on.  This works so long as we're moving
-	// forward along the gradient.  If we move backwards, we have to start over
-	// from the beginning.
-	currentStop := 0
-	currentStopOffset := getStopOffset(gradient.stops, 0, length)
-	nextStopOffset := getStopOffset(gradient.stops, 1, length)
-
-	// Add 0.5, because we want the middle of the pixel.
-	position := float64(index) + 0.5
-
-	for nextStopOffset <= position && currentStop < len(gradient.stops)-1 {
-		// Advance to the next stop
-		currentStop++
-		currentStopOffset = nextStopOffset
-		nextStopOffset = gradient.stops[currentStop].GetOffset(length)
-	}
-
-	// Calculate the color at this point.
-	if currentStop >= len(gradient.stops)-1 {
-		return gradient.stops[currentStop].Color
-	}
-
-	return lerpColor(
-		gradient.stops[currentStop].Color,
-		gradient.stops[currentStop+1].Color,
-		(position-currentStopOffset)/float64(nextStopOffset-currentStopOffset),
-	)
-
+	return gradient.Generator(length).ColorAt(float64(index))
 }
 
 // Colors returns an array of colors of the specified length.
@@ -243,38 +211,64 @@ func (gradient LinearGradient) ColorAt(length int, index int) color.RGBA {
 // This assumes that each returned value is a single pixel.  The color
 // returned is for the center of the pixel.
 func (gradient LinearGradient) Colors(length int) []color.RGBA {
+	colors := gradient.Generator(length)
 	result := make([]color.RGBA, length)
-
-	// Render all the stops.
-	currentStop := 0
-	currentStopOffset := getStopOffset(gradient.stops, 0, length)
-	nextStopOffset := getStopOffset(gradient.stops, 1, length)
 
 	for i := 0; i < length; i++ {
 		// Add 0.5, because we want the middle of the pixel.
 		position := float64(i) + 0.5
-
-		// Advance the stop until the position is after the start of the current stop.
-		for nextStopOffset <= position && currentStop < len(gradient.stops)-1 {
-			currentStop++
-			currentStopOffset = nextStopOffset
-			nextStopOffset = getStopOffset(gradient.stops, currentStop+1, length)
-		}
-
-		if currentStop == 0 && position < currentStopOffset {
-			// If we're before the first stop, use the first stop as the color.
-			result[i] = gradient.stops[0].Color
-		} else if currentStop >= len(gradient.stops)-1 {
-			// If we're at or after the last stop, use the last stop as the color.
-			result[i] = gradient.stops[currentStop].Color
-		} else {
-			result[i] = lerpColor(
-				gradient.stops[currentStop].Color,
-				gradient.stops[currentStop+1].Color,
-				(position-currentStopOffset)/float64(nextStopOffset-currentStopOffset),
-			)
-		}
+		result[i] = colors.ColorAt(position)
 	}
 
 	return result
+}
+
+// Generator returns an object that generates colors for a string of a particular length.
+func (gradient LinearGradient) Generator(length int) ColorGenerator {
+	return &linearGradientColorizer{
+		stops:        gradient.stops,
+		length:       length,
+		lastPosition: 0,
+	}
+}
+
+type linearGradientColorizer struct {
+	stops             []gradientStop
+	length            int
+	currentStop       int
+	lastPosition      float64
+	currentStopOffset float64
+	nextStopOffset    float64
+}
+
+// ColorAt returns the color at the position along the gradient.
+func (colorizer *linearGradientColorizer) ColorAt(position float64) color.RGBA {
+	// If we go backwards along the list, start over from the first stop.
+	if colorizer.lastPosition == 0 || position < colorizer.lastPosition {
+		colorizer.currentStop = 0
+		colorizer.currentStopOffset = getStopOffset(colorizer.stops, 0, colorizer.length)
+		colorizer.nextStopOffset = getStopOffset(colorizer.stops, 1, colorizer.length)
+	}
+	colorizer.lastPosition = position
+
+	// Advance the stop until the position is after the start of the current stop.
+	for colorizer.nextStopOffset <= position && colorizer.currentStop < len(colorizer.stops)-1 {
+		colorizer.currentStop++
+		colorizer.currentStopOffset = colorizer.nextStopOffset
+		colorizer.nextStopOffset = getStopOffset(colorizer.stops, colorizer.currentStop+1, colorizer.length)
+	}
+
+	if colorizer.currentStop == 0 && position < colorizer.currentStopOffset {
+		// If we're before the first stop, use the first stop as the color.
+		return colorizer.stops[0].Color
+	} else if colorizer.currentStop >= len(colorizer.stops)-1 {
+		// If we're at or after the last stop, use the last stop as the color.
+		return colorizer.stops[colorizer.currentStop].Color
+	} else {
+		return lerpColor(
+			colorizer.stops[colorizer.currentStop].Color,
+			colorizer.stops[colorizer.currentStop+1].Color,
+			(position-colorizer.currentStopOffset)/float64(colorizer.nextStopOffset-colorizer.currentStopOffset),
+		)
+	}
 }

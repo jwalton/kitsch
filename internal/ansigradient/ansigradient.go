@@ -17,11 +17,6 @@
 //     // Apply a gradient to the background of a string of text.
 //     text := ansigradient.ApplyGradients("Red-to-blue text", nil, linearGradient);
 //
-//     // Convert a gradient to an array of Colors, then apply those colors to the text:
-//     str := "Red-to-blue text"
-//     colors := linearGradient.Colors(len(str))
-//     text := ansigradient.ColorString(colors, nil, str)
-//
 // Stops can optionally have an "offset" which will say where along the text that
 // color will begin - an offset of `0px` or `0%` is right before the first color,
 // and `100%` is right at the end of the last character.  The actual color of
@@ -33,12 +28,12 @@
 //
 //     gradient := ansigradient.CSSLinearGradientMust("#FF0000 20%, 30%, #0000FF 80%")
 //
-// The "ApplyGradients" and "ColorString" functions will attempt to auto-detect
-// terminal color support based on what stdout supports.  For details about how
+// The "ApplyGradients"  functions will attempt to auto-detect terminal color
+// support based on what stdout supports.  For details about how
 // this works, see https://github.com/jwalton/go-supportscolor.  You can
 // override the level with `SetLevel()`, or if you want to apply colors to a
 // string ignoring the current color level, you can do so with
-// "ApplyGradientsRaw" and "ColorStringRaw".
+// "ApplyGradientsRaw".
 //
 package ansigradient
 
@@ -93,4 +88,14 @@ type Gradient interface {
 	Colors(length int) []color.RGBA
 	// ColorAt returns the color of a specific location along the gradient.
 	ColorAt(length int, index int) color.RGBA
+	// Generator returns a Colorizer for the specified length string.
+	Generator(length int) ColorGenerator
+}
+
+// ColorGenerator generates colors along a gradient or spectrum.
+type ColorGenerator interface {
+	// ColorAt returns the color of a specific location along a color spectrum,
+	// such as a gradient.  `position` is the position along the spectrum.
+	// The range of `position` depends on the length of the spectrum.
+	ColorAt(position float64) color.RGBA
 }
