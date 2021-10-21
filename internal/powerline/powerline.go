@@ -27,6 +27,9 @@ func New(styles *styling.Registry, prefix string, separator string, suffix strin
 }
 
 // Segment prints a new Powerline segment with the given background color and text.
+// If previous segments have been written by this Powerline instance, then
+// a "prefix+separator+suffix" will be written between the previous segment and
+// this one.
 func (pl *Powerline) Segment(color string, text string) string {
 	// If the segment is empty, skip it.
 	if text == "" {
@@ -43,12 +46,12 @@ func (pl *Powerline) Segment(color string, text string) string {
 
 	// Print the separator
 	if pl.lastColor.BG != "" {
-		prefixStyle, err := pl.styles.Get(firstColor.BG + " " + styling.ToBgColor(pl.lastColor.BG))
+		prefixStyle, err := pl.styles.Get(styling.ToFgColor(firstColor.BG) + " " + styling.ToBgColor(pl.lastColor.BG))
 		if err == nil {
 			result += prefixStyle.Apply(pl.separatorPrefix)
 		}
 
-		suffixStyle, err := pl.styles.Get(styling.ToBgColor(firstColor.BG) + " " + pl.lastColor.BG)
+		suffixStyle, err := pl.styles.Get(styling.ToFgColor(pl.lastColor.BG) + " " + styling.ToBgColor(firstColor.BG))
 		if err == nil {
 			result += suffixStyle.Apply(pl.separator + pl.separatorSuffix)
 		}
@@ -57,12 +60,13 @@ func (pl *Powerline) Segment(color string, text string) string {
 	result += coloredText
 	pl.lastColor = lastColor
 	if pl.lastColor.BG == "" {
-		pl.lastColor.BG = "black"
+		pl.lastColor.BG = "bg:black"
 	}
 
 	return result
 }
 
+// Finish will print an "end" to this powerline string.
 func (pl *Powerline) Finish() string {
 	result := ""
 
@@ -72,7 +76,7 @@ func (pl *Powerline) Finish() string {
 			result += prefixStyle.Apply(pl.separatorPrefix)
 		}
 
-		suffixStyle, err := pl.styles.Get("bg:black " + pl.lastColor.BG)
+		suffixStyle, err := pl.styles.Get("bg:black " + styling.ToFgColor(pl.lastColor.BG))
 		if err == nil {
 			result += suffixStyle.Apply(pl.separator)
 		}

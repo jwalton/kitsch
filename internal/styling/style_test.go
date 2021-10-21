@@ -39,6 +39,8 @@ func TestApply(t *testing.T) {
 	assert.Equal(t, "\u001b[37mtest\u001b[39m", style.Apply("test"))
 }
 
+// TODO: Add tests for ApplyGetColors
+
 func TestGradient(t *testing.T) {
 	styles := testStyleRegistry()
 

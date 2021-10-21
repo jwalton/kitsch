@@ -1,13 +1,17 @@
 colors:
   $timeBg: "linear-gradient(#555, #222)"
-  $timeFg: "brightWhite"
+  $timeFg: "#ccc"
   $directoryBg: "linear-gradient(#088, #008)"
-  $directoryFg: "#cff"
+  $directoryFg: "#cfc"
+  $commandDurationBg: "linear-gradient(#221, #553)"
+  $commandDurationFg: "#fd6"
   $gitFg: "#000"
-  $gitBg: "#ff0"
-  $gitBgAhead: "#0F9"
-  $gitBgBehind: "#F60"
+  $gitBg: "#0fc"
+  $gitBgAhead: "#ef3"
+  $gitBgBehind: "#fb3"
   $gitFgNormal: "#000"
+  $gitIndexBg: "#060"
+  $gitUnstagedBg: "#600"
 prompt:
   type: block
   modules:
@@ -19,7 +23,13 @@ prompt:
       behindStyle: $gitFg
       aheadBehindStyle: $gitFg
     - type: git_status
+      indexStyle: "#3f3"
+      unstagedStyle: "#f33"
+      unmergedStyle: "#f06"
+      stashStyle: "#f90 bold"
     - type: prompt
+    - type: CommandDuration
+      style: $commandDurationFg
   template: |
     {{- $pl := makePowerline " " "\ue0b0" " " -}}
     {{- $global := .Global -}}
@@ -30,7 +40,18 @@ prompt:
         {{- $gitBg := or (and (gt .git.Data.Behind 0) "$gitBgBehind") (and (gt .git.Data.Ahead 0) "$gitBgAhead") "$gitBg" -}}
         {{- list "\ue0a0" .git.Text | join " " | style "$gitFg" | $pl.Segment $gitBg -}}
       {{- end -}}
-      {{- .git_status.Text | $pl.Segment "#440" -}}
+      {{- with .git_status -}}
+          {{- $gitStatusBg := "#444" -}}
+          {{- if and (gt .Data.Index.Total 0) (gt .Data.Unstaged.Total 0) -}}
+            {{- $gitStatusBg = "linear-gradient($gitIndexBg, $gitUnstagedBg)" -}}
+          {{- else if gt .Data.Index.Total 0 -}}
+            {{- $gitStatusBg = "$gitIndexBg" -}}
+          {{- else if gt .Data.Unstaged.Total 0 -}}
+            {{- $gitStatusBg = "$gitUnstagedBg" -}}
+          {{- end -}}
+          {{- .Text | style "#fff" | $pl.Segment $gitStatusBg -}}
+      {{- end -}}
+      {{- .CommandDuration.Text | $pl.Segment "$commandDurationBg" -}}
       {{- if (ne $global.Status 0) }}{{ $global.Status | style "brightWhite" | $pl.Segment "red" }}{{ end -}}
     {{- end -}}
     {{- $pl.Finish -}}{{- " " -}}

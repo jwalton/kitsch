@@ -1,4 +1,4 @@
-// Package style is for parsing style strings from the kitsch configuration,
+// Package styling is for parsing style strings from the kitsch configuration,
 // and for applying styles to strings.
 package styling
 
@@ -125,6 +125,12 @@ func (style *Style) ApplyGetColors(text string) (result string, first CharacterC
 
 	first.FG, last.FG = getCharacterColors(style.descriptor.fg, style.fgGradient, printLength)
 	first.BG, last.BG = getCharacterColors(style.descriptor.bg, style.bgGradient, printLength)
+	if first.BG != "" {
+		first.BG = "bg:" + first.BG
+	}
+	if last.BG != "" {
+		last.BG = "bg:" + last.BG
+	}
 
 	return result, first, last
 }

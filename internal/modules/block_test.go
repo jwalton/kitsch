@@ -12,6 +12,7 @@ func TestBlock(t *testing.T) {
 	}
 	promptMod := PromptModule{}
 	blockMod := BlockModule{
+		Join: " ",
 		Modules: []ModuleSpec{
 			{ID: "", Module: usernameMod},
 			{ID: "", Module: promptMod},

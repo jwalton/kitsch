@@ -1,8 +1,10 @@
 colors:
   $timeBg: "linear-gradient(#555, #222)"
-  $timeFg: "#fff"
+  $timeFg: "#ccc"
   $directoryBg: "linear-gradient(#088, #008)"
-  $directoryFg: "#cff"
+  $directoryFg: "#cfc"
+  $commandDurationBg: "linear-gradient(#221, #553)"
+  $commandDurationFg: "#fd6"
 prompt:
   type: block
   join: '{{ bgColor .PrevColors.BG " " }}{{ "\ue0b0 " | fgColor .PrevColors.BG | bgColor .NextColors.BG }}'
@@ -16,6 +18,8 @@ prompt:
       modules:
         - type: git
         - type: git_status
+    - type: CommandDuration
+      style: bg:$commandDurationBg $commandDurationFg
     - type: prompt
       style: bgBlack
       errorStyle: bgRed brightWhite

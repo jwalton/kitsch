@@ -1,12 +1,13 @@
 colors:
-  $foreground: "linear-gradient(#0ff, #08f)"
+  $fg: "#08f"
+  $directory: "linear-gradient(#0ff, $fg)"
 prompt:
   type: block
   modules:
     - type: time
       style: brightBlack
     - type: block
-      style: $foreground
+      style: $directory
       template: "{{ with .Text }}[{{ . }}]{{end}}"
       modules:
         - type: username
@@ -17,6 +18,8 @@ prompt:
         - type: git
         - type: git_status
       template: "{{ with .Text }}[{{ . }}]{{end}}"
+    - type: CommandDuration
+      style: brightYellow
     - type: prompt
-      style: brightBlue
+      style: $fg
       errorStyle: brightRed

@@ -25,9 +25,9 @@ var promptCmd = &cobra.Command{
 		shell, _ := cmd.Flags().GetString("shell")
 
 		cmdDurationStr, _ := cmd.Flags().GetString("cmd-duration")
-		cmdDuration := 0
+		cmdDuration := int64(0)
 		if cmdDurationStr != "" {
-			cmdDuration, _ = strconv.Atoi(cmdDurationStr)
+			cmdDuration, _ = strconv.ParseInt(cmdDurationStr, 10, 64)
 		}
 
 		// Because the prompt is shown from the shell, when it is run, it

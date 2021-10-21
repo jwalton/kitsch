@@ -59,7 +59,7 @@ type Globals struct {
 	// Status is the return status of the previous command.
 	Status int
 	// PreviousCommandDuration is the duration of the previous command, in milliseconds.
-	PreviousCommandDuration int
+	PreviousCommandDuration int64
 	// Keymap is the zsh/fish keymap. TODO: What values can this have?
 	Keymap string
 }
@@ -67,7 +67,7 @@ type Globals struct {
 // NewGlobals creates a new Globals object.
 func NewGlobals(
 	status int,
-	previousCommandDuration int,
+	previousCommandDuration int64,
 	keymap string,
 ) Globals {
 	cwd, err := os.Getwd()
