@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/jwalton/gchalk"
-	"github.com/jwalton/go-ansiparser"
 	"github.com/jwalton/kitsch-prompt/internal/ansigradient"
 	"github.com/jwalton/kitsch-prompt/internal/colortools"
 )
@@ -97,14 +96,8 @@ func compileStyle(
 
 // Apply applies this style to the given text.
 func (style *Style) Apply(text string) string {
-	if style == nil {
-		return text
-	}
-	if style.builder != nil {
-		text = style.builder.Paint(text)
-	}
-	text = ansigradient.ApplyGradientsRaw(text, style.fgGradient, style.bgGradient, gchalk.GetLevel())
-	return text
+	result, _, _ := style.ApplyGetColors(text)
+	return result
 }
 
 // ApplyGetColors applies this style to the given text, and returns the first and last colors of the styled text.
@@ -112,19 +105,18 @@ func (style *Style) ApplyGetColors(text string) (result string, first CharacterC
 	if style == nil {
 		return text, first, last
 	}
-	result = style.Apply(text)
 
-	// TODO: This is not very efficient, because we end up parsing the string
-	// twice.  Consider making it so `ApplyGradients` lets us pass in a
-	// pre-parsed string?
-	printLength := 0
-	if style.fgGradient != nil || style.bgGradient != nil {
-		parsed := ansiparser.Parse(text)
-		printLength = ansiparser.TokensPrintLength(parsed)
+	if style.builder != nil {
+		result = style.builder.Paint(text)
 	}
 
-	first.FG, last.FG = getCharacterColors(style.descriptor.fg, style.fgGradient, printLength)
-	first.BG, last.BG = getCharacterColors(style.descriptor.bg, style.bgGradient, printLength)
+	printWidth := 0
+	if style.fgGradient != nil || style.bgGradient != nil {
+		result, printWidth = ansigradient.ApplyGradientsRawLen(text, style.fgGradient, style.bgGradient, gchalk.GetLevel())
+	}
+
+	first.FG, last.FG = getCharacterColors(style.descriptor.fg, style.fgGradient, printWidth)
+	first.BG, last.BG = getCharacterColors(style.descriptor.bg, style.bgGradient, printWidth)
 	if first.BG != "" {
 		first.BG = "bg:" + first.BG
 	}

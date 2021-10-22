@@ -9,15 +9,21 @@ import (
 
 func TestRender(t *testing.T) {
 	gradient := CSSLinearGradientMust("#ff0020, #2000ff")
+
+	result, len := ApplyGradientsRawLen("Hello!", gradient, nil, LevelAnsi16m)
 	assert.Equal(t,
 		"\u001b[38;2;236;0;50mH\u001b[38;2;199;0;87me\u001b[38;2;162;0;124ml\u001b[38;2;124;0;162ml\u001b[38;2;87;0;199mo\u001b[38;2;50;0;236m!\u001b[39m",
-		ApplyGradientsRaw("Hello!", gradient, nil, LevelAnsi16m),
+		result,
 	)
+	assert.Equal(t, len, 6)
+
+	result, len = ApplyGradientsRawLen("Hello World!", nil, gradient, LevelAnsi16m)
 	assert.Equal(t,
 		"\u001b[48;2;245;0;41mH\u001b[48;2;227;0;59me\u001b[48;2;208;0;78ml\u001b[48;2;189;0;97ml\u001b[48;2;171;0;115mo\u001b[48;2;152;0;134m "+
 			"\u001b[48;2;134;0;152mW\u001b[48;2;115;0;171mo\u001b[48;2;97;0;189mr\u001b[48;2;78;0;208ml\u001b[48;2;59;0;227md\u001b[48;2;41;0;245m!\u001b[49m",
-		ApplyGradientsRaw("Hello World!", nil, gradient, LevelAnsi16m),
+		result,
 	)
+	assert.Equal(t, len, 12)
 }
 
 func TestRenderPreColoredText(t *testing.T) {
@@ -26,8 +32,9 @@ func TestRenderPreColoredText(t *testing.T) {
 
 	// Render FG with a character that already has a FG color.
 	message := "AB" + g.Green("C") + "DE"
-	output := ApplyGradientsRaw(message, gradient, nil, LevelAnsi16m)
+	output, len := ApplyGradientsRawLen(message, gradient, nil, LevelAnsi16m)
 	assert.Equal(t, "\u001b[38;2;255;0;0mAB\u001b[32mC\u001b[38;2;255;0;0mDE\u001b[39m", output)
+	assert.Equal(t, len, 5)
 
 	// Render BG with a character that has a FG color.
 	output = ApplyGradientsRaw(message, nil, gradient, LevelAnsi16m)
@@ -66,9 +73,11 @@ func TestRenderGradientsOverGradients(t *testing.T) {
 
 func TestRenderMultipleCharsSameColor(t *testing.T) {
 	gradient := CSSLinearGradientMust("#ff0000 3px, #0000ff 3px")
+
+	result := ApplyGradientsRaw("RedBlu", nil, gradient, LevelAnsi16m)
 	assert.Equal(t,
 		"\u001b[48;2;255;0;0mRed\u001b[48;2;0;0;255mBlu\u001b[49m",
-		ApplyGradientsRaw("RedBlu", nil, gradient, LevelAnsi16m),
+		result,
 	)
 }
 
@@ -79,25 +88,29 @@ func TestZwjEmojiRender(t *testing.T) {
 	// and the zero-width-joiner codepoints, all combined into a single
 	// grapheme.  If we use a naive "insert escape codes between each rune"
 	// approach, we'd end up splitting this into its component emojis.
-	str := "AB👩🏻‍🚀"
+	str := "A👩🏻‍🚀D"
 
 	// FIXME: This is wrong - the astronaut should be 2 characters wide.
+	result, len := ApplyGradientsRawLen(str, nil, gradient, LevelAnsi16m)
 	assert.Equal(t,
-		"\x1b[48;2;212;0;42mA\x1b[48;2;127;0;127mB\x1b[48;2;42;0;212m👩🏻\u200d🚀\x1b[49m",
-		ApplyGradientsRaw(str, nil, gradient, LevelAnsi16m),
+		"\x1b[48;2;223;0;31mA\x1b[48;2;127;0;127m👩🏻‍🚀\x1b[48;2;31;0;223mD\x1b[49m",
+		result,
 	)
+	assert.Equal(t, len, 4)
 }
 
 func Test256ColorMode(t *testing.T) {
 	gradient := CSSLinearGradientMust("#ff0020 0%, #2000ff 100%")
 
+	result := ApplyGradientsRaw("Hello World!", gradient, nil, LevelAnsi256)
 	assert.Equal(t,
 		"\u001b[38;5;197mH\u001b[38;5;161me\u001b[38;5;162mll\u001b[38;5;126mo\u001b[38;5;127m W\u001b[38;5;91mo\u001b[38;5;92mrl\u001b[38;5;56md\u001b[38;5;57m!\u001b[39m",
-		ApplyGradientsRaw("Hello World!", gradient, nil, LevelAnsi256),
+		result,
 	)
 
+	result = ApplyGradientsRaw("Hello World!", nil, gradient, LevelAnsi256)
 	assert.Equal(t,
 		"\u001b[48;5;197mH\u001b[48;5;161me\u001b[48;5;162mll\u001b[48;5;126mo\u001b[48;5;127m W\u001b[48;5;91mo\u001b[48;5;92mrl\u001b[48;5;56md\u001b[48;5;57m!\u001b[49m",
-		ApplyGradientsRaw("Hello World!", nil, gradient, LevelAnsi256),
+		result,
 	)
 }

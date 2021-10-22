@@ -26,7 +26,7 @@ func addZeroWidthCharacterEscapes(prompt string, start string, end string) strin
 	result := ""
 
 	for _, part := range parsed {
-		if part.Type == ansiparser.EscapeCode || part.Type == ansiparser.ZeroWidth {
+		if part.Type == ansiparser.EscapeCode {
 			result += start + part.Content + end
 		} else {
 			result += part.Content
