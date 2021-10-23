@@ -51,7 +51,7 @@ func (mod CmdDurationModule) formatDuration(timeInMs int64) string {
 }
 
 func init() {
-	registerFactory("CommandDuration", func(node *yaml.Node) (Module, error) {
+	registerFactory("command_duration", func(node *yaml.Node) (Module, error) {
 		module := CmdDurationModule{MinTime: 2000}
 		err := node.Decode(&module)
 		return &module, err

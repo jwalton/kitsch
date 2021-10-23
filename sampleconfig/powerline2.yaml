@@ -28,7 +28,7 @@ prompt:
       unmergedStyle: "#f06"
       stashStyle: "#f90 bold"
     - type: prompt
-    - type: CommandDuration
+    - type: command_duration
       style: $commandDurationFg
   template: |
     {{- $pl := makePowerline " " "\ue0b0" " " -}}
@@ -51,7 +51,7 @@ prompt:
           {{- end -}}
           {{- .Text | style "#fff" | $pl.Segment $gitStatusBg -}}
       {{- end -}}
-      {{- .CommandDuration.Text | $pl.Segment "$commandDurationBg" -}}
+      {{- .command_duration.Text | $pl.Segment "$commandDurationBg" -}}
       {{- if (ne $global.Status 0) }}{{ $global.Status | style "brightWhite" | $pl.Segment "red" }}{{ end -}}
     {{- end -}}
     {{- $pl.Finish -}}{{- " " -}}

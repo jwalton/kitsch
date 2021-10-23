@@ -18,7 +18,7 @@ prompt:
       modules:
         - type: git
         - type: git_status
-    - type: CommandDuration
+    - type: command_duration
       style: bg:$commandDurationBg $commandDurationFg
     - type: prompt
       style: bgBlack
