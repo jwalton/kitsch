@@ -1,6 +1,7 @@
 package powerline
 
 import (
+	"fmt"
 	"text/template"
 
 	"github.com/jwalton/kitsch-prompt/internal/styling"
@@ -30,9 +31,14 @@ func New(styles *styling.Registry, prefix string, separator string, suffix strin
 // If previous segments have been written by this Powerline instance, then
 // a "prefix+separator+suffix" will be written between the previous segment and
 // this one.
-func (pl *Powerline) Segment(color string, text string) string {
+func (pl *Powerline) Segment(color string, text interface{}) string {
 	// If the segment is empty, skip it.
-	if text == "" {
+	if text == nil {
+		return ""
+	}
+
+	str := toText(text)
+	if str == "" {
 		return ""
 	}
 
@@ -40,9 +46,9 @@ func (pl *Powerline) Segment(color string, text string) string {
 
 	style, err := pl.styles.Get(styling.ToBgColor(color))
 	if err != nil {
-		return err.Error() + text
+		return err.Error() + str
 	}
-	coloredText, firstColor, lastColor := style.ApplyGetColors(text)
+	coloredText, firstColor, lastColor := style.ApplyGetColors(str)
 
 	// Print the separator
 	if pl.lastColor.BG != "" {
@@ -92,4 +98,13 @@ func TxtFuncMap(styles *styling.Registry) template.FuncMap {
 			return New(styles, prefix, separator, suffix)
 		},
 	}
+}
+
+// toText converts a value to a string.
+func toText(text interface{}) string {
+	textString, ok := text.(string)
+	if !ok {
+		textString = fmt.Sprintf("%v", text)
+	}
+	return textString
 }
