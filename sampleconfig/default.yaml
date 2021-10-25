@@ -10,7 +10,11 @@ prompt:
       style: $directory
       template: "{{ with .Text }}[{{ . }}]{{end}}"
       modules:
-        - type: username
+        - type: block
+          join: "@"
+          modules:
+            - type: username
+            - type: hostname
         - type: directory
     - type: block
       style: brightYellow

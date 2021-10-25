@@ -53,9 +53,11 @@ type Globals struct {
 	CWD string
 	// Home is the user's home directory.
 	Home string
-	// The user's username.
+	// Username is the user's username.
 	// TODO: Add the "short" username for MacOS and Windows.
 	Username string
+	// Hostname is the name of the current machine.
+	Hostname string
 	// Status is the return status of the previous command.
 	Status int
 	// PreviousCommandDuration is the duration of the previous command, in milliseconds.
@@ -86,10 +88,16 @@ func NewGlobals(
 		username = user.Name
 	}
 
+	hostname, err := os.Hostname()
+	if err != nil {
+		hostname = ""
+	}
+
 	return Globals{
 		CWD:                     cwd,
 		Home:                    home,
 		Username:                username,
+		Hostname:                hostname,
 		Status:                  status,
 		PreviousCommandDuration: previousCommandDuration,
 	}

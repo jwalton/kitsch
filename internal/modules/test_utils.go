@@ -19,6 +19,7 @@ func testContext(username string) *Context {
 			CWD:                     "/Users/" + username,
 			Home:                    "/Users/" + username,
 			Username:                username,
+			Hostname:                "lucid",
 			Status:                  0,
 			PreviousCommandDuration: 0,
 		},

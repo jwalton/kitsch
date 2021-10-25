@@ -11,13 +11,13 @@ import (
 //
 // The username module provides the following template variables:
 //
-// • username - The current user's username.
+// • Username - The current user's username.
 //
-// • isRoot - True if the user is root, false otherwise.
+// • IsRoot - True if the user is root, false otherwise.
 //
-// • isSSH - True if this is an SSH session, false otherwise.
+// • IsSSH - True if this is an SSH session, false otherwise.
 //
-// • show - True if we should show the username module, false otherwise.
+// • Show - True if we should show the username module, false otherwise.
 //
 type UsernameModule struct {
 	CommonConfig `yaml:",inline"`
