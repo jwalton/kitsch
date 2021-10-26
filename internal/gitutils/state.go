@@ -7,6 +7,8 @@ import (
 	"github.com/jwalton/kitsch-prompt/internal/fileutils"
 )
 
+const shortSHALength = 7
+
 // RepositoryStateType represents the current state of a repository (e.g. rebasing, merging, etc...)
 type RepositoryStateType string
 
@@ -115,9 +117,9 @@ func (utils *GitUtils) getBranchName() (base string, branch string) {
 
 	// If that fails, get the SHA
 	if err != nil || base == "" {
-		base, err = utils.git("rev-parse", "--head")
-		if base != "" {
-			base = "(" + strings.TrimSpace(base)[0:7] + "...)"
+		base, err = utils.git("rev-parse", "HEAD")
+		if base != "" && len(base) > shortSHALength {
+			base = "(" + strings.TrimSpace(base)[0:shortSHALength] + "...)"
 		}
 	}
 
