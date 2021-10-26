@@ -24,6 +24,8 @@ prompt:
       template: "{{ with .Text }}[{{ . }}]{{end}}"
     - type: command_duration
       style: brightYellow
+    - type: jobs
+      style: $fg
     - type: prompt
       style: $fg
       errorStyle: brightRed

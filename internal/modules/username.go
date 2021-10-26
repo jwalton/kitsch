@@ -4,7 +4,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// The UsernameModule shows the name of the currently logged in user.  This is,
+// UsernameModule shows the name of the currently logged in user.  This is,
 // by default, hidden unless the user is root or the session is an SSH session.
 // The CommonConfig.Style is applied by default, unless the user is Root in which
 // case it is overridden by `UsernameConfig.RootStyle`.
