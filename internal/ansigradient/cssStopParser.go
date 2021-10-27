@@ -118,25 +118,23 @@ func (parser *cssStopParser) parseColor() (c color.RGBA, err error) {
 
 	token := parser.getNextToken()
 
-	// If starts with #, parse a hex color
-	if token[0] == '#' {
-		c, err := colortools.ParseColor(token)
-		if err != nil {
-			return c, fmt.Errorf("invalid color at %d: %w", colorStartIndex, err)
+	if token[0] == '$' {
+		// Try for a custom color.
+		if colorStr, ok := parser.colorMap[token]; ok {
+			c, err = colortools.ParseColor(colorStr)
+			if err != nil {
+				return c, fmt.Errorf("color %s=\"%s\" cannot be used in linear-gradient", token, colorStr)
+			}
+			return c, nil
 		}
-		return c, nil
 	}
 
-	// Try for a custom color.
-	if colorStr, ok := parser.colorMap[token]; ok {
-		c, err := colortools.ParseColor(colorStr)
-		if err != nil {
-			return c, fmt.Errorf("color %s=\"%s\" cannot be used in linear-gradient: %w", token, colorStr, err)
-		}
-		return c, nil
+	c, err = colortools.ParseColor(token)
+	if err != nil {
+		return c, fmt.Errorf("invalid color \"%s\" at %d", token, colorStartIndex)
 	}
 
-	return color.RGBA{}, fmt.Errorf("expected color at position %d, got \"%s\"", colorStartIndex+1, token)
+	return c, nil
 }
 
 // parseLengthPercentage parses a `length-percentage` as per CSS values level 4:

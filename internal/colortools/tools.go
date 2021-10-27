@@ -7,6 +7,8 @@ import (
 	"github.com/jwalton/gchalk/pkg/ansistyles"
 )
 
+var errUnrecognized = fmt.Errorf("unrecognized color")
+
 func isHexDigit(c byte) bool {
 	return c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F'
 }
@@ -36,7 +38,7 @@ func ValidateHexColor(str string) bool {
 // HexToColor converts a hex value to a color.
 func HexToColor(str string) (color.RGBA, error) {
 	if !ValidateHexColor(str) {
-		return color.RGBA{}, fmt.Errorf("invalid hex color \"%s\"", str)
+		return color.RGBA{}, fmt.Errorf("invalid hex color")
 	}
 
 	r, g, b := ansistyles.HexToRGB(str)
@@ -51,5 +53,26 @@ func ColorToHex(c color.RGBA) string {
 
 // ParseColor converts a string to an RGBA color.
 func ParseColor(str string) (color.RGBA, error) {
-	return HexToColor(str)
+	if str == "" {
+		return color.RGBA{}, errUnrecognized
+	} else if str[0] == '#' {
+		return HexToColor(str)
+	} else if c, ok := CSSColors[str]; ok {
+		return c, nil
+	}
+
+	return color.RGBA{}, errUnrecognized
+}
+
+// ValidateColor returns true if str is a valid color, false otherwise.
+func ValidateColor(str string) bool {
+	if str == "" {
+		return false
+	} else if str[0] == '#' {
+		return ValidateHexColor(str)
+	} else if _, ok := CSSColors[str]; ok {
+		return true
+	}
+
+	return false
 }

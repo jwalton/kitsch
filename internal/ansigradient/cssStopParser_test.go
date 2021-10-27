@@ -102,6 +102,19 @@ func TestCssStopParser_MultiStops(t *testing.T) {
 	)
 }
 
+func TestCssStopParser_CSSColors(t *testing.T) {
+	result, err := parseCSSStops(nil, "tomato, blue")
+	assert.Nil(t, err)
+	assert.Equal(
+		t,
+		[]gradientStop{
+			{Color: color.RGBA{255, 99, 71, 255}, ColorUnset: false, Offset: 0, OffsetType: gradientStopUnspecified},
+			{Color: color.RGBA{0, 0, 255, 255}, ColorUnset: false, Offset: 0, OffsetType: gradientStopUnspecified},
+		},
+		result,
+	)
+}
+
 func TestCssStopParser_BadStops(t *testing.T) {
 	_, err := parseCSSStops(nil, "10%, #fff")
 	assert.Equal(
@@ -120,14 +133,14 @@ func TestCssStopParser_BadStops(t *testing.T) {
 	_, err = parseCSSStops(nil, "#22, #fff")
 	assert.Equal(
 		t,
-		"invalid color at 0: invalid hex color \"#22\"",
+		"invalid color \"#22\" at 0",
 		err.Error(),
 	)
 
 	_, err = parseCSSStops(nil, "#222, woo")
 	assert.Equal(
 		t,
-		"expected color at position 7, got \"woo\"",
+		"invalid color \"woo\" at 6",
 		err.Error(),
 	)
 

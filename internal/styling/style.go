@@ -3,9 +3,11 @@
 package styling
 
 import (
+	"image/color"
 	"strings"
 
 	"github.com/jwalton/gchalk"
+	"github.com/jwalton/gchalk/pkg/ansistyles"
 	"github.com/jwalton/kitsch-prompt/internal/ansigradient"
 	"github.com/jwalton/kitsch-prompt/internal/colortools"
 )
@@ -51,7 +53,13 @@ func compileStyle(
 			return nil
 		}
 
-		if strings.HasPrefix(token, linearGradientPrefix) {
+		if _, validAnsiStyle := ansistyles.Color[token]; validAnsiStyle {
+			if background {
+				// TODO: Must be a better way!  :/
+				token = "bg" + strings.ToUpper(token[0:1]) + token[1:]
+			}
+			builder, err = builder.WithStyle(token)
+		} else if strings.HasPrefix(token, linearGradientPrefix) {
 			cssGradient := token[len(linearGradientPrefix) : len(token)-1]
 			if background {
 				bgGradient, err = ansigradient.CSSLinearGradientWithMap(customColors, cssGradient)
@@ -59,11 +67,13 @@ func compileStyle(
 				fgGradient, err = ansigradient.CSSLinearGradientWithMap(customColors, cssGradient)
 			}
 		} else {
+			var c color.RGBA
+			c, err = colortools.ParseColor(token)
 			if background {
-				// TODO: Must be a better way!  :/
-				token = "bg" + strings.ToUpper(token[0:1]) + token[1:]
+				builder = builder.WithBgRGB(c.R, c.G, c.B)
+			} else {
+				builder = builder.WithRGB(c.R, c.G, c.B)
 			}
-			builder, err = builder.WithStyle(token)
 		}
 
 		return err

@@ -103,9 +103,7 @@ func isColor(color string) bool {
 		return true
 	}
 
-	// FIXME: Allow non-hex colors here.
-	isHexColor := colortools.ValidateHexColor(color)
-	return isHexColor
+	return colortools.ValidateColor(color)
 }
 
 // parseStyleToken adds a token to the style descriptor.  The token can be
@@ -143,7 +141,7 @@ func parseStyleTokenHelper(
 		// Handle case where `token` is a modifier.
 		descriptor.modifiers = append(descriptor.modifiers, token)
 	} else if color, ok := customColors[token]; ok {
-		// Handle casae where token is a custom color.
+		// Handle case where token is a custom color.
 		if isBackground {
 			descriptor.bg = color
 		} else {
