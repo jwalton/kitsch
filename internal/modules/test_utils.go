@@ -19,9 +19,11 @@ func testContext(username string) *Context {
 			CWD:                     "/Users/" + username,
 			Home:                    "/Users/" + username,
 			Username:                username,
+			UserFullName:            "Jason Walton",
 			Hostname:                "lucid",
 			Status:                  0,
 			PreviousCommandDuration: 0,
+			Shell:                   "bash",
 		},
 		Styles: styling.Registry{},
 	}

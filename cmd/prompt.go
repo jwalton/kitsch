@@ -8,6 +8,7 @@ import (
 
 	"github.com/jwalton/gchalk"
 	"github.com/jwalton/go-supportscolor"
+	"github.com/jwalton/kitsch-prompt/internal/config"
 	"github.com/jwalton/kitsch-prompt/internal/env"
 	"github.com/jwalton/kitsch-prompt/internal/modules"
 	"github.com/jwalton/kitsch-prompt/internal/shellprompt"
@@ -43,33 +44,42 @@ var promptCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		globals := modules.NewGlobals(status, cmdDuration, keymap)
+		globals := modules.NewGlobals(shell, status, cmdDuration, keymap)
 		runtimeEnv := env.New(globals.CWD, jobs)
-
-		// Load custom colors
-		styles := styling.Registry{}
-		for colorName, color := range configuration.Colors {
-			if !strings.HasPrefix(colorName, "$") {
-				runtimeEnv.Warn("Custom color \"" + colorName + "should start with $")
-			}
-			styles.AddCustomColor(colorName, color)
-		}
 
 		if err != nil {
 			fmt.Println(err)
 			fmt.Print("$ ")
 		} else {
-			context := modules.Context{
-				Environment: runtimeEnv,
-				Globals:     globals,
-				Styles:      styles,
-			}
-
-			prompt := configuration.Prompt.Module.Execute(&context)
-			withEscapes := shellprompt.AddZeroWidthCharacterEscapes(shell, prompt.Text)
-			fmt.Println(withEscapes)
+			fmt.Print(renderPrompt(configuration, globals, runtimeEnv))
 		}
 	},
+}
+
+// renderPrompt will render the prompt with the given configuration.
+func renderPrompt(
+	configuration *config.Config,
+	globals modules.Globals,
+	runtimeEnv env.Env,
+) string {
+	// Load custom colors
+	styles := styling.Registry{}
+	for colorName, color := range configuration.Colors {
+		if !strings.HasPrefix(colorName, "$") {
+			runtimeEnv.Warn("Custom color \"" + colorName + "must start with $")
+		}
+		styles.AddCustomColor(colorName, color)
+	}
+
+	context := modules.Context{
+		Environment: runtimeEnv,
+		Globals:     globals,
+		Styles:      styles,
+	}
+
+	prompt := configuration.Prompt.Module.Execute(&context)
+	withEscapes := shellprompt.AddZeroWidthCharacterEscapes(globals.Shell, prompt.Text)
+	return withEscapes
 }
 
 func init() {

@@ -66,10 +66,13 @@ type Globals struct {
 	PreviousCommandDuration int64
 	// Keymap is the zsh/fish keymap. TODO: What values can this have?
 	Keymap string
+	// Shell is the type of the shell (e.g. "zsh", "bash", "powershell", etc...).
+	Shell string
 }
 
 // NewGlobals creates a new Globals object.
 func NewGlobals(
+	shell string,
 	status int,
 	previousCommandDuration int64,
 	keymap string,
@@ -86,10 +89,10 @@ func NewGlobals(
 
 	user, err := user.Current()
 	username := ""
-	name := ""
+	userFullName := ""
 	if err == nil {
 		username = user.Username
-		name = user.Name
+		userFullName = user.Name
 	}
 
 	hostname, err := os.Hostname()
@@ -101,10 +104,12 @@ func NewGlobals(
 		CWD:                     cwd,
 		Home:                    home,
 		Username:                username,
-		UserFullName:            name,
+		UserFullName:            userFullName,
 		Hostname:                hostname,
 		Status:                  status,
 		PreviousCommandDuration: previousCommandDuration,
+		Keymap:                  keymap,
+		Shell:                   shell,
 	}
 }
 

@@ -1,6 +1,7 @@
 package modules
 
 import (
+	"strings"
 	"text/template"
 
 	"github.com/jwalton/kitsch-prompt/internal/modtemplate"
@@ -88,31 +89,43 @@ func (mod BlockModule) joinChildren(context *Context, children []ModuleResult) s
 	result := ""
 	var join *template.Template = nil
 
-	if mod.Join != "" {
-		var err error
-		join, err = modtemplate.CompileTemplate(&context.Styles, "join", mod.Join)
-		if err != nil {
-			join = nil
-		}
-	}
-
-	for index, child := range children {
-		if join != nil && index != 0 {
-			prev := children[index-1]
-			joiner, err := modtemplate.TemplateToString(join, blockJoinData{
-				Global:     &context.Globals,
-				PrevColors: prev.EndStyle,
-				NextColors: child.StartStyle,
-				Index:      index,
-			})
-			if err != nil {
-				context.Environment.Warn(err.Error())
-				joiner = " "
+	if !strings.Contains(mod.Join, "{{") {
+		// Not a template, just a string.
+		for index, child := range children {
+			if index != 0 {
+				result += mod.Join
 			}
-			result += joiner
+			result += child.Text
 		}
 
-		result += child.Text
+	} else {
+		// Compile the join template
+		if mod.Join != "" {
+			var err error
+			join, err = modtemplate.CompileTemplate(&context.Styles, "join", mod.Join)
+			if err != nil {
+				join = nil
+			}
+		}
+
+		for index, child := range children {
+			if join != nil && index != 0 {
+				prev := children[index-1]
+				joiner, err := modtemplate.TemplateToString(join, blockJoinData{
+					Global:     &context.Globals,
+					PrevColors: prev.EndStyle,
+					NextColors: child.StartStyle,
+					Index:      index,
+				})
+				if err != nil {
+					context.Environment.Warn(err.Error())
+					joiner = " "
+				}
+				result += joiner
+			}
+
+			result += child.Text
+		}
 	}
 
 	return result

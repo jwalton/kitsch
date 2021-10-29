@@ -27,7 +27,7 @@ type Env interface {
 	// Jobs returns the number of jobs running in the background.
 	Jobs() int
 	// Git returns a git instance for the current repo, or nil if the current
-	// working directory is not part of a git repo, or git is uninstalled.
+	// working directory is not part of a git repo, or git is not installed.
 	Git() *gitutils.GitUtils
 	// Warn is used to print configuration warnings to the user.
 	Warn(string)

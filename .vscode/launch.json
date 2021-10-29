@@ -10,7 +10,7 @@
       "request": "launch",
       "mode": "debug",
       "program": "${workspaceFolder}",
-      "args": ["prompt"],
+      "args": ["prompt", "--config", "${workspaceFolder}/sampleconfig/default.yaml"],
       "cwd": "${workspaceFolder}"
     },
     {
@@ -19,7 +19,7 @@
       "request": "launch",
       "mode": "debug",
       "program": "${workspaceFolder}",
-      "args": ["prompt", "--config", "${workspaceFolder}/sampleconfig/powerline.yaml"],
+      "args": ["prompt", "--config", "${workspaceFolder}/sampleconfig/powerline2.yaml"],
       "cwd": "${workspaceFolder}",
       "env": { "FORCE_COLOR": "3" }
     }
