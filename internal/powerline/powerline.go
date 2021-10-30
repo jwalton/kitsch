@@ -2,6 +2,7 @@ package powerline
 
 import (
 	"fmt"
+	"strings"
 	"text/template"
 
 	"github.com/jwalton/kitsch-prompt/internal/styling"
@@ -42,7 +43,7 @@ func (pl *Powerline) Segment(color string, text interface{}) string {
 		return ""
 	}
 
-	result := ""
+	out := strings.Builder{}
 
 	style, err := pl.styles.Get(styling.ToBgColor(color))
 	if err != nil {
@@ -54,41 +55,41 @@ func (pl *Powerline) Segment(color string, text interface{}) string {
 	if pl.lastColor.BG != "" {
 		prefixStyle, err := pl.styles.Get(styling.ToFgColor(firstColor.BG) + " " + styling.ToBgColor(pl.lastColor.BG))
 		if err == nil {
-			result += prefixStyle.Apply(pl.separatorPrefix)
+			out.WriteString(prefixStyle.Apply(pl.separatorPrefix))
 		}
 
 		suffixStyle, err := pl.styles.Get(styling.ToFgColor(pl.lastColor.BG) + " " + styling.ToBgColor(firstColor.BG))
 		if err == nil {
-			result += suffixStyle.Apply(pl.separator + pl.separatorSuffix)
+			out.WriteString(suffixStyle.Apply(pl.separator + pl.separatorSuffix))
 		}
 	}
 
-	result += coloredText
+	out.WriteString(coloredText)
 	pl.lastColor = lastColor
 	if pl.lastColor.BG == "" {
 		pl.lastColor.BG = "bg:black"
 	}
 
-	return result
+	return out.String()
 }
 
 // Finish will print an "end" to this powerline string.
 func (pl *Powerline) Finish() string {
-	result := ""
+	out := strings.Builder{}
 
 	if pl.lastColor.BG != "" {
 		prefixStyle, err := pl.styles.Get("black " + styling.ToBgColor(pl.lastColor.BG))
 		if err == nil {
-			result += prefixStyle.Apply(pl.separatorPrefix)
+			out.WriteString(prefixStyle.Apply(pl.separatorPrefix))
 		}
 
 		suffixStyle, err := pl.styles.Get("bg:black " + styling.ToFgColor(pl.lastColor.BG))
 		if err == nil {
-			result += suffixStyle.Apply(pl.separator)
+			out.WriteString(suffixStyle.Apply(pl.separator))
 		}
 	}
 
-	return result
+	return out.String()
 }
 
 // TxtFuncMap returns template functions for styling text.

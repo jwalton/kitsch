@@ -86,16 +86,17 @@ type blockJoinData struct {
 }
 
 func (mod BlockModule) joinChildren(context *Context, children []ModuleResult) string {
-	result := ""
+	out := strings.Builder{}
+
 	var join *template.Template = nil
 
 	if !strings.Contains(mod.Join, "{{") {
 		// Not a template, just a string.
 		for index, child := range children {
 			if index != 0 {
-				result += mod.Join
+				out.WriteString(mod.Join)
 			}
-			result += child.Text
+			out.WriteString(child.Text)
 		}
 
 	} else {
@@ -121,14 +122,14 @@ func (mod BlockModule) joinChildren(context *Context, children []ModuleResult) s
 					context.Environment.Warn(err.Error())
 					joiner = " "
 				}
-				result += joiner
+				out.WriteString(joiner)
 			}
 
-			result += child.Text
+			out.WriteString(child.Text)
 		}
 	}
 
-	return result
+	return out.String()
 }
 
 func init() {
