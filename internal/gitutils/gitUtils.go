@@ -14,31 +14,34 @@ import (
 // a git repository.
 type GitUtils struct {
 	pathToGit string
+	files     fileutils.FileUtils
 	// RepoRoot is the root folder of the git repository.
 	RepoRoot string
 }
 
 // New returns a new instance of `GitUtils` for the specified repository.
 func New(pathToGit string, path string) *GitUtils {
-	gitRoot := findGitRoot(pathToGit, path)
+	files := fileutils.New()
+	gitRoot := findGitRoot(files, pathToGit, path)
 
 	if gitRoot == "" {
 		return nil
 	}
 
 	return &GitUtils{
-		pathToGit,
-		gitRoot,
+		pathToGit: pathToGit,
+		files:     files,
+		RepoRoot:  gitRoot,
 	}
 }
 
 // FindGitRoot returns the root of the current git repo.
 func FindGitRoot(cwd string) string {
-	return findGitRoot("git", cwd)
+	return findGitRoot(fileutils.New(), "git", cwd)
 }
 
-func findGitRoot(pathToGit string, cwd string) string {
-	gitFolder := fileutils.FindFileInAncestors(cwd, ".git")
+func findGitRoot(files fileutils.FileUtils, pathToGit string, cwd string) string {
+	gitFolder := files.FindFileInAncestors(cwd, ".git")
 	if gitFolder != "" {
 		return filepath.Dir(gitFolder)
 	}

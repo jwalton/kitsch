@@ -3,8 +3,6 @@ package gitutils
 import (
 	"path/filepath"
 	"strings"
-
-	"github.com/jwalton/kitsch-prompt/internal/fileutils"
 )
 
 const shortSHALength = 7
@@ -52,6 +50,14 @@ type RepositoryState struct {
 	Branch string
 }
 
+func (utils *GitUtils) readFileIfExist(path string) string {
+	contents, err := utils.files.ReadFile(path)
+	if err != nil {
+		return ""
+	}
+	return string(contents)
+}
+
 // State returns the current state of the repository.
 // Based loosely on posh-git's Get-GitBranch.
 // https://github.com/dahlbyk/posh-git/blob/b79c2dc39c9387847642bc3b38fa2186b29f6113/src/GitUtils.ps1#L62
@@ -60,37 +66,37 @@ func (utils *GitUtils) State() RepositoryState {
 	gitFolder := filepath.Join(utils.RepoRoot, ".git")
 
 	rebaseMerge := filepath.Join(gitFolder, "rebase-merge")
-	if fileutils.FileExists(rebaseMerge) {
-		if fileutils.FileExists(filepath.Join(rebaseMerge, "interactive")) {
+	if utils.files.FileExists(rebaseMerge) {
+		if utils.files.FileExists(filepath.Join(rebaseMerge, "interactive")) {
 			result.State = StateRebasingInteractive
 		} else {
 			result.State = StateRebaseMerging
 		}
 
-		result.Branch = extractBranchName(fileutils.ReadFile(filepath.Join(rebaseMerge, "head-name")))
+		result.Branch = extractBranchName(utils.readFileIfExist(filepath.Join(rebaseMerge, "head-name")))
 		result.Base = result.Branch
-		result.Step = fileutils.ReadFile(filepath.Join(rebaseMerge, "msgnum"))
-		result.Total = fileutils.ReadFile(filepath.Join(rebaseMerge, "end"))
+		result.Step = utils.readFileIfExist(filepath.Join(rebaseMerge, "msgnum"))
+		result.Total = utils.readFileIfExist(filepath.Join(rebaseMerge, "end"))
 	} else {
 		rebaseApply := filepath.Join(gitFolder, "rebase-apply")
-		if fileutils.FileExists(rebaseApply) {
-			result.Step = fileutils.ReadFile(filepath.Join(rebaseApply, "next"))
-			result.Total = fileutils.ReadFile(filepath.Join(rebaseApply, "last"))
+		if utils.files.FileExists(rebaseApply) {
+			result.Step = utils.readFileIfExist(filepath.Join(rebaseApply, "next"))
+			result.Total = utils.readFileIfExist(filepath.Join(rebaseApply, "last"))
 
-			if fileutils.FileExists(filepath.Join(rebaseApply, "rebasing")) {
+			if utils.files.FileExists(filepath.Join(rebaseApply, "rebasing")) {
 				result.State = StateRebasing
-			} else if fileutils.FileExists(filepath.Join(rebaseApply, "applying")) {
+			} else if utils.files.FileExists(filepath.Join(rebaseApply, "applying")) {
 				result.State = StateAMing
 			} else {
 				result.State = StateRebaseAMing
 			}
-		} else if fileutils.FileExists(filepath.Join(gitFolder, "MERGE_HEAD")) {
+		} else if utils.files.FileExists(filepath.Join(gitFolder, "MERGE_HEAD")) {
 			result.State = StateMerging
-		} else if fileutils.FileExists(filepath.Join(gitFolder, "CHERRY_PICK_HEAD")) {
+		} else if utils.files.FileExists(filepath.Join(gitFolder, "CHERRY_PICK_HEAD")) {
 			result.State = StateCherryPicking
-		} else if fileutils.FileExists(filepath.Join(gitFolder, "REVERT_HEAD")) {
+		} else if utils.files.FileExists(filepath.Join(gitFolder, "REVERT_HEAD")) {
 			result.State = StateReverting
-		} else if fileutils.FileExists(filepath.Join(gitFolder, "BISECT_LOG")) {
+		} else if utils.files.FileExists(filepath.Join(gitFolder, "BISECT_LOG")) {
 			result.State = StateBisecting
 		} else {
 			result.State = StateNone
