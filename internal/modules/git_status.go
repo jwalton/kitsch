@@ -109,7 +109,7 @@ func (mod GitStatusModule) renderDefault(
 	}
 
 	if stats.Unmerged > 0 {
-		unmergedStats := unmergedStyle.Apply(fmt.Sprintf("%d!", stats.Unmerged))
+		unmergedStats := unmergedStyle.Apply(fmt.Sprintf("!%d", stats.Unmerged))
 		parts = append(parts, unmergedStats)
 	}
 

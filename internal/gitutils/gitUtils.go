@@ -2,6 +2,8 @@ package gitutils
 
 import (
 	"bytes"
+	"io/fs"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
@@ -14,15 +16,16 @@ import (
 // a git repository.
 type GitUtils struct {
 	pathToGit string
-	files     fileutils.FileUtils
+	files     fs.FS
 	// RepoRoot is the root folder of the git repository.
 	RepoRoot string
 }
 
 // New returns a new instance of `GitUtils` for the specified repository.
-func New(pathToGit string, path string) *GitUtils {
-	files := fileutils.New()
-	gitRoot := findGitRoot(files, pathToGit, path)
+func New(pathToGit string, folder string) *GitUtils {
+	fileUtils := fileutils.New()
+	gitRoot := findGitRoot(fileUtils, pathToGit, folder)
+	files := os.DirFS(gitRoot)
 
 	if gitRoot == "" {
 		return nil

@@ -48,8 +48,8 @@ func (mod GitModule) Execute(context *Context) ModuleResult {
 	var ahead, behind int
 	var upstream string
 
-	if state.State == gitutils.StateNone && state.Branch != "" {
-		upstream = git.GetUpstream(state.Branch)
+	if !state.IsDetached {
+		upstream = git.GetUpstream(state.HeadDescription)
 		if upstream != "" {
 			ahead, behind, _ = git.GetAheadBehind("HEAD", upstream)
 		}
@@ -101,7 +101,7 @@ func (mod GitModule) renderDefault(
 ) string {
 	out := strings.Builder{}
 
-	out.WriteString(state.Base)
+	out.WriteString(state.HeadDescription)
 
 	if behind > 0 {
 		out.WriteString(fmt.Sprintf(" ↓%d", behind))
