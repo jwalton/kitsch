@@ -31,7 +31,7 @@ prompt:
     - type: command_duration
       style: $commandDurationFg
   template: |
-    {{- $pl := makePowerline " " "\ue0b0" " " -}}
+    {{- $pl := newPowerline " " "\ue0b0" " " -}}
     {{- $global := .Global -}}
     {{- with .Data.Modules -}}
       {{- printf " %s" .time.Text | style "$timeFg" | $pl.Segment "$timeBg" -}}

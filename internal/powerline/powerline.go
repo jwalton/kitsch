@@ -15,16 +15,18 @@ type Powerline struct {
 	separatorPrefix string
 	separator       string
 	separatorSuffix string
+	reverse         bool
 }
 
-// New creates a noew Powerline helper object for use in a template.
-func New(styles *styling.Registry, prefix string, separator string, suffix string) *Powerline {
+// New creates a new Powerline helper object for use in a template.
+func New(styles *styling.Registry, prefix string, separator string, suffix string, reverse bool) *Powerline {
 	return &Powerline{
 		styles:          styles,
 		lastColor:       styling.CharacterColors{FG: "", BG: ""},
 		separatorPrefix: prefix,
 		separator:       separator,
 		separatorSuffix: suffix,
+		reverse:         reverse,
 	}
 }
 
@@ -32,6 +34,11 @@ func New(styles *styling.Registry, prefix string, separator string, suffix strin
 // If previous segments have been written by this Powerline instance, then
 // a "prefix+separator+suffix" will be written between the previous segment and
 // this one.
+//
+// The prefix will have the background from the previous segment and the foreground
+// from the next segment.  The suffix will be the reverse.  The separator will be
+// colored the same as the suffix, unless this is a "reverse" powerline instance
+// in which case it will be the same as the prefix.
 func (pl *Powerline) Segment(color string, text interface{}) string {
 	// If the segment is empty, skip it.
 	if text == nil {
@@ -52,15 +59,28 @@ func (pl *Powerline) Segment(color string, text interface{}) string {
 	coloredText, firstColor, lastColor := style.ApplyGetColors(str)
 
 	// Print the separator
-	if pl.lastColor.BG != "" {
+	if pl.lastColor.BG != "" || pl.reverse {
+		prefix := pl.separatorPrefix
+		suffix := pl.separatorSuffix
+
+		if pl.reverse {
+			if pl.lastColor.BG == "" {
+				prefix = pl.separator
+			} else {
+				prefix = pl.separatorPrefix + pl.separator
+			}
+		} else {
+			suffix = pl.separator + pl.separatorSuffix
+		}
+
 		prefixStyle, err := pl.styles.Get(styling.ToFgColor(firstColor.BG) + " " + styling.ToBgColor(pl.lastColor.BG))
 		if err == nil {
-			out.WriteString(prefixStyle.Apply(pl.separatorPrefix))
+			out.WriteString(prefixStyle.Apply(prefix))
 		}
 
 		suffixStyle, err := pl.styles.Get(styling.ToFgColor(pl.lastColor.BG) + " " + styling.ToBgColor(firstColor.BG))
 		if err == nil {
-			out.WriteString(suffixStyle.Apply(pl.separator + pl.separatorSuffix))
+			out.WriteString(suffixStyle.Apply(suffix))
 		}
 	}
 
@@ -77,7 +97,7 @@ func (pl *Powerline) Segment(color string, text interface{}) string {
 func (pl *Powerline) Finish() string {
 	out := strings.Builder{}
 
-	if pl.lastColor.BG != "" {
+	if pl.lastColor.BG != "" && !pl.reverse {
 		prefixStyle, err := pl.styles.Get("black " + styling.ToBgColor(pl.lastColor.BG))
 		if err == nil {
 			out.WriteString(prefixStyle.Apply(pl.separatorPrefix))
@@ -95,8 +115,11 @@ func (pl *Powerline) Finish() string {
 // TxtFuncMap returns template functions for styling text.
 func TxtFuncMap(styles *styling.Registry) template.FuncMap {
 	return template.FuncMap{
-		"makePowerline": func(prefix string, separator string, suffix string) *Powerline {
-			return New(styles, prefix, separator, suffix)
+		"newPowerline": func(prefix string, separator string, suffix string) *Powerline {
+			return New(styles, prefix, separator, suffix, false)
+		},
+		"newReversePowerline": func(prefix string, separator string, suffix string) *Powerline {
+			return New(styles, prefix, separator, suffix, true)
 		},
 	}
 }

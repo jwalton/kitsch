@@ -32,7 +32,7 @@ func ToFgColor(color string) string {
 // ToBgColor converts a color to a background color.
 func ToBgColor(color string) string {
 	if color == "" {
-		color = "black"
+		color = "bg:black"
 	} else if !strings.HasPrefix(color, "bg") {
 		color = "bg:" + color
 	}

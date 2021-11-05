@@ -79,12 +79,12 @@ func compileStyle(
 		return err
 	}
 
-	err = compileColor(descriptor.fg, false)
+	err = compileColor(descriptor.bg, true)
 	if err != nil {
 		return Style{}, err
 	}
 
-	err = compileColor(descriptor.bg, true)
+	err = compileColor(descriptor.fg, false)
 	if err != nil {
 		return Style{}, err
 	}
@@ -122,6 +122,7 @@ func (style *Style) ApplyGetColors(text string) (result string, first CharacterC
 
 	printWidth := 0
 	if style.fgGradient != nil || style.bgGradient != nil {
+		// TODO: This instance of gchalk is not the same instance as the one from the styleRegistry.
 		result, printWidth = ansigradient.ApplyGradientsRawLen(text, style.fgGradient, style.bgGradient, gchalk.GetLevel())
 	}
 
