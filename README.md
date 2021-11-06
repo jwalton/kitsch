@@ -1,22 +1,22 @@
 # kitch-prompt
 
-Kitch-prompt is a tool for displaying a shell prompt, with a focus on extreme customization.
+Kitch-prompt is a cross-platform tool for displaying a shell prompt, which can be extensively customized both in terms of what is shown, and in terms of how it is shown.  Kitch-prompt makes it easy to render your prompt with
 
 ## Installation
 
-kitch-prompt supports the following shell types:
-
-Via `go`:
+If you have go development toolchain installed, you can install kitsch-prompt by cloning this repo and running:
 
 ```sh
-$ go get https://github.com/jwalton/kitch-prompt
+$ make install
 ```
 
 ## Setup
 
-For ZSH, add the following to your ~/.zshrc:
+### ZSH
 
-```
+Add the following to your ~/.zshrc:
+
+```sh
 if which kitsch-prompt > /dev/null; then
     eval "$(kitsch-prompt init zsh)"
 fi
