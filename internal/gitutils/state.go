@@ -55,7 +55,11 @@ type RepositoryState struct {
 }
 
 func (g *GitUtils) readFileIfExist(path string) string {
-	contents, err := fs.ReadFile(g.files, path)
+	if g.fsys == nil {
+		return ""
+	}
+
+	contents, err := fs.ReadFile(g.fsys, path)
 	if err != nil {
 		return ""
 	}
@@ -68,8 +72,12 @@ func (g *GitUtils) readFileIfExist(path string) string {
 func (g *GitUtils) State() RepositoryState {
 	var result RepositoryState
 
-	if fileutils.FSFileExists(g.files, ".git/rebase-merge") {
-		if fileutils.FSFileExists(g.files, ".git/rebase-merge/interactive") {
+	if g.fsys == nil {
+		return result
+	}
+
+	if fileutils.FSFileExists(g.fsys, ".git/rebase-merge") {
+		if fileutils.FSFileExists(g.fsys, ".git/rebase-merge/interactive") {
 			result.State = StateRebasingInteractive
 		} else {
 			result.State = StateRebaseMerging
@@ -80,24 +88,24 @@ func (g *GitUtils) State() RepositoryState {
 		result.Step = g.readFileIfExist(".git/rebase-merge/msgnum")
 		result.Total = g.readFileIfExist(".git/rebase-merge/end")
 	} else {
-		if fileutils.FSFileExists(g.files, ".git/rebase-apply") {
+		if fileutils.FSFileExists(g.fsys, ".git/rebase-apply") {
 			result.Step = g.readFileIfExist(".git/rebase-apply/next")
 			result.Total = g.readFileIfExist(".git/rebase-apply/last")
 
-			if fileutils.FSFileExists(g.files, ".git/rebase-apply/rebasing") {
+			if fileutils.FSFileExists(g.fsys, ".git/rebase-apply/rebasing") {
 				result.State = StateRebasing
-			} else if fileutils.FSFileExists(g.files, ".git/rebase-apply/applying") {
+			} else if fileutils.FSFileExists(g.fsys, ".git/rebase-apply/applying") {
 				result.State = StateAMing
 			} else {
 				result.State = StateRebaseAMing
 			}
-		} else if fileutils.FSFileExists(g.files, ".git/MERGE_HEAD") {
+		} else if fileutils.FSFileExists(g.fsys, ".git/MERGE_HEAD") {
 			result.State = StateMerging
-		} else if fileutils.FSFileExists(g.files, ".git/CHERRY_PICK_HEAD") {
+		} else if fileutils.FSFileExists(g.fsys, ".git/CHERRY_PICK_HEAD") {
 			result.State = StateCherryPicking
-		} else if fileutils.FSFileExists(g.files, ".git/REVERT_HEAD") {
+		} else if fileutils.FSFileExists(g.fsys, ".git/REVERT_HEAD") {
 			result.State = StateReverting
-		} else if fileutils.FSFileExists(g.files, ".git/BISECT_LOG") {
+		} else if fileutils.FSFileExists(g.fsys, ".git/BISECT_LOG") {
 			result.State = StateBisecting
 		} else {
 			result.State = StateNone
@@ -162,13 +170,17 @@ var errNotFound = errors.New("Not found")
 // GetTagNameForHash returns the tag name for the hash, or an error if no such
 // tag exists.  "hash" can be a short hash.
 func (g *GitUtils) GetTagNameForHash(hash string) (string, error) {
-	tagFiles, err := fs.ReadDir(g.files, ".git/refs/tags")
+	if g.fsys == nil {
+		return "", errNotFound
+	}
+
+	tagFiles, err := fs.ReadDir(g.fsys, ".git/refs/tags")
 	if err != nil {
 		return "", err
 	}
 
 	for _, tagFile := range tagFiles {
-		content, err := fs.ReadFile(g.files, ".git/refs/tags/"+tagFile.Name())
+		content, err := fs.ReadFile(g.fsys, ".git/refs/tags/"+tagFile.Name())
 		if err != nil {
 			continue
 		}
@@ -181,8 +193,12 @@ func (g *GitUtils) GetTagNameForHash(hash string) (string, error) {
 }
 
 func (g *GitUtils) resolveSymbolicRef(ref string) (string, error) {
+	if g.fsys == nil {
+		return "", errNotFound
+	}
+
 	// Resolve the symbolic ref to a hash.
-	hashBytes, err := fs.ReadFile(g.files, ".git/"+ref[5:])
+	hashBytes, err := fs.ReadFile(g.fsys, ".git/"+ref[5:])
 	if err != nil {
 		return "", err
 	}

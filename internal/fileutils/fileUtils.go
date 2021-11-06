@@ -1,9 +1,12 @@
 package fileutils
 
 import (
+	"io/fs"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 	"syscall"
 )
 
@@ -18,6 +21,9 @@ type FileUtils interface {
 	// ReadFile returns the contents of a file, or an error if the file cannot
 	// be read.
 	ReadFile(path string) ([]byte, error)
+	// LookPathSafe is like exec.LookPath, but does not search in ".", event
+	// if it is in the path.
+	LookPathSafe(file string) (string, error)
 }
 
 type fileUtils struct{}
@@ -79,4 +85,37 @@ func (*fileUtils) FileExists(path string) bool {
 // if the file does not exist or cannot be read.
 func (*fileUtils) ReadFile(path string) ([]byte, error) {
 	return ioutil.ReadFile(path)
+}
+
+func findExecutable(file string) error {
+	d, err := os.Stat(file)
+	if err != nil {
+		return err
+	}
+	if m := d.Mode(); !m.IsDir() && m&0111 != 0 {
+		return nil
+	}
+	return fs.ErrPermission
+}
+
+func (*fileUtils) LookPathSafe(file string) (string, error) {
+	if strings.Contains(file, "/") {
+		err := findExecutable(file)
+		if err == nil {
+			return file, nil
+		}
+		return "", &exec.Error{Name: file, Err: err}
+	}
+
+	path := os.Getenv("PATH")
+	for _, dir := range filepath.SplitList(path) {
+		if dir == "" || dir == "." {
+			continue
+		}
+		path := filepath.Join(dir, file)
+		if err := findExecutable(path); err == nil {
+			return path, nil
+		}
+	}
+	return "", &exec.Error{Name: file, Err: exec.ErrNotFound}
 }

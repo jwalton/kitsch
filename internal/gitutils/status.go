@@ -4,6 +4,10 @@ import "os/exec"
 
 // Stats returns status counters for the given git repo.
 func (utils *GitUtils) Stats() (GitStats, error) {
+	if utils.pathToGit == "" {
+		return GitStats{}, ErrNoGit
+	}
+
 	// This uses `exec.Command` instead of go-git's worktree.Status(),
 	// because worktree.Status() is crazy slow: https://github.com/go-git/go-git/issues/181
 	cmd := exec.Command(utils.pathToGit, "status", "-z")

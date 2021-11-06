@@ -2,6 +2,7 @@ package gitutils
 
 import (
 	"bytes"
+	"errors"
 	"io/fs"
 	"os"
 	"os/exec"
@@ -12,11 +13,14 @@ import (
 	"github.com/jwalton/kitsch-prompt/internal/fileutils"
 )
 
+// ErrNoGit is emitted when we need to run the git executable, but git is not installed.
+var ErrNoGit = errors.New("Git is not installed")
+
 // GitUtils is an object that allows you to retrieve information about
 // a git repository.
 type GitUtils struct {
 	pathToGit string
-	files     fs.FS
+	fsys      fs.FS
 	// RepoRoot is the root folder of the git repository.
 	RepoRoot string
 }
@@ -24,8 +28,20 @@ type GitUtils struct {
 // New returns a new instance of `GitUtils` for the specified repository.
 func New(pathToGit string, folder string) *GitUtils {
 	fileUtils := fileutils.New()
+
+	// Resolve the path to the git executable
+	pathToGit, err := fileUtils.LookPathSafe(pathToGit)
+	if err != nil {
+		pathToGit = ""
+	}
+
+	// Figure out whether or not we're inside a git repo.
 	gitRoot := findGitRoot(fileUtils, pathToGit, folder)
-	files := os.DirFS(gitRoot)
+
+	var fsys fs.FS = nil
+	if gitRoot != "" {
+		fsys = os.DirFS(gitRoot)
+	}
 
 	if gitRoot == "" {
 		return nil
@@ -33,7 +49,7 @@ func New(pathToGit string, folder string) *GitUtils {
 
 	return &GitUtils{
 		pathToGit: pathToGit,
-		files:     files,
+		fsys:      fsys,
 		RepoRoot:  gitRoot,
 	}
 }
@@ -54,6 +70,10 @@ func findGitRoot(files fileutils.FileUtils, pathToGit string, cwd string) string
 // git will run a git command in the root folder of the git repository.
 // Returns empty string if there was an error running the command.
 func (utils *GitUtils) git(args ...string) (string, error) {
+	if utils.pathToGit == "" {
+		return "", ErrNoGit
+	}
+
 	cmd := exec.Command(utils.pathToGit, args...)
 	cmd.Dir = utils.RepoRoot
 	var out bytes.Buffer

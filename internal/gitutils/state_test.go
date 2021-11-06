@@ -19,7 +19,7 @@ func TestStateOnBranch(t *testing.T) {
 
 	git := &GitUtils{
 		pathToGit: "git",
-		files:     files,
+		fsys:      files,
 		RepoRoot:  "/Users/oriana/dev/kitsch-prompt",
 	}
 
@@ -48,7 +48,7 @@ func TestStateDetached(t *testing.T) {
 
 	git := &GitUtils{
 		pathToGit: "git",
-		files:     files,
+		fsys:      files,
 		RepoRoot:  "/Users/oriana/dev/kitsch-prompt",
 	}
 
@@ -80,7 +80,7 @@ func TestStateOnTag(t *testing.T) {
 
 	git := &GitUtils{
 		pathToGit: "git",
-		files:     files,
+		fsys:      files,
 		RepoRoot:  "/Users/oriana/dev/kitsch-prompt",
 	}
 
@@ -92,6 +92,26 @@ func TestStateOnTag(t *testing.T) {
 			Total:           "",
 			HeadDescription: "(v1.0.0)",
 			IsDetached:      true,
+		},
+		state,
+	)
+}
+
+func TestStateInNonGitRepo(t *testing.T) {
+	git := &GitUtils{
+		pathToGit: "git",
+		fsys:      nil,
+		RepoRoot:  "",
+	}
+
+	state := git.State()
+	assert.Equal(t,
+		RepositoryState{
+			State:           StateNone,
+			Step:            "",
+			Total:           "",
+			HeadDescription: "",
+			IsDetached:      false,
 		},
 		state,
 	)
