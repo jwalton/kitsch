@@ -3,6 +3,7 @@ module github.com/jwalton/kitsch-prompt
 go 1.16
 
 require (
+	github.com/BurntSushi/toml v0.4.1 // indirect
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/imdario/mergo v0.3.12 // indirect
@@ -11,6 +12,7 @@ require (
 	github.com/jwalton/go-supportscolor v1.1.0
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-runewidth v0.0.13
+	github.com/mattn/go-shellwords v1.0.12 // indirect
 	github.com/rivo/uniseg v0.2.0
 	github.com/spf13/cobra v1.1.3
 	github.com/stretchr/testify v1.7.0

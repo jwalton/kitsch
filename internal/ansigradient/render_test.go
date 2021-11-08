@@ -90,7 +90,6 @@ func TestZwjEmojiRender(t *testing.T) {
 	// approach, we'd end up splitting this into its component emojis.
 	str := "A👩🏻‍🚀D"
 
-	// FIXME: This is wrong - the astronaut should be 2 characters wide.
 	result, len := ApplyGradientsRawLen(str, nil, gradient, LevelAnsi16m)
 	assert.Equal(t,
 		"\x1b[48;2;223;0;31mA\x1b[48;2;127;0;127m👩🏻‍🚀\x1b[48;2;31;0;223mD\x1b[49m",

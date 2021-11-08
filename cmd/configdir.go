@@ -10,7 +10,7 @@ var configDirCmd = &cobra.Command{
 	Use:   "configdir",
 	Short: "Print the location of the configuration directory",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(cfgFolder)
+		fmt.Println(userConfigDir)
 	},
 }
 

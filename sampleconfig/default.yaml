@@ -16,6 +16,11 @@ prompt:
             - type: username
             - type: hostname
         - type: directory
+          style: bold
+        - type: project
+          # template: |
+          #   via {{ .Data.ToolSymbol }}@{{ .Data.ToolVersion }}
+          #   {{- if .Data.PackageManagerVersion }}/{{ .Data.PackageManagerSymbol }}@{{ .Data.PackageManagerVersion }}{{ end -}}
     - type: block
       style: brightYellow
       modules:

@@ -23,7 +23,9 @@ import (
 	"os/user"
 
 	"github.com/jwalton/kitsch-prompt/internal/env"
+	"github.com/jwalton/kitsch-prompt/internal/fileutils"
 	"github.com/jwalton/kitsch-prompt/internal/modtemplate"
+	"github.com/jwalton/kitsch-prompt/internal/projects"
 	"github.com/jwalton/kitsch-prompt/internal/styling"
 )
 
@@ -117,11 +119,15 @@ func NewGlobals(
 type Context struct {
 	// Environment is the environment to fetch data from.
 	Environment env.Env
+	// Directory is the current working directory.
+	Directory fileutils.Directory
 	// Styles is the style registry to use to create styles.
 	Styles styling.Registry
 	// Globals is a collection of "global" values that are passed to all modules.
 	// These values are available to templates via the ".Globals" property.
 	Globals Globals
+	// ProjectTypes is a list of project types.
+	ProjectTypes []projects.ProjectType
 }
 
 // Module represnts a module that generates some output to show in the prompt.
@@ -172,13 +178,15 @@ func executeModule(
 		tmpl, err := modtemplate.CompileTemplate(&context.Styles, "module-template", config.Template)
 		if err != nil {
 			// FIX: Should add this error to a list of warnings for this module.
-			fmt.Printf("Error compiling template: %v", err)
+			context.Environment.Warn(fmt.Sprintf("Error compiling template: %v", err))
 		} else {
-			text, err = modtemplate.TemplateToString(tmpl, TemplateData{
+			templateData := TemplateData{
 				Data:   data,
 				Global: &context.Globals,
 				Text:   defaultText,
-			})
+			}
+
+			text, err = modtemplate.TemplateToString(tmpl, templateData)
 			if err != nil {
 				context.Environment.Warn(fmt.Sprintf("Error executing template:\n%s\n%v", config.Template, err))
 				text = defaultText

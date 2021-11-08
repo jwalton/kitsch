@@ -1,7 +1,6 @@
 package gitutils
 
 import (
-	"bytes"
 	"errors"
 	"io/fs"
 	"os"
@@ -27,16 +26,14 @@ type GitUtils struct {
 
 // New returns a new instance of `GitUtils` for the specified repository.
 func New(pathToGit string, folder string) *GitUtils {
-	fileUtils := fileutils.New()
-
 	// Resolve the path to the git executable
-	pathToGit, err := fileUtils.LookPathSafe(pathToGit)
+	pathToGit, err := fileutils.LookPathSafe(pathToGit)
 	if err != nil {
 		pathToGit = ""
 	}
 
 	// Figure out whether or not we're inside a git repo.
-	gitRoot := findGitRoot(fileUtils, pathToGit, folder)
+	gitRoot := FindGitRoot(folder)
 
 	var fsys fs.FS = nil
 	if gitRoot != "" {
@@ -56,11 +53,7 @@ func New(pathToGit string, folder string) *GitUtils {
 
 // FindGitRoot returns the root of the current git repo.
 func FindGitRoot(cwd string) string {
-	return findGitRoot(fileutils.New(), "git", cwd)
-}
-
-func findGitRoot(files fileutils.FileUtils, pathToGit string, cwd string) string {
-	gitFolder := files.FindFileInAncestors(cwd, ".git")
+	gitFolder := fileutils.FindFileInAncestors(cwd, ".git")
 	if gitFolder != "" {
 		return filepath.Dir(gitFolder)
 	}
@@ -76,15 +69,12 @@ func (utils *GitUtils) git(args ...string) (string, error) {
 
 	cmd := exec.Command(utils.pathToGit, args...)
 	cmd.Dir = utils.RepoRoot
-	var out bytes.Buffer
-	cmd.Stdout = &out
 
-	err := cmd.Run()
+	out, err := cmd.Output()
 	if err != nil {
 		return "", err
 	}
-
-	return out.String(), nil
+	return string(out), nil
 }
 
 // GetStashCount returns the number of stashes, or 0 if there are none or

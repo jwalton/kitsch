@@ -1,13 +1,18 @@
 package modules
 
 import (
+	"testing/fstest"
+
 	"github.com/jwalton/kitsch-prompt/internal/env"
+	"github.com/jwalton/kitsch-prompt/internal/fileutils"
 	"github.com/jwalton/kitsch-prompt/internal/styling"
 )
 
 // createTextContext creates a Context with reasonable defaults that can
 // be passed in to modules when unit testing.
 func testContext(username string) *Context {
+	fsys := fstest.MapFS{}
+
 	return &Context{
 		Environment: &env.DummyEnv{
 			Env: map[string]string{
@@ -15,6 +20,7 @@ func testContext(username string) *Context {
 				"HOME": "/Users/" + username,
 			},
 		},
+		Directory: fileutils.NewDirectoryTestFS("/Users/"+username, fsys),
 		Globals: Globals{
 			CWD:                     "/Users/" + username,
 			Home:                    "/Users/" + username,

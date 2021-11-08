@@ -14,7 +14,7 @@ import (
 
 const programName = "kitsch-prompt"
 
-var cfgFolder string
+var userConfigDir string
 var cfgFile string
 var defaultConfigFile string
 
@@ -50,11 +50,11 @@ func Execute() {
 
 func init() {
 	var err error
-	cfgFolder, err = getConfigFolder()
+	userConfigDir, err = getConfigFolder()
 	if err != nil {
-		cfgFolder = "~"
+		userConfigDir = "~"
 	}
-	defaultConfigFile = filepath.Join(cfgFolder, "prompt.yaml")
+	defaultConfigFile = filepath.Join(userConfigDir, "kitsch.yaml")
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is "+defaultConfigFile+")")
 	rootCmd.PersistentFlags().Bool("verbose", false, "Use verbose output")

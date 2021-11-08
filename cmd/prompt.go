@@ -10,7 +10,9 @@ import (
 	"github.com/jwalton/go-supportscolor"
 	"github.com/jwalton/kitsch-prompt/internal/config"
 	"github.com/jwalton/kitsch-prompt/internal/env"
+	"github.com/jwalton/kitsch-prompt/internal/fileutils"
 	"github.com/jwalton/kitsch-prompt/internal/modules"
+	"github.com/jwalton/kitsch-prompt/internal/projects"
 	"github.com/jwalton/kitsch-prompt/internal/shellprompt"
 	"github.com/jwalton/kitsch-prompt/internal/styling"
 	"github.com/spf13/cobra"
@@ -72,9 +74,11 @@ func renderPrompt(
 	}
 
 	context := modules.Context{
-		Environment: runtimeEnv,
-		Globals:     globals,
-		Styles:      styles,
+		Environment:  runtimeEnv,
+		Directory:    fileutils.NewDirectory(globals.CWD),
+		Globals:      globals,
+		Styles:       styles,
+		ProjectTypes: projects.DefaultProjectTypes,
 	}
 
 	prompt := configuration.Prompt.Module.Execute(&context)

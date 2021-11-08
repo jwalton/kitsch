@@ -33,7 +33,7 @@ type ModuleSpec struct {
 	Module Module
 }
 
-// UnmarshalYAML unmarshals a YAML node into a module..
+// UnmarshalYAML unmarshals a YAML node into a module.
 func (item *ModuleSpec) UnmarshalYAML(node *yaml.Node) error {
 	if node == nil {
 		return fmt.Errorf("no value provided")
