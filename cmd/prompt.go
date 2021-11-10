@@ -26,6 +26,7 @@ var promptCmd = &cobra.Command{
 		status, _ := cmd.Flags().GetInt("status")
 		keymap, _ := cmd.Flags().GetString("keymap")
 		shell, _ := cmd.Flags().GetString("shell")
+		perf, _ := cmd.Flags().GetBool("perf")
 
 		cmdDurationStr, _ := cmd.Flags().GetString("cmd-duration")
 		cmdDuration := int64(0)
@@ -53,7 +54,13 @@ var promptCmd = &cobra.Command{
 			fmt.Println(err)
 			fmt.Print("$ ")
 		} else {
-			fmt.Print(renderPrompt(configuration, globals, runtimeEnv))
+			result := renderPrompt(configuration, globals, runtimeEnv)
+			if perf {
+				renderPerf(result.ChildDurations, 0)
+			}
+
+			withEscapes := shellprompt.AddZeroWidthCharacterEscapes(globals.Shell, result.Text)
+			fmt.Print(withEscapes)
 		}
 	},
 }
@@ -63,7 +70,7 @@ func renderPrompt(
 	configuration *config.Config,
 	globals modules.Globals,
 	runtimeEnv env.Env,
-) string {
+) modules.ModuleResult {
 	// Load custom colors
 	styles := styling.Registry{}
 	for colorName, color := range configuration.Colors {
@@ -81,9 +88,31 @@ func renderPrompt(
 		ProjectTypes: projects.DefaultProjectTypes,
 	}
 
-	prompt := configuration.Prompt.Module.Execute(&context)
-	withEscapes := shellprompt.AddZeroWidthCharacterEscapes(globals.Shell, prompt.Text)
-	return withEscapes
+	return configuration.Prompt.Module.Execute(&context)
+}
+
+func renderPerf(durations []modules.ModuleDuration, indent int) {
+	for _, duration := range durations {
+		printDuration := duration.Duration.String()
+		if duration.Duration > 1000000 {
+			printDuration = gchalk.Yellow(printDuration)
+		} else if duration.Duration > 250000000 {
+			printDuration = gchalk.Red(printDuration)
+		} else {
+			printDuration = gchalk.Green(printDuration)
+		}
+
+		fmt.Printf("%s%s(%d:%d) - %s\n",
+			strings.Repeat(" ", indent),
+			duration.Module.Type,
+			duration.Module.Line,
+			duration.Module.Column,
+			printDuration,
+		)
+		if len(duration.Children) > 0 {
+			renderPerf(duration.Children, indent+2)
+		}
+	}
 }
 
 func init() {
@@ -93,4 +122,5 @@ func init() {
 	promptCmd.Flags().StringP("keymap", "k", "", "The keymap of fish/zsh")
 	promptCmd.Flags().IntP("jobs", "j", 0, "The number of currently running jobs")
 	promptCmd.Flags().IntP("status", "s", 0, "The status code of the previously run command")
+	promptCmd.Flags().Bool("perf", false, "Print performance information about each module")
 }

@@ -29,8 +29,14 @@ func registerFactory(name string, factory moduleFactory) {
 type ModuleSpec struct {
 	// ID is a unique ID for this module within a ModuleList, if provided.
 	ID string
+	// Type is the type of this module.
+	Type string
 	// Module is the actual module.
 	Module Module
+	// Line is the line number of the module in the configuration file.
+	Line int
+	// Column is the column number of the module in the configuration file.
+	Column int
 }
 
 // UnmarshalYAML unmarshals a YAML node into a module.
@@ -73,6 +79,9 @@ func (item *ModuleSpec) UnmarshalYAML(node *yaml.Node) error {
 		item.ID = moduleType
 	}
 
+	item.Type = moduleType
+	item.Line = node.Line
+	item.Column = node.Column
 	item.Module = module
 	return nil
 }

@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 	"os/user"
+	"time"
 
 	"github.com/jwalton/kitsch-prompt/internal/env"
 	"github.com/jwalton/kitsch-prompt/internal/fileutils"
@@ -28,6 +29,16 @@ import (
 	"github.com/jwalton/kitsch-prompt/internal/projects"
 	"github.com/jwalton/kitsch-prompt/internal/styling"
 )
+
+// ModuleDuration is used to store stats about execution times for each module.
+type ModuleDuration struct {
+	// Module is the module that was executed.
+	Module *ModuleSpec
+	// Duration is the time taken to execute the module.
+	Duration time.Duration
+	// Children is the time taken to execute each of the module's children.
+	Children []ModuleDuration
+}
 
 // ModuleResult represents the output of a module.
 type ModuleResult struct {
@@ -46,6 +57,8 @@ type ModuleResult struct {
 	// EndStyle is similar to StartStyle, but contains the colors  of the last
 	// character in Text.
 	EndStyle styling.CharacterColors
+	// ChildDurations is an array of execution times for children of this module.
+	ChildDurations []ModuleDuration
 }
 
 // Globals is a collection of "global" values that are passed to all modules.

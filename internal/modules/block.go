@@ -3,6 +3,7 @@ package modules
 import (
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/jwalton/kitsch-prompt/internal/modtemplate"
 	"github.com/jwalton/kitsch-prompt/internal/styling"
@@ -41,10 +42,21 @@ type BlockModule struct {
 // Execute the block module.
 func (mod BlockModule) Execute(context *Context) ModuleResult {
 	resultsArray := make([]ModuleResult, 0, len(mod.Modules))
+	childDurations := make([]ModuleDuration, 0, len(mod.Modules))
 	resultsByID := make(map[string]ModuleResult, len(mod.Modules))
 
-	for _, item := range mod.Modules {
+	for index := range mod.Modules {
+		item := &mod.Modules[index]
+		start := time.Now()
+
 		result := item.Module.Execute(context)
+
+		childDurations = append(childDurations, ModuleDuration{
+			Module:   item,
+			Duration: time.Since(start),
+			Children: result.ChildDurations,
+		})
+
 		if len(result.Text) != 0 {
 			resultsArray = append(resultsArray, result)
 			if item.ID != "" {
@@ -73,6 +85,8 @@ func (mod BlockModule) Execute(context *Context) ModuleResult {
 			BG: defaultString(result.EndStyle.BG, resultsArray[lastChild].EndStyle.BG),
 		}
 	}
+
+	result.ChildDurations = childDurations
 
 	return result
 }
