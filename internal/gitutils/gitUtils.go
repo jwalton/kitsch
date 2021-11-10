@@ -18,8 +18,10 @@ var ErrNoGit = errors.New("Git is not installed")
 // GitUtils is an object that allows you to retrieve information about
 // a git repository.
 type GitUtils struct {
+	// pathToGit is the path to the git executable.
 	pathToGit string
-	fsys      fs.FS
+	// fsys is an fs.FS instance bound to the root of the git repository.
+	fsys fs.FS
 	// RepoRoot is the root folder of the git repository.
 	RepoRoot string
 }

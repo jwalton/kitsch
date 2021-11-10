@@ -8,11 +8,21 @@ import (
 // GetUpstream returns the upstream of the current branch if one exists, or
 // an empty string otherwise.
 func (utils *GitUtils) GetUpstream(branch string) string {
-	upstream, err := utils.git("for-each-ref", "--format=%(upstream:short)", "refs/heads/"+branch)
+	config, err := utils.localConfig()
 	if err != nil {
 		return ""
 	}
-	return strings.TrimSpace(upstream)
+
+	branchConfig := config.Branches[branch]
+	if branchConfig == nil {
+		return ""
+	}
+
+	if !strings.HasPrefix(branchConfig.Merge, "refs/heads/") {
+		return ""
+	}
+
+	return branchConfig.Remote + "/" + branchConfig.Merge[11:]
 }
 
 // GetAheadBehind returns how many commits ahead and behind the given
