@@ -69,7 +69,6 @@ type Globals struct {
 	// Home is the user's home directory.
 	Home string
 	// Username is the user's username.
-	// TODO: Add the "short" username for MacOS and Windows.
 	Username string
 	// UserFullName is the user's full name.
 	UserFullName string
