@@ -3,9 +3,9 @@ package modules
 import (
 	"testing/fstest"
 
-	"github.com/jwalton/kitsch-prompt/internal/env"
 	"github.com/jwalton/kitsch-prompt/internal/fileutils"
-	"github.com/jwalton/kitsch-prompt/internal/styling"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/env"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/styling"
 )
 
 // createTextContext creates a Context with reasonable defaults that can

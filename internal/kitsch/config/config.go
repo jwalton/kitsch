@@ -8,7 +8,7 @@ import (
 	// embed required for sample configs below.
 	_ "embed"
 
-	"github.com/jwalton/kitsch-prompt/internal/modules"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/modules"
 	"github.com/jwalton/kitsch-prompt/sampleconfig"
 	"gopkg.in/yaml.v3"
 )

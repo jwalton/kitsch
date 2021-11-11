@@ -5,8 +5,8 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/jwalton/kitsch-prompt/internal/modtemplate"
-	"github.com/jwalton/kitsch-prompt/internal/styling"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/modtemplate"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/styling"
 	"gopkg.in/yaml.v3"
 )
 

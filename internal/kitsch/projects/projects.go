@@ -4,7 +4,7 @@ package projects
 
 import (
 	"github.com/jwalton/kitsch-prompt/internal/fileutils"
-	"github.com/jwalton/kitsch-prompt/internal/getters"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/getters"
 )
 
 // ProjectInfo represents resolved information about the current project.

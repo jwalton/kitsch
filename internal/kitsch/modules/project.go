@@ -1,7 +1,7 @@
 package modules
 
 import (
-	"github.com/jwalton/kitsch-prompt/internal/projects"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/projects"
 	"gopkg.in/yaml.v3"
 )
 

@@ -3,8 +3,8 @@ package modules
 import (
 	"testing"
 
-	"github.com/jwalton/kitsch-prompt/internal/env"
 	"github.com/jwalton/kitsch-prompt/internal/gitutils"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/env"
 	"github.com/stretchr/testify/assert"
 )
 

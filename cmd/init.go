@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/jwalton/kitsch-prompt/internal/initscripts"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/initscripts"
 	"github.com/spf13/cobra"
 )
 

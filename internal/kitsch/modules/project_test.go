@@ -4,10 +4,10 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/jwalton/kitsch-prompt/internal/condition"
 	"github.com/jwalton/kitsch-prompt/internal/fileutils"
-	"github.com/jwalton/kitsch-prompt/internal/getters"
-	"github.com/jwalton/kitsch-prompt/internal/projects"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/condition"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/getters"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/projects"
 	"github.com/stretchr/testify/assert"
 )
 

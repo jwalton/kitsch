@@ -7,8 +7,8 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
-	"github.com/jwalton/kitsch-prompt/internal/powerline"
-	"github.com/jwalton/kitsch-prompt/internal/styling"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/powerline"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/styling"
 )
 
 const recursionMaxNums = 1000

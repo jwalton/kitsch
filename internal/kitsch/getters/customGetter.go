@@ -13,7 +13,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/Masterminds/sprig/v3"
 	"github.com/jwalton/kitsch-prompt/internal/fileutils"
-	"github.com/jwalton/kitsch-prompt/internal/modtemplate"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/modtemplate"
 	"github.com/mattn/go-shellwords"
 	"gopkg.in/yaml.v3"
 )

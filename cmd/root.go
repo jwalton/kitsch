@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/jwalton/kitsch-prompt/internal/config"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/config"
 	"github.com/spf13/cobra"
 )
 

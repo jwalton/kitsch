@@ -3,8 +3,8 @@ package projects
 import (
 	"fmt"
 
-	"github.com/jwalton/kitsch-prompt/internal/condition"
-	"github.com/jwalton/kitsch-prompt/internal/getters"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/condition"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/getters"
 	"gopkg.in/yaml.v3"
 )
 

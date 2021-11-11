@@ -3,7 +3,7 @@ package modules
 import (
 	"testing"
 
-	"github.com/jwalton/kitsch-prompt/internal/styling"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/styling"
 	"github.com/stretchr/testify/assert"
 )
 

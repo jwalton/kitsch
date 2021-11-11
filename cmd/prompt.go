@@ -8,13 +8,13 @@ import (
 
 	"github.com/jwalton/gchalk"
 	"github.com/jwalton/go-supportscolor"
-	"github.com/jwalton/kitsch-prompt/internal/config"
-	"github.com/jwalton/kitsch-prompt/internal/env"
 	"github.com/jwalton/kitsch-prompt/internal/fileutils"
-	"github.com/jwalton/kitsch-prompt/internal/modules"
-	"github.com/jwalton/kitsch-prompt/internal/projects"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/config"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/env"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/modules"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/projects"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/styling"
 	"github.com/jwalton/kitsch-prompt/internal/shellprompt"
-	"github.com/jwalton/kitsch-prompt/internal/styling"
 	"github.com/spf13/cobra"
 )
 

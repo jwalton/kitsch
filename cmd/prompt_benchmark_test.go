@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	"github.com/jwalton/gchalk"
-	"github.com/jwalton/kitsch-prompt/internal/config"
-	"github.com/jwalton/kitsch-prompt/internal/env"
-	"github.com/jwalton/kitsch-prompt/internal/modules"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/config"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/env"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/modules"
 )
 
 func BenchmarkPrompt(b *testing.B) {

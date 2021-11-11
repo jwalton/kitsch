@@ -23,11 +23,11 @@ import (
 	"os/user"
 	"time"
 
-	"github.com/jwalton/kitsch-prompt/internal/env"
 	"github.com/jwalton/kitsch-prompt/internal/fileutils"
-	"github.com/jwalton/kitsch-prompt/internal/modtemplate"
-	"github.com/jwalton/kitsch-prompt/internal/projects"
-	"github.com/jwalton/kitsch-prompt/internal/styling"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/env"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/modtemplate"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/projects"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/styling"
 )
 
 // ModuleDuration is used to store stats about execution times for each module.

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/jwalton/kitsch-prompt/internal/styling"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/styling"
 )
 
 // Powerline is a helper object for constructing powerline prompts.
