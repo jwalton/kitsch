@@ -9,6 +9,7 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/config"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/projects"
 	"github.com/spf13/cobra"
 )
 
@@ -80,6 +81,21 @@ func readConfig() (*config.Config, error) {
 
 	if configuration == nil {
 		configuration, err = config.LoadDefaultConfig()
+		if err != nil {
+			fmt.Println("Error loading default config: ", err)
+		}
+	}
+
+	// Merge in default project types.
+	configuration.ProjectsTypes, err = projects.MergeProjectTypes(
+		configuration.ProjectsTypes,
+		projects.DefaultProjectTypes,
+		true,
+	)
+	if err != nil {
+		// TODO: Need better logging system.
+		fmt.Println("Error in projectTypes:", err)
+		configuration.ProjectsTypes = projects.DefaultProjectTypes
 	}
 
 	return configuration, err

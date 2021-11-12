@@ -12,7 +12,6 @@ import (
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/config"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/env"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/modules"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/projects"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/styling"
 	"github.com/jwalton/kitsch-prompt/internal/shellprompt"
 	"github.com/spf13/cobra"
@@ -83,9 +82,9 @@ func renderPrompt(
 	context := modules.Context{
 		Environment:  runtimeEnv,
 		Directory:    fileutils.NewDirectory(globals.CWD),
-		Globals:      globals,
 		Styles:       styles,
-		ProjectTypes: projects.DefaultProjectTypes,
+		Globals:      globals,
+		ProjectTypes: configuration.ProjectsTypes,
 	}
 
 	return configuration.Prompt.Module.Execute(&context)

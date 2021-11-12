@@ -9,7 +9,7 @@ import (
 var DefaultProjectTypes = []ProjectType{
 	{
 		Name: "java",
-		Condition: condition.Condition{
+		Conditions: condition.Conditions{
 			IfExtensions: []string{"java"},
 		},
 		ToolSymbol: "java",
@@ -22,7 +22,7 @@ var DefaultProjectTypes = []ProjectType{
 	},
 	{
 		Name: "go",
-		Condition: condition.Condition{
+		Conditions: condition.Conditions{
 			IfFiles:      []string{"go.mod"},
 			IfExtensions: []string{"go"},
 		},
@@ -35,7 +35,7 @@ var DefaultProjectTypes = []ProjectType{
 	},
 	{
 		Name: "rust",
-		Condition: condition.Condition{
+		Conditions: condition.Conditions{
 			IfFiles:      []string{"Cargo.toml"},
 			IfExtensions: []string{"rs"},
 		},
@@ -54,7 +54,7 @@ var DefaultProjectTypes = []ProjectType{
 	},
 	{
 		Name: "node-yarn",
-		Condition: condition.Condition{
+		Conditions: condition.Conditions{
 			IfFiles: []string{"yarn.lock"},
 		},
 		ToolSymbol: "node",
@@ -82,7 +82,7 @@ var DefaultProjectTypes = []ProjectType{
 	},
 	{
 		Name: "node",
-		Condition: condition.Condition{
+		Conditions: condition.Conditions{
 			IfFiles: []string{"package.json"},
 		},
 		ToolSymbol: "node",
@@ -102,7 +102,7 @@ var DefaultProjectTypes = []ProjectType{
 	},
 	{
 		Name: "deno",
-		Condition: condition.Condition{
+		Conditions: condition.Conditions{
 			IfFiles: []string{"mod.ts"},
 		},
 		ToolSymbol: "deno",
@@ -114,7 +114,7 @@ var DefaultProjectTypes = []ProjectType{
 	},
 	{
 		Name: "helm",
-		Condition: condition.Condition{
+		Conditions: condition.Conditions{
 			IfFiles: []string{"Chart.yaml"},
 		},
 		ToolSymbol: "helm",

@@ -30,7 +30,7 @@ func TestProject(t *testing.T) {
 	context.ProjectTypes = []projects.ProjectType{
 		{
 			Name:                  "txt",
-			Condition:             condition.Condition{IfExtensions: []string{"txt"}},
+			Conditions:            condition.Conditions{IfExtensions: []string{"txt"}},
 			ToolSymbol:            "txt",
 			PackageManagerSymbol:  "txt",
 			ToolVersion:           getters.CustomGetter{Type: "file", From: "tool.txt"},

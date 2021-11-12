@@ -138,7 +138,7 @@ type Context struct {
 	// Globals is a collection of "global" values that are passed to all modules.
 	// These values are available to templates via the ".Globals" property.
 	Globals Globals
-	// ProjectTypes is a list of project types.
+	// ProjectTypes is the list of available project types.
 	ProjectTypes []projects.ProjectType
 }
 

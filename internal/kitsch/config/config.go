@@ -1,5 +1,4 @@
-// The config package is responsible for loading configuation files.
-
+// Package config is responsible for loading configuration files.
 package config
 
 import (
@@ -9,6 +8,7 @@ import (
 	_ "embed"
 
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/modules"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/projects"
 	"github.com/jwalton/kitsch-prompt/sampleconfig"
 	"gopkg.in/yaml.v3"
 )
@@ -17,6 +17,8 @@ import (
 type Config struct {
 	// Colors is a collection of custom colors.
 	Colors map[string]string `yaml:"colors"`
+	// ProjectTypes are used when detecting the project type of the current folder.
+	ProjectsTypes []projects.ProjectType `yaml:"projectTypes"`
 	// Prompt is the module to use to display the prompt.
 	Prompt modules.ModuleSpec
 }

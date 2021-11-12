@@ -68,15 +68,8 @@ func ResolveProjectType(
 	projectTypes []ProjectType,
 	directory fileutils.Directory,
 ) *ProjectInfo {
-	return resolveProjectType(projectTypes, directory)
-}
-
-func resolveProjectType(
-	projectTypes []ProjectType,
-	directory fileutils.Directory,
-) *ProjectInfo {
 	for _, projectType := range projectTypes {
-		if !projectType.Condition.Matches(directory) {
+		if !projectType.Conditions.Matches(directory) {
 			continue
 		}
 

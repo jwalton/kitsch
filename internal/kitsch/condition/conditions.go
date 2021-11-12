@@ -8,9 +8,9 @@ import (
 	"github.com/jwalton/kitsch-prompt/internal/fileutils"
 )
 
-// Condition represents a condition which can be used in configuration files to
+// Conditions represents a condition which can be used in configuration files to
 // specify when a module or project should be used.
-type Condition struct {
+type Conditions struct {
 	// IfAncestorFiles is a list of files to search for in the project folder,
 	// or another folder higher up in the directory structure.
 	IfAncestorFiles []string `yaml:"ifAncestorFiles"`
@@ -27,34 +27,34 @@ type Condition struct {
 }
 
 // IsEmpty returns true if the condition has no conditions to match.
-func (condition Condition) IsEmpty() bool {
-	return len(condition.IfAncestorFiles) == 0 &&
-		len(condition.IfFiles) == 0 &&
-		len(condition.IfExtensions) == 0 &&
-		len(condition.IfOS) == 0 &&
-		len(condition.IfNotOS) == 0
+func (conditions Conditions) IsEmpty() bool {
+	return len(conditions.IfAncestorFiles) == 0 &&
+		len(conditions.IfFiles) == 0 &&
+		len(conditions.IfExtensions) == 0 &&
+		len(conditions.IfOS) == 0 &&
+		len(conditions.IfNotOS) == 0
 }
 
 // Matches returns true if this condition is matched in the given directory
 // and for the current operating system.
-func (condition Condition) Matches(directory fileutils.Directory) bool {
-	if !condition.matchesOS() {
+func (conditions Conditions) Matches(directory fileutils.Directory) bool {
+	if !conditions.matchesOS() {
 		return false
 	}
 
-	for _, extension := range condition.IfExtensions {
+	for _, extension := range conditions.IfExtensions {
 		if directory.HasExtension(extension) {
 			return true
 		}
 	}
 
-	for _, file := range condition.IfFiles {
+	for _, file := range conditions.IfFiles {
 		if directory.HasFile(file) {
 			return true
 		}
 	}
 
-	for _, ancestorFile := range condition.IfAncestorFiles {
+	for _, ancestorFile := range conditions.IfAncestorFiles {
 		result := directory.FindFileInAncestors(ancestorFile)
 		if result != "" {
 			return true
@@ -64,15 +64,15 @@ func (condition Condition) Matches(directory fileutils.Directory) bool {
 	return false
 }
 
-func (condition Condition) matchesOS() bool {
-	if len(condition.IfNotOS) > 0 {
-		if contains(condition.IfNotOS, runtime.GOOS) {
+func (conditions Conditions) matchesOS() bool {
+	if len(conditions.IfNotOS) > 0 {
+		if contains(conditions.IfNotOS, runtime.GOOS) {
 			return false
 		}
 	}
 
-	if len(condition.IfOS) > 0 {
-		return contains(condition.IfOS, runtime.GOOS)
+	if len(conditions.IfOS) > 0 {
+		return contains(conditions.IfOS, runtime.GOOS)
 	}
 
 	return true

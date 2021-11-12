@@ -12,8 +12,8 @@ import (
 type ProjectType struct {
 	// Name is the name of this project type.
 	Name string
-	// Condition is the condition that must be met for this project type to be used.
-	Condition condition.Condition
+	// Conditions are the conditions that must be met for this project type to be used.
+	Conditions condition.Conditions
 	// ToolSymbol is the default symbol to use for this project type.
 	ToolSymbol string
 	// ToolVersion is used to retrieve the version of the build tool for this project.
