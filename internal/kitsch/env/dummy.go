@@ -51,8 +51,3 @@ func (env *DummyEnv) Jobs() int {
 func (env *DummyEnv) Git() *gitutils.GitUtils {
 	return env.TestGit
 }
-
-// Warn is used to print configuration warnings to the user.
-func (env *DummyEnv) Warn(message string) {
-	env.Warnings = append(env.Warnings, message)
-}

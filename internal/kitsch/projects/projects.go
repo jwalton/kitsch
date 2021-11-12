@@ -5,6 +5,7 @@ package projects
 import (
 	"github.com/jwalton/kitsch-prompt/internal/fileutils"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/getters"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/log"
 )
 
 // ProjectInfo represents resolved information about the current project.
@@ -76,7 +77,7 @@ func ResolveProjectType(
 		toolVersion, err := getStringValue(projectType.ToolVersion, directory)
 		if err != nil || toolVersion == "" {
 			// If we can't get a toolVesrion, skip this project type.
-			// TODO: If there was an error, log it in verbose mode.
+			log.Info("Could not get tool version for project type", projectType.Name)
 			continue
 		}
 

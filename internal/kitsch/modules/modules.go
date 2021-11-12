@@ -25,6 +25,7 @@ import (
 
 	"github.com/jwalton/kitsch-prompt/internal/fileutils"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/env"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/log"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/modtemplate"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/projects"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/styling"
@@ -178,7 +179,7 @@ func executeModule(
 	style, err := context.Styles.Get(styleStr)
 	if err != nil {
 		style = nil
-		context.Environment.Warn(err.Error())
+		log.Warn(err)
 	}
 
 	text := defaultText
@@ -190,7 +191,7 @@ func executeModule(
 		tmpl, err := modtemplate.CompileTemplate(&context.Styles, "module-template", config.Template)
 		if err != nil {
 			// FIX: Should add this error to a list of warnings for this module.
-			context.Environment.Warn(fmt.Sprintf("Error compiling template: %v", err))
+			log.Warn(fmt.Sprintf("Error compiling template: %v", err))
 		} else {
 			templateData := TemplateData{
 				Data:   data,
@@ -200,7 +201,7 @@ func executeModule(
 
 			text, err = modtemplate.TemplateToString(tmpl, templateData)
 			if err != nil {
-				context.Environment.Warn(fmt.Sprintf("Error executing template:\n%s\n%v", config.Template, err))
+				log.Warn(fmt.Sprintf("Error executing template:\n%s\n%v", config.Template, err))
 				text = defaultText
 			}
 		}
@@ -229,7 +230,7 @@ func defaultString(value string, def string) string {
 func defaultStyle(context *Context, styleString string, defStyle string) *styling.Style {
 	style, err := context.Styles.Get(styleString)
 	if err != nil {
-		context.Environment.Warn(err.Error())
+		log.Warn(err.Error())
 	}
 	if styleString == "" || err != nil {
 		style, err = context.Styles.Get(defStyle)

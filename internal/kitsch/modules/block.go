@@ -5,6 +5,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/log"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/modtemplate"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/styling"
 	"gopkg.in/yaml.v3"
@@ -133,7 +134,7 @@ func (mod BlockModule) joinChildren(context *Context, children []ModuleResult) s
 					Index:      index,
 				})
 				if err != nil {
-					context.Environment.Warn(err.Error())
+					log.Warn(err.Error())
 					joiner = " "
 				}
 				out.WriteString(joiner)

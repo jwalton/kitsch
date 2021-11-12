@@ -2,6 +2,7 @@
 package config
 
 import (
+	"errors"
 	"os"
 
 	// embed required for sample configs below.
@@ -12,6 +13,8 @@ import (
 	"github.com/jwalton/kitsch-prompt/sampleconfig"
 	"gopkg.in/yaml.v3"
 )
+
+var errNoPrompt = errors.New("configuration is missing prompt")
 
 // Config represents a configuration file.
 type Config struct {
@@ -40,6 +43,10 @@ func LoadConfigFromFile(configFile string) (*Config, error) {
 	err = config.LoadFromYaml(yamlData)
 	if err != nil {
 		return nil, err
+	}
+
+	if config.Prompt.Module == nil {
+		return nil, errNoPrompt
 	}
 
 	return &config, nil

@@ -1,6 +1,7 @@
 package modules
 
 import (
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/log"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/projects"
 	"gopkg.in/yaml.v3"
 )
@@ -74,7 +75,7 @@ func (mod ProjectModule) Execute(context *Context) ModuleResult {
 
 	projectStyle, err := context.Styles.Get(data.ProjectStyle)
 	if err != nil {
-		context.Environment.Warn("Invalid style " + data.ProjectStyle + ": " + err.Error())
+		log.Warn("Invalid style " + data.ProjectStyle + ": " + err.Error())
 		projectStyle, _ = context.Styles.Get("")
 	}
 

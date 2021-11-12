@@ -3,12 +3,12 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/config"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/log"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/projects"
 	"github.com/spf13/cobra"
 )
@@ -44,7 +44,7 @@ var rootCmd = &cobra.Command{
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		log.Fatal(err)
+		log.Error(err)
 		os.Exit(1)
 	}
 }
@@ -68,21 +68,21 @@ func readConfig() (*config.Config, error) {
 	if cfgFile != "" {
 		configuration, err = config.LoadConfigFromFile(cfgFile)
 		if err != nil {
-			fmt.Println("Error loading config file: ", err)
+			log.Error("Error loading config file "+cfgFile+": ", err)
 		}
 	}
 
 	if configuration == nil && cfgFile != defaultConfigFile {
 		configuration, err = config.LoadConfigFromFile(defaultConfigFile)
 		if err != nil && !os.IsNotExist(err) {
-			fmt.Println("Error loading config file: ", err)
+			log.Error("Error loading config file "+defaultConfigFile+": ", err)
 		}
 	}
 
 	if configuration == nil {
 		configuration, err = config.LoadDefaultConfig()
 		if err != nil {
-			fmt.Println("Error loading default config: ", err)
+			log.Error("Error loading default config: ", err)
 		}
 	}
 
@@ -93,8 +93,7 @@ func readConfig() (*config.Config, error) {
 		true,
 	)
 	if err != nil {
-		// TODO: Need better logging system.
-		fmt.Println("Error in projectTypes:", err)
+		log.Warn("Error in projectTypes:", err)
 		configuration.ProjectsTypes = projects.DefaultProjectTypes
 	}
 

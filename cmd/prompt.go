@@ -11,6 +11,7 @@ import (
 	"github.com/jwalton/kitsch-prompt/internal/fileutils"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/config"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/env"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/log"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/modules"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/styling"
 	"github.com/jwalton/kitsch-prompt/internal/shellprompt"
@@ -26,6 +27,11 @@ var promptCmd = &cobra.Command{
 		keymap, _ := cmd.Flags().GetString("keymap")
 		shell, _ := cmd.Flags().GetString("shell")
 		perf, _ := cmd.Flags().GetBool("perf")
+		verbose, _ := cmd.Flags().GetBool("verbose")
+
+		if verbose {
+			log.SetVerbose(true)
+		}
 
 		cmdDurationStr, _ := cmd.Flags().GetString("cmd-duration")
 		cmdDuration := int64(0)
@@ -50,7 +56,7 @@ var promptCmd = &cobra.Command{
 		runtimeEnv := env.New(globals.CWD, jobs)
 
 		if err != nil {
-			fmt.Println(err)
+			log.Error(err)
 			fmt.Print("$ ")
 		} else {
 			result := renderPrompt(configuration, globals, runtimeEnv)
@@ -74,9 +80,10 @@ func renderPrompt(
 	styles := styling.Registry{}
 	for colorName, color := range configuration.Colors {
 		if !strings.HasPrefix(colorName, "$") {
-			runtimeEnv.Warn("Custom color \"" + colorName + "must start with $")
+			log.Warn("Custom color \"" + colorName + "must start with $")
+		} else {
+			styles.AddCustomColor(colorName, color)
 		}
-		styles.AddCustomColor(colorName, color)
 	}
 
 	context := modules.Context{
@@ -122,4 +129,5 @@ func init() {
 	promptCmd.Flags().IntP("jobs", "j", 0, "The number of currently running jobs")
 	promptCmd.Flags().IntP("status", "s", 0, "The status code of the previously run command")
 	promptCmd.Flags().Bool("perf", false, "Print performance information about each module")
+	promptCmd.Flags().Bool("verbose", false, "Print verbose output")
 }

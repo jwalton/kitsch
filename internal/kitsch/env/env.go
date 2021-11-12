@@ -7,7 +7,6 @@ import (
 	"os/user"
 	"runtime"
 
-	"github.com/jwalton/gchalk"
 	"github.com/jwalton/kitsch-prompt/internal/gitutils"
 )
 
@@ -29,8 +28,6 @@ type Env interface {
 	// Git returns a git instance for the current repo, or nil if the current
 	// working directory is not part of a git repo, or git is not installed.
 	Git() *gitutils.GitUtils
-	// Warn is used to print configuration warnings to the user.
-	Warn(string)
 }
 
 type defaultEnv struct {
@@ -89,8 +86,4 @@ func (env *defaultEnv) Git() *gitutils.GitUtils {
 		env.gitInitialized = true
 	}
 	return env.git
-}
-
-func (env *defaultEnv) Warn(message string) {
-	println(gchalk.Stderr.BrightYellow("Warning: " + message))
 }
