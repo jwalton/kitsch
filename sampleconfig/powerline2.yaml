@@ -56,11 +56,14 @@ prompt:
       {{- .command_duration.Text | $pl.Segment "$commandDurationBg" -}}
 
       {{- /* Jobs and Status */ -}}
-      {{- if or (ne $global.Status 0) .jobs.Text -}}
+      {{- if or (ne $global.Status 0) .jobs.Text (eq $global.Keymap "vicmd") -}}
         {{- $color := (ne $global.Status 0) | ternary "#b00" "#00b" -}}
         {{- $out := list .jobs.Text -}}
         {{- if (ne $global.Status 0) -}}
           {{- $out = mustAppend $out $global.Status -}}
+        {{- end -}}
+        {{- if (eq $global.Keymap "vicmd") -}}
+          {{- $out = mustAppend $out ":" -}}
         {{- end -}}
         {{- $out | join " " | style "#fff" | $pl.Segment $color -}}
       {{- end -}}

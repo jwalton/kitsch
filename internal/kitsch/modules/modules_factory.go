@@ -101,3 +101,12 @@ func getTypeAndID(node *yaml.Node) (string, string, error) {
 
 	return t.Type, t.ID, err
 }
+
+func moduleFromYAML(data string) (Module, error) {
+	var moduleSpec ModuleSpec
+	err := yaml.Unmarshal([]byte(data), &moduleSpec)
+	if err != nil {
+		return nil, err
+	}
+	return moduleSpec.Module, nil
+}

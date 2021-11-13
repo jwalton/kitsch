@@ -3,13 +3,16 @@ package modules
 import (
 	"testing"
 
+	"github.com/MakeNowJust/heredoc"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/env"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/styling"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestPrompt(t *testing.T) {
-	mod := PromptModule{}
+	mod, err := moduleFromYAML("{type: prompt}")
+	assert.NoError(t, err)
+
 	context := testContext("jwalton")
 
 	result := mod.Execute(context)
@@ -25,7 +28,9 @@ func TestPrompt(t *testing.T) {
 }
 
 func TestRootPrompt(t *testing.T) {
-	mod := PromptModule{}
+	mod, err := moduleFromYAML("{type: prompt}")
+	assert.NoError(t, err)
+
 	context := testContext("jwalton")
 	context.Environment = &env.DummyEnv{Root: true}
 
@@ -42,12 +47,12 @@ func TestRootPrompt(t *testing.T) {
 }
 
 func TestStyle(t *testing.T) {
-	mod := PromptModule{
-		CommonConfig: CommonConfig{
-			Style: "blue",
-		},
-		RootStyle: "red",
-	}
+	mod, err := moduleFromYAML(heredoc.Doc(`
+		type: prompt
+		style: blue
+		rootStyle: red
+	`))
+	assert.NoError(t, err)
 
 	context := testContext("jwalton")
 	context.Environment = &env.DummyEnv{Root: false}

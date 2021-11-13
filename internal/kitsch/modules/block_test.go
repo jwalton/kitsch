@@ -7,41 +7,35 @@ import (
 )
 
 func TestBlock(t *testing.T) {
-	usernameMod := UsernameModule{
-		ShowAlways: true,
-	}
-	promptMod := PromptModule{}
 	blockMod := BlockModule{
 		Join: " ",
 		Modules: []ModuleSpec{
-			{ID: "", Module: usernameMod},
-			{ID: "", Module: promptMod},
+			{ID: "", Module: TextModule{Text: "hello"}},
+			{ID: "", Module: TextModule{Text: "world"}},
 		},
 	}
 
 	result := blockMod.Execute(testContext("jwalton"))
-	assert.Equal(t, "jwalton $ ", result.Text)
+	assert.Equal(t, "hello world", result.Text)
 }
 
 func TestBlockStyles(t *testing.T) {
-	usernameMod := UsernameModule{
-		CommonConfig: CommonConfig{Style: "red"},
-		ShowAlways:   true,
-	}
-	promptMod := PromptModule{
-		CommonConfig: CommonConfig{Style: "blue"},
-	}
-
 	blockMod := BlockModule{
 		Modules: []ModuleSpec{
-			{ID: "", Module: usernameMod},
-			{ID: "", Module: promptMod},
+			{ID: "", Module: TextModule{
+				CommonConfig: CommonConfig{Style: "red"},
+				Text:         "hello",
+			}},
+			{ID: "", Module: TextModule{
+				CommonConfig: CommonConfig{Style: "blue"},
+				Text:         "world",
+			}},
 		},
 		Join: " {{.PrevColors.FG}}{{.NextColors.FG}} ",
 	}
 
 	result := blockMod.Execute(testContext("jwalton"))
-	assert.Equal(t, "jwalton redblue $ ", result.Text)
+	assert.Equal(t, "hello redblue world", result.Text)
 }
 
 // TestBlockSubIDs verifies that the results of child modules can be indexed by ID.
