@@ -79,7 +79,8 @@ type Globals struct {
 	Status int
 	// PreviousCommandDuration is the duration of the previous command, in milliseconds.
 	PreviousCommandDuration int64
-	// Keymap is the zsh/fish keymap. TODO: What values can this have?
+	// Keymap is the zsh/fish keymap. This will be "" if vi mode is not enabled,
+	// "" or "main" in insert mode, and "vicmd" in normal mode.
 	Keymap string
 	// Shell is the type of the shell (e.g. "zsh", "bash", "powershell", etc...).
 	Shell string

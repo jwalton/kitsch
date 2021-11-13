@@ -16,13 +16,18 @@ import (
 //
 type PromptModule struct {
 	CommonConfig `yaml:",inline"`
-	// Prompt is what to display as the prompt.  Defaults to "$".
+	// Prompt is what to display as the prompt.  Defaults to "$ ".
 	Prompt string `yaml:"prompt"`
-	// RootPrompt is what to display as the prompt if the current user is root.  Defaults to "#".
+	// RootPrompt is what to display as the prompt if the current user is root.  Defaults to "# ".
 	RootPrompt string `yaml:"rootPrompt"`
 	// RootStyle will be used in place of `Style` if the current user is root.
 	// If this style is empty, will fall back to Style.
 	RootStyle string `yaml:"rootStyle"`
+	// ViCmdPrompt is what to display as the prompt if the shell is in vicmd mode.
+	// Defaults to ": ".
+	VicmdPrompt string `yaml:"vicmdPrompt"`
+	// VicmdStyle will be used when the shell is in vicmd mode.
+	VicmdStyle string `yaml:"vicmdStyle"`
 	// ErrorStyle will be used when the previous command failed.
 	ErrorStyle string `yaml:"errorStyle"`
 }
@@ -35,29 +40,33 @@ func (mod PromptModule) Execute(context *Context) ModuleResult {
 		"IsRoot": isRoot,
 	}
 
-	// TODO: Use globals.Keymap here.
 	var text string
-	if !isRoot {
-		text = defaultString(mod.Prompt, "$")
-	} else {
-		text = defaultString(mod.RootPrompt, "#")
-	}
-
 	var style string
-	if context.Globals.Status != 0 {
-		style = defaultString(mod.ErrorStyle, mod.Style)
+	if context.Globals.Keymap == "vicmd" {
+		text = mod.VicmdPrompt
+		style = defaultString(mod.VicmdStyle, mod.Style)
 	} else if !isRoot {
+		text = mod.Prompt
 		style = mod.Style
 	} else {
+		text = mod.RootPrompt
 		style = defaultString(mod.RootStyle, mod.Style)
 	}
 
-	return executeModule(context, mod.CommonConfig, data, style, text+" ")
+	if context.Globals.Status != 0 {
+		style = defaultString(mod.ErrorStyle, mod.Style)
+	}
+
+	return executeModule(context, mod.CommonConfig, data, style, text)
 }
 
 func init() {
 	registerFactory("prompt", func(node *yaml.Node) (Module, error) {
-		var module PromptModule
+		module := PromptModule{
+			Prompt:      "$ ",
+			RootPrompt:  "# ",
+			VicmdPrompt: ": ",
+		}
 		err := node.Decode(&module)
 		return &module, err
 	})
