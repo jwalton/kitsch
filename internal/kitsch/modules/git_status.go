@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/jwalton/kitsch-prompt/internal/gitutils"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/log"
 	"gopkg.in/yaml.v3"
 )
 
@@ -56,7 +57,11 @@ func (mod GitStatusModule) Execute(context *Context) ModuleResult {
 	}
 
 	stats, _ := git.Stats()
-	stashCount := git.GetStashCount()
+	stashCount, err := git.GetStashCount()
+	if err != nil {
+		stashCount = 0
+		log.Warn("Error getting stash count: ", err)
+	}
 
 	data := map[string]interface{}{
 		"Index": map[string]interface{}{

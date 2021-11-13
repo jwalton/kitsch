@@ -2,12 +2,11 @@ package gitutils
 
 import (
 	"errors"
+	"io"
 	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strconv"
-	"strings"
 
 	"github.com/jwalton/kitsch-prompt/internal/fileutils"
 )
@@ -79,23 +78,44 @@ func (utils *GitUtils) git(args ...string) (string, error) {
 	return string(out), nil
 }
 
+func countLines(r io.Reader) (int, error) {
+	buf := make([]byte, 32*1024)
+	count := 0
+
+	for {
+		n, err := r.Read(buf)
+		for i := 0; i < n; i++ {
+			if buf[i] == '\n' {
+				count++
+			}
+		}
+
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return 0, err
+		}
+	}
+
+	return count, nil
+}
+
 // GetStashCount returns the number of stashes, or 0 if there are none or
 // the path is not a git repo.
 //
 // `path` should be the git root folder.
-func (utils *GitUtils) GetStashCount() int {
-	countStr, err := utils.git("rev-list", "--walk-reflogs", "--count", "refs/stash")
+func (utils *GitUtils) GetStashCount() (int, error) {
+	// TODO: Read .git/logs/refs/stash, and count the number of `\n`s.`
+	file, err := utils.fsys.Open(".git/logs/refs/stash")
 	if err != nil {
-		return 0
+		if os.IsNotExist(err) {
+			return 0, nil
+		}
+		return 0, err
 	}
 
-	result, err := strconv.Atoi(strings.TrimSpace(countStr))
-	if err != nil {
-		// ???
-		return 0
-	}
-
-	return result
+	defer file.Close()
+	return countLines(file)
 }
 
 // // GetCurrentRepo returns a git repo for the current folder, or nil if we are not
