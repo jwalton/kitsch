@@ -1,6 +1,9 @@
 package gitutils
 
 import (
+	"bytes"
+	"compress/zlib"
+	"strconv"
 	"testing"
 	"testing/fstest"
 
@@ -49,4 +52,47 @@ func TestGetStashCountNoStashes(t *testing.T) {
 	result, err := git.GetStashCount()
 	assert.Nil(t, err)
 	assert.Equal(t, 0, result)
+}
+
+// generateGitObject generates a git object with the given content.
+func generateGitObject(objectType string, content string) []byte {
+	contentBytes := []byte(content)
+	out := bytes.Buffer{}
+	out.WriteString(objectType + " ")
+	out.WriteString(strconv.Itoa(len(contentBytes)))
+	out.WriteByte(0)
+	out.Write(contentBytes)
+
+	compressedContent := bytes.Buffer{}
+	w := zlib.NewWriter(&compressedContent)
+	_, _ = w.Write(out.Bytes())
+	w.Close()
+
+	return compressedContent.Bytes()
+}
+
+func TestReadObject(t *testing.T) {
+	files := fstest.MapFS{
+		".git/objects/b0/592fb675bd471541928aa8c9900ba76f748ac8": &fstest.MapFile{
+			Data: generateGitObject("blob", "hello world"),
+		},
+	}
+
+	git := &GitUtils{
+		pathToGit: "git",
+		fsys:      files,
+		RepoRoot:  "/Users/oriana/dev/kitsch-prompt",
+	}
+
+	objectType, content, err := git.ReadObject("b0592fb675bd471541928aa8c9900ba76f748ac8")
+	assert.Nil(t, err)
+	assert.Equal(t, "blob", objectType)
+	assert.Equal(t, "hello world", string(content))
+
+	content, err = git.ReadObjectOfType("blob", "b0592fb675bd471541928aa8c9900ba76f748ac8")
+	assert.Nil(t, err)
+	assert.Equal(t, "hello world", string(content))
+
+	_, err = git.ReadObjectOfType("tag", "b0592fb675bd471541928aa8c9900ba76f748ac8")
+	assert.Equal(t, ErrIncorrectType, err)
 }

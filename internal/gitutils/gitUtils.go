@@ -1,12 +1,15 @@
 package gitutils
 
 import (
+	"compress/zlib"
 	"errors"
+	"fmt"
 	"io"
 	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 
 	"github.com/jwalton/kitsch-prompt/internal/fileutils"
 )
@@ -63,13 +66,13 @@ func FindGitRoot(cwd string) string {
 
 // git will run a git command in the root folder of the git repository.
 // Returns empty string if there was an error running the command.
-func (utils *GitUtils) git(args ...string) (string, error) {
-	if utils.pathToGit == "" {
+func (g *GitUtils) git(args ...string) (string, error) {
+	if g.pathToGit == "" {
 		return "", ErrNoGit
 	}
 
-	cmd := exec.Command(utils.pathToGit, args...)
-	cmd.Dir = utils.RepoRoot
+	cmd := exec.Command(g.pathToGit, args...)
+	cmd.Dir = g.RepoRoot
 
 	out, err := cmd.Output()
 	if err != nil {
@@ -104,9 +107,9 @@ func countLines(r io.Reader) (int, error) {
 // the path is not a git repo.
 //
 // `path` should be the git root folder.
-func (utils *GitUtils) GetStashCount() (int, error) {
+func (g *GitUtils) GetStashCount() (int, error) {
 	// TODO: Read .git/logs/refs/stash, and count the number of `\n`s.`
-	file, err := utils.fsys.Open(".git/logs/refs/stash")
+	file, err := g.fsys.Open(".git/logs/refs/stash")
 	if err != nil {
 		if os.IsNotExist(err) {
 			return 0, nil
@@ -118,70 +121,91 @@ func (utils *GitUtils) GetStashCount() (int, error) {
 	return countLines(file)
 }
 
-// // GetCurrentRepo returns a git repo for the current folder, or nil if we are not
-// // inside a git repo.
-// func OpenRepo(path string) *git.Repository {
-// 	gitFolder := fileutils.FindFileInAncestors(path, ".git")
+// ReadObject reads a git object from the repo.
+func (g *GitUtils) ReadObject(hash string) (objectType string, data []byte, err error) {
+	filename := ".git/objects/" + hash[0:2] + "/" + hash[2:]
+	file, err := g.fsys.Open(filename)
+	if err != nil {
+		return "", nil, err
+	}
+	defer file.Close()
 
-// 	repo, err := git.PlainOpen(gitFolder)
+	zlibReader, err := zlib.NewReader(file)
+	if err != nil {
+		return "", nil, err
+	}
+	defer zlibReader.Close()
 
-// 	if err != nil {
-// 		return nil
-// 	}
+	content, err := io.ReadAll(zlibReader)
+	if err != nil {
+		return "", nil, err
+	}
 
-// 	return repo
-// }
+	// Read the object type.
+	objectType, objectTypeLen := readUntil(content, ' ')
 
-// // GetShortName returns the short name for the given reference.  This will
-// // be the branch name, the tag name, or the hash.
-// func GetShortName(repo *git.Repository, ref *plumbing.Reference) string {
-// 	var shortName string
+	// Read the size of the contents.
+	data, err = getContent(content[objectTypeLen+1:])
+	if err != nil {
+		return "", nil, err
+	}
 
-// 	// If this is a branch, return the branch name
-// 	refName := ref.Name()
-// 	if refName.IsBranch() {
-// 		shortName = refName.Short()
-// 	}
+	return objectType, data, nil
+}
 
-// 	if shortName == "" {
-// 		// Search for a tag with this ref.
-// 		shortName = getTagName(repo, ref)
-// 	}
+// ErrIncorrectType is returned when an object is not of the requested type.
+var ErrIncorrectType = errors.New("incorrect object type")
 
-// 	if shortName == "" {
-// 		// If all else fails, use the hash.
-// 		shortName = "(" + ref.Hash().String()[0:7] + "...)"
-// 	}
+// ReadObjectOfType reads a git object from repo, but only if it is of the
+// provided type.  If the object is not the correct type, returns ErrIncorrectType.
+func (g *GitUtils) ReadObjectOfType(objectType string, hash string) (data []byte, err error) {
+	filename := ".git/objects/" + hash[0:2] + "/" + hash[2:]
+	file, err := g.fsys.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
 
-// 	return shortName
-// }
+	zlibReader, err := zlib.NewReader(file)
+	if err != nil {
+		return nil, err
+	}
+	defer zlibReader.Close()
 
-// func getTagName(repo *git.Repository, ref *plumbing.Reference) string {
-// 	var result string
+	// Read the file type.
+	fileType := make([]byte, len(objectType)+1)
+	n, err := zlibReader.Read(fileType)
+	if n != len(objectType)+1 || string(fileType[0:len(objectType)]) != objectType {
+		return nil, ErrIncorrectType
+	}
 
-// 	if ref.Name().IsTag() {
-// 		result = ref.Name().Short()
-// 	} else {
-// 		annotatedTag, _ := repo.TagObject(ref.Hash())
-// 		if annotatedTag != nil {
-// 			result = annotatedTag.Name
-// 		} else {
-// 			// Need to search for the tag.
-// 			tags, err := repo.Tags()
-// 			CheckIfError(err)
-// 			err = tags.ForEach(func(t *plumbing.Reference) error {
-// 				if t.Hash() == ref.Hash() {
-// 					result = t.Name().Short()
-// 					return storer.ErrStop
-// 				}
-// 				return nil
-// 			})
-// 		}
-// 	}
+	content, err := io.ReadAll(zlibReader)
 
-// 	if result != "" {
-// 		result = "(" + result + ")"
-// 	}
+	// Read the size of the contents.
+	return getContent(content)
+}
 
-// 	return result
-// }
+// getContent reads a length-of-content, then a null byte, then the content.
+func getContent(content []byte) ([]byte, error) {
+	// Read the size of the contents.
+	sizeStr, sizeLen := readUntil(content, '\x00')
+	size, err := strconv.ParseInt(sizeStr, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid size in git object: %s, %w", sizeStr, err)
+	}
+
+	data := content[sizeLen+1:]
+	if len(data) != int(size) {
+		return nil, fmt.Errorf("expected %d bytes but only got %d", size, len(data))
+	}
+
+	return data, nil
+}
+
+func readUntil(bytes []byte, until byte) (string, int) {
+	index := 0
+	for index < len(bytes) && bytes[index] != until {
+		index++
+	}
+	return string(bytes[:index]), index
+}

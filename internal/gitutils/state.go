@@ -1,6 +1,7 @@
 package gitutils
 
 import (
+	"bytes"
 	"errors"
 	"io/fs"
 	"strings"
@@ -179,19 +180,47 @@ func (g *GitUtils) GetTagNameForHash(hash string) (string, error) {
 		return "", err
 	}
 
+	objectHash := []byte("object " + hash)
+	objectHashNewline := []byte("\nobject" + hash)
+
+	result := ""
 	for _, tagFile := range tagFiles {
-		content, err := fs.ReadFile(g.fsys, ".git/refs/tags/"+tagFile.Name())
+		tagName := tagFile.Name()
+		tagHash, err := fs.ReadFile(g.fsys, ".git/refs/tags/"+tagName)
 		if err != nil {
 			continue
 		}
-		if len(content) >= len(hash) && string(content[0:len(hash)]) == hash {
-			return tagFile.Name(), nil
+
+		// If the tag is a lightweight tag, the hash should match.
+		if len(tagHash) >= len(hash) && string(tagHash[0:len(hash)]) == hash {
+			result = tagName
+			break
+		}
+
+		// If the tag is an annotated tag, we need to read the tag object.
+		obj, err := g.ReadObjectOfType("tag", strings.TrimSpace(string(tagHash)))
+		if err == nil {
+			endOfHeader := bytes.Index(obj, []byte("\n\n"))
+			if endOfHeader == -1 {
+				endOfHeader = len(obj)
+			}
+
+			header := obj[0:endOfHeader]
+			if bytes.HasPrefix(header, objectHash) || bytes.Contains(header, objectHashNewline) {
+				result = tagName
+				break
+			}
 		}
 	}
 
+	if result != "" {
+		return result, nil
+	}
 	return "", errNotFound
 }
 
+// resolveSymbolicRef returns the hash for a given symbolic ref.
+// e.g. this turns "refs/heads/master" into a hash.
 func (g *GitUtils) resolveSymbolicRef(ref string) (string, error) {
 	if g.fsys == nil {
 		return "", errNotFound
@@ -205,6 +234,8 @@ func (g *GitUtils) resolveSymbolicRef(ref string) (string, error) {
 	return strings.TrimSpace(string(hashBytes)), nil
 }
 
+// extractBranchName returns the branch name from a symbolic ref, or returns
+// the passed in string otherwise.
 func extractBranchName(name string) string {
 	name = strings.TrimSpace(name)
 	name = strings.TrimPrefix(name, "refs/heads/")
