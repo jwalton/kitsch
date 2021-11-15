@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/go-git/go-git/v5"
 	"github.com/jwalton/kitsch-prompt/internal/fileutils"
 )
 
@@ -23,6 +24,7 @@ type GitUtils struct {
 	fsys fs.FS
 	// RepoRoot is the root folder of the git repository.
 	RepoRoot string
+	repo     *git.Repository
 }
 
 // New returns a new instance of `GitUtils` for the specified repository.
@@ -45,10 +47,16 @@ func New(pathToGit string, folder string) *GitUtils {
 		return nil
 	}
 
+	repo, err := git.PlainOpen(gitRoot)
+	if err != nil {
+		return nil
+	}
+
 	return &GitUtils{
 		pathToGit: pathToGit,
 		fsys:      fsys,
 		RepoRoot:  gitRoot,
+		repo:      repo,
 	}
 }
 
@@ -63,13 +71,13 @@ func FindGitRoot(cwd string) string {
 
 // git will run a git command in the root folder of the git repository.
 // Returns empty string if there was an error running the command.
-func (utils *GitUtils) git(args ...string) (string, error) {
-	if utils.pathToGit == "" {
+func (g *GitUtils) git(args ...string) (string, error) {
+	if g.pathToGit == "" {
 		return "", ErrNoGit
 	}
 
-	cmd := exec.Command(utils.pathToGit, args...)
-	cmd.Dir = utils.RepoRoot
+	cmd := exec.Command(g.pathToGit, args...)
+	cmd.Dir = g.RepoRoot
 
 	out, err := cmd.Output()
 	if err != nil {
@@ -104,9 +112,9 @@ func countLines(r io.Reader) (int, error) {
 // the path is not a git repo.
 //
 // `path` should be the git root folder.
-func (utils *GitUtils) GetStashCount() (int, error) {
+func (g *GitUtils) GetStashCount() (int, error) {
 	// TODO: Read .git/logs/refs/stash, and count the number of `\n`s.`
-	file, err := utils.fsys.Open(".git/logs/refs/stash")
+	file, err := g.fsys.Open(".git/logs/refs/stash")
 	if err != nil {
 		if os.IsNotExist(err) {
 			return 0, nil
@@ -118,70 +126,16 @@ func (utils *GitUtils) GetStashCount() (int, error) {
 	return countLines(file)
 }
 
-// // GetCurrentRepo returns a git repo for the current folder, or nil if we are not
-// // inside a git repo.
-// func OpenRepo(path string) *git.Repository {
-// 	gitFolder := fileutils.FindFileInAncestors(path, ".git")
+// GetCurrentRepo returns a git repo for the current folder, or nil if we are not
+// inside a git repo.
+func openRepo(path string) *git.Repository {
+	gitFolder := fileutils.FindFileInAncestors(path, ".git")
 
-// 	repo, err := git.PlainOpen(gitFolder)
+	repo, err := git.PlainOpen(gitFolder)
 
-// 	if err != nil {
-// 		return nil
-// 	}
+	if err != nil {
+		return nil
+	}
 
-// 	return repo
-// }
-
-// // GetShortName returns the short name for the given reference.  This will
-// // be the branch name, the tag name, or the hash.
-// func GetShortName(repo *git.Repository, ref *plumbing.Reference) string {
-// 	var shortName string
-
-// 	// If this is a branch, return the branch name
-// 	refName := ref.Name()
-// 	if refName.IsBranch() {
-// 		shortName = refName.Short()
-// 	}
-
-// 	if shortName == "" {
-// 		// Search for a tag with this ref.
-// 		shortName = getTagName(repo, ref)
-// 	}
-
-// 	if shortName == "" {
-// 		// If all else fails, use the hash.
-// 		shortName = "(" + ref.Hash().String()[0:7] + "...)"
-// 	}
-
-// 	return shortName
-// }
-
-// func getTagName(repo *git.Repository, ref *plumbing.Reference) string {
-// 	var result string
-
-// 	if ref.Name().IsTag() {
-// 		result = ref.Name().Short()
-// 	} else {
-// 		annotatedTag, _ := repo.TagObject(ref.Hash())
-// 		if annotatedTag != nil {
-// 			result = annotatedTag.Name
-// 		} else {
-// 			// Need to search for the tag.
-// 			tags, err := repo.Tags()
-// 			CheckIfError(err)
-// 			err = tags.ForEach(func(t *plumbing.Reference) error {
-// 				if t.Hash() == ref.Hash() {
-// 					result = t.Name().Short()
-// 					return storer.ErrStop
-// 				}
-// 				return nil
-// 			})
-// 		}
-// 	}
-
-// 	if result != "" {
-// 		result = "(" + result + ")"
-// 	}
-
-// 	return result
-// }
+	return repo
+}

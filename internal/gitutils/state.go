@@ -5,6 +5,8 @@ import (
 	"io/fs"
 	"strings"
 
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/storer"
 	"github.com/jwalton/kitsch-prompt/internal/fileutils"
 )
 
@@ -147,7 +149,7 @@ func (g *GitUtils) getHeadDescription() (description string, isDetached bool) {
 
 	// If we don't have a description, try to get a tag name
 	if description == "" {
-		tag, err := g.GetTagNameForHash(head)
+		tag, err := g.getTagNameForHash(head)
 		if err == nil && tag != "" {
 			description = "(" + strings.TrimSpace(tag) + ")"
 		}
@@ -167,29 +169,33 @@ func (g *GitUtils) getHeadDescription() (description string, isDetached bool) {
 
 var errNotFound = errors.New("Not found")
 
-// GetTagNameForHash returns the tag name for the hash, or an error if no such
-// tag exists.  "hash" can be a short hash.
-func (g *GitUtils) GetTagNameForHash(hash string) (string, error) {
-	if g.fsys == nil {
-		return "", errNotFound
-	}
+func (g *GitUtils) getTagNameForHash(hash string) (string, error) {
+	ref := plumbing.NewHash(hash)
+	var result string
 
-	tagFiles, err := fs.ReadDir(g.fsys, ".git/refs/tags")
+	tags, err := g.repo.Tags()
 	if err != nil {
 		return "", err
 	}
 
-	for _, tagFile := range tagFiles {
-		content, err := fs.ReadFile(g.fsys, ".git/refs/tags/"+tagFile.Name())
-		if err != nil {
-			continue
-		}
-		if len(content) >= len(hash) && string(content[0:len(hash)]) == hash {
-			return tagFile.Name(), nil
-		}
-	}
+	err = tags.ForEach(func(t *plumbing.Reference) error {
+		name := t.Name()
 
-	return "", errNotFound
+		if t.Hash() == ref {
+			result = name.Short()
+			return storer.ErrStop
+		} else {
+			annotatedTag, _ := g.repo.TagObject(t.Hash())
+			if annotatedTag != nil && annotatedTag.Target == ref {
+				result = name.Short()
+				return storer.ErrStop
+			}
+		}
+
+		return nil
+	})
+
+	return result, nil
 }
 
 func (g *GitUtils) resolveSymbolicRef(ref string) (string, error) {
