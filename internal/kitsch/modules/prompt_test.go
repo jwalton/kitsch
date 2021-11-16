@@ -10,8 +10,7 @@ import (
 )
 
 func TestPrompt(t *testing.T) {
-	mod, err := moduleFromYAML("{type: prompt}")
-	assert.NoError(t, err)
+	mod := moduleFromYAMLMust("{type: prompt}")
 
 	context := testContext("jwalton")
 
@@ -28,8 +27,7 @@ func TestPrompt(t *testing.T) {
 }
 
 func TestRootPrompt(t *testing.T) {
-	mod, err := moduleFromYAML("{type: prompt}")
-	assert.NoError(t, err)
+	mod := moduleFromYAMLMust("{type: prompt}")
 
 	context := testContext("jwalton")
 	context.Environment = &env.DummyEnv{Root: true}
@@ -47,12 +45,11 @@ func TestRootPrompt(t *testing.T) {
 }
 
 func TestStyle(t *testing.T) {
-	mod, err := moduleFromYAML(heredoc.Doc(`
+	mod := moduleFromYAMLMust(heredoc.Doc(`
 		type: prompt
 		style: blue
 		rootStyle: red
 	`))
-	assert.NoError(t, err)
 
 	context := testContext("jwalton")
 	context.Environment = &env.DummyEnv{Root: false}

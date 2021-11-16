@@ -30,17 +30,31 @@ type UsernameModule struct {
 	RootStyle string `yaml:"rootStyle"`
 }
 
+type usernameModuleData struct {
+	// Username is the current user's username.
+	Username string
+	// FullName is the current user's full name, if available.
+	FullName string
+	// IsRoot is true if the current user is root.
+	IsRoot bool
+	// IsSSH is true if the user is in an SSH session.
+	IsSSH bool
+	// Show is true if the username module should be displayed.
+	Show bool
+}
+
 // Execute the username module.
 func (mod UsernameModule) Execute(context *Context) ModuleResult {
 	isRoot := context.Environment.IsRoot()
 	isSSH := context.Environment.HasSomeEnv("SSH_CLIENT", "SSH_CONNECTION", "SSH_TTY")
 	show := isSSH || isRoot || mod.ShowAlways
 
-	data := map[string]interface{}{
-		"Username": context.Globals.Username,
-		"IsRoot":   isRoot,
-		"IsSSH":    isSSH,
-		"Show":     show,
+	data := usernameModuleData{
+		Username: context.Globals.Username,
+		FullName: context.Globals.UserFullName,
+		IsRoot:   isRoot,
+		IsSSH:    isSSH,
+		Show:     show,
 	}
 
 	defaultText := ""

@@ -4,6 +4,7 @@ import (
 	"testing"
 	"testing/fstest"
 
+	"github.com/MakeNowJust/heredoc"
 	"github.com/jwalton/kitsch-prompt/internal/fileutils"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/condition"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/getters"
@@ -39,11 +40,10 @@ func TestProject(t *testing.T) {
 		},
 	}
 
-	mod := ProjectModule{
-		CommonConfig: CommonConfig{
-			Template: "{{ .Data.ToolVersion }} / {{ .Data.PackageManagerVersion }} / {{ .Data.PackageVersion }}",
-		},
-	}
+	mod := moduleFromYAMLMust(heredoc.Doc(`
+		type: project
+		template: "{{ .Data.ToolVersion }} / {{ .Data.PackageManagerVersion }} / {{ .Data.PackageVersion }}"
+	`))
 
 	result := mod.Execute(context)
 

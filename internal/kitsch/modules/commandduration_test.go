@@ -16,15 +16,13 @@ func TestCmdDuration(t *testing.T) {
 	}
 
 	// If we're under "MinTime", should produce no output.
-	mod, err := moduleFromYAML("{ type: command_duration, minTime: 2000 }")
-	assert.NoError(t, err)
+	mod := moduleFromYAMLMust("{ type: command_duration, minTime: 2000 }")
 	assert.Equal(t, "", forTime(mod, 1000))
 	assert.Equal(t, "4s", forTime(mod, 4000))
 	assert.Equal(t, "1m0s", forTime(mod, 60000))
 	assert.Equal(t, "1m9s", forTime(mod, 69001))
 
-	mod, err = moduleFromYAML("{ type: command_duration, minTime: 2000, showMilliseconds: true }")
-	assert.NoError(t, err)
+	mod = moduleFromYAMLMust("{ type: command_duration, minTime: 2000, showMilliseconds: true }")
 	assert.Equal(t, "1m9s1ms", forTime(mod, 69001))
 	assert.Equal(t, "2h46m40s0ms", forTime(mod, 10000000))
 }

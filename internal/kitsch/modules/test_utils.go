@@ -6,6 +6,7 @@ import (
 	"github.com/jwalton/kitsch-prompt/internal/fileutils"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/env"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/styling"
+	"gopkg.in/yaml.v3"
 )
 
 // createTextContext creates a Context with reasonable defaults that can
@@ -33,4 +34,21 @@ func testContext(username string) *Context {
 		},
 		Styles: styling.Registry{},
 	}
+}
+
+func moduleFromYAML(data string) (Module, error) {
+	var moduleSpec ModuleSpec
+	err := yaml.Unmarshal([]byte(data), &moduleSpec)
+	if err != nil {
+		return nil, err
+	}
+	return moduleSpec.Module, nil
+}
+
+func moduleFromYAMLMust(data string) Module {
+	module, err := moduleFromYAML(data)
+	if err != nil {
+		panic(err)
+	}
+	return module
 }

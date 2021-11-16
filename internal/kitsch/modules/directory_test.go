@@ -3,13 +3,14 @@ package modules
 import (
 	"testing"
 
+	"github.com/MakeNowJust/heredoc"
 	"github.com/jwalton/kitsch-prompt/internal/gitutils"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/env"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestDirectory(t *testing.T) {
-	mod := DirectoryModule{}
+	mod := moduleFromYAMLMust("{type: directory}")
 
 	context := testContext("jwalton")
 	context.Globals.CWD = "/tmp/test"
@@ -24,7 +25,7 @@ func TestDirectory(t *testing.T) {
 }
 
 func TestHomeDirectory(t *testing.T) {
-	mod := DirectoryModule{}
+	mod := moduleFromYAMLMust("{type: directory}")
 
 	context := testContext("jwalton")
 	context.Globals.CWD = context.Globals.Home
@@ -39,7 +40,7 @@ func TestHomeDirectory(t *testing.T) {
 }
 
 func TestHomeDirectorySubdirectory(t *testing.T) {
-	mod := DirectoryModule{}
+	mod := moduleFromYAMLMust("{type: directory}")
 
 	context := testContext("jwalton")
 	context.Globals.CWD = "/Users/jwalton/foo"
@@ -54,9 +55,10 @@ func TestHomeDirectorySubdirectory(t *testing.T) {
 }
 
 func TestHomeDirectorySubdirectoryTruncated(t *testing.T) {
-	mod := DirectoryModule{
-		TruncationLength: 3,
-	}
+	mod := moduleFromYAMLMust(heredoc.Doc(`
+		type: directory
+		truncationLength: 3
+	`))
 
 	context := testContext("jwalton")
 	context.Globals.CWD = "/Users/jwalton/foo/bar/baz/qux"
@@ -70,9 +72,10 @@ func TestHomeDirectorySubdirectoryTruncated(t *testing.T) {
 }
 
 func TestDirectoryTruncateToHome(t *testing.T) {
-	mod := DirectoryModule{
-		TruncationLength: 3,
-	}
+	mod := moduleFromYAMLMust(heredoc.Doc(`
+		type: directory
+		truncationLength: 3
+	`))
 
 	context := testContext("jwalton")
 	context.Globals.CWD = "/tmp/foo/bar/baz/qux"
@@ -81,13 +84,12 @@ func TestDirectoryTruncateToHome(t *testing.T) {
 }
 
 func TestDirectoryTruncateToGitRepo(t *testing.T) {
-	mod := DirectoryModule{
-		TruncateToRepo:   true,
-		TruncationLength: 3,
-	}
+	mod := moduleFromYAMLMust(heredoc.Doc(`
+		type: directory
+		truncationLength: 3
+	`))
 
 	context := testContext("jwalton")
-	context.Globals.CWD = "/Users/jwalton/dev/kitsch-prompt/src"
 	context.Environment = &env.DummyEnv{
 		Env: map[string]string{
 			"USER": "jwalton",
@@ -96,5 +98,22 @@ func TestDirectoryTruncateToGitRepo(t *testing.T) {
 		TestGit: &gitutils.GitUtils{RepoRoot: "/Users/jwalton/dev/kitsch-prompt"},
 	}
 
+	context.Globals.CWD = "/Users/jwalton/dev/kitsch-prompt/src"
 	assert.Equal(t, "…/kitsch-prompt/src", mod.Execute(context).Text)
+
+	context.Globals.CWD = "/Users/jwalton/dev/kitsch-prompt/src/foo/bar/baz/qux"
+	assert.Equal(t, "…/bar/baz/qux", mod.Execute(context).Text)
+
+	mod = moduleFromYAMLMust(heredoc.Doc(`
+		type: directory
+		truncationLength: 3
+		truncateToRepo: false
+	`))
+
+	context.Globals.CWD = "/Users/jwalton/dev/kitsch-prompt/src"
+	assert.Equal(t, "~/dev/kitsch-prompt/src", mod.Execute(context).Text)
+
+	context.Globals.CWD = "/Users/jwalton/work/dev/kitsch-prompt/src"
+	assert.Equal(t, "…/dev/kitsch-prompt/src", mod.Execute(context).Text)
+
 }
