@@ -3,11 +3,13 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
 	"github.com/jwalton/gchalk"
 	"github.com/jwalton/go-supportscolor"
+	"github.com/jwalton/kitsch-prompt/internal/cache"
 	"github.com/jwalton/kitsch-prompt/internal/fileutils"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/config"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/env"
@@ -53,13 +55,19 @@ var promptCmd = &cobra.Command{
 		}
 
 		globals := modules.NewGlobals(shell, status, cmdDuration, keymap)
-		runtimeEnv := env.New(globals.CWD, jobs)
+		runtimeEnv := env.New(env.Options{
+			CWD:  globals.CWD,
+			Jobs: jobs,
+		})
 
 		if err != nil {
 			log.Error(err)
 			fmt.Print("$ ")
 		} else {
-			result := renderPrompt(configuration, globals, runtimeEnv)
+			cacheDir := filepath.Join(userConfigDir, "cache")
+			valueCache := cache.NewFileCache(cacheDir)
+
+			result := renderPrompt(configuration, globals, runtimeEnv, valueCache)
 			if perf {
 				renderPerf(result.ChildDurations, 0)
 			}
@@ -75,6 +83,7 @@ func renderPrompt(
 	configuration *config.Config,
 	globals modules.Globals,
 	runtimeEnv env.Env,
+	valueCache cache.Cache,
 ) modules.ModuleResult {
 	// Load custom colors
 	styles := styling.Registry{}
@@ -89,6 +98,7 @@ func renderPrompt(
 	context := modules.Context{
 		Environment:  runtimeEnv,
 		Directory:    fileutils.NewDirectory(globals.CWD),
+		ValueCache:   valueCache,
 		Styles:       styles,
 		Globals:      globals,
 		ProjectTypes: configuration.ProjectsTypes,

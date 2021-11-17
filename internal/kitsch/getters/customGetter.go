@@ -6,12 +6,14 @@ import (
 	"io/fs"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"text/template"
 
 	"github.com/BurntSushi/toml"
 	"github.com/Masterminds/sprig/v3"
+	"github.com/jwalton/kitsch-prompt/internal/cache"
 	"github.com/jwalton/kitsch-prompt/internal/fileutils"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/modtemplate"
 	"github.com/mattn/go-shellwords"
@@ -19,6 +21,16 @@ import (
 )
 
 var sprigTemplateFunctions = sprig.TxtFuncMap()
+
+// CacheSettings are cache settings for a CustomGetter.
+type CacheSettings struct {
+	// Enabled is true if caching should be enabled for this getter.
+	//
+	// At the moment, this only applied to getters with `Type: "custom"`.  This
+	// makes it so we will cache the output of a command instead of re-running that
+	// command.
+	Enabled bool `yaml:"enabled"`
+}
 
 // CustomGetter is a getter that can be configured from a YAML file.
 type CustomGetter struct {
@@ -35,6 +47,8 @@ type CustomGetter struct {
 	// Regex is a regular expression used to parse values out of the result of
 	// the getter.  If specified, then "As" and "Template" will be ignored.
 	Regex string `yaml:"regex"`
+	// Cache specified cache settings for this getter.
+	Cache CacheSettings `yaml:"cache"`
 }
 
 // GetValue gets the value for this getter.  The return value will be either a string,
@@ -42,6 +56,7 @@ type CustomGetter struct {
 // the parsed contents of the object.
 func (getter CustomGetter) GetValue(
 	folder fileutils.Directory,
+	valueCache cache.Cache,
 ) (interface{}, error) {
 	// Get the raw value for the getter.
 	var bytesValue []byte
@@ -50,7 +65,7 @@ func (getter CustomGetter) GetValue(
 
 	switch getter.Type {
 	case "custom":
-		bytesValue, err = getter.getCustomValue(folder, getter.From)
+		bytesValue, err = getter.getCustomValue(folder, valueCache, getter.From)
 	case "file":
 		bytesValue, err = fs.ReadFile(folder.FileSystem(), getter.From)
 	case "ancestorFile":
@@ -118,6 +133,7 @@ func (getter CustomGetter) GetValue(
 
 func (getter CustomGetter) getCustomValue(
 	projectFolder fileutils.Directory,
+	valueCache cache.Cache,
 	command string,
 ) ([]byte, error) {
 	commandParts, err := shellwords.Parse(command)
@@ -135,9 +151,48 @@ func (getter CustomGetter) getCustomValue(
 		return nil, fmt.Errorf("could not find executable: \"%s\": %w", commandParts[0], err)
 	}
 
+	// If the executable is a symlink, resolve it.
+	executable, err = filepath.EvalSymlinks(executable)
+	if err != nil {
+		return nil, fmt.Errorf("could not resolve executable: \"%s\": %w", commandParts[0], err)
+	}
+
+	executableDetails, err := os.Stat(executable)
+	if err != nil {
+		return nil, fmt.Errorf("could not stat executable:  \"%s\": %w", commandParts[0], err)
+	}
+
+	var cacheKey string
+
+	// Try to get the value from the cache.
+	if getter.Cache.Enabled {
+		cacheKey = fmt.Sprintf(
+			"%s %s -- %d/%d",
+			executable,
+			strings.Join(commandParts[1:], " "),
+			executableDetails.ModTime().Unix(),
+			executableDetails.Size(),
+		)
+
+		if value := valueCache.Get(cacheKey); value != nil {
+			return value, nil
+		}
+	}
+
+	// If that fails, run the command.
 	cmd := exec.Command(executable, commandParts[1:]...)
 	cmd.Dir = projectFolder.Path()
-	return cmd.CombinedOutput()
+	result, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("error running command: \"%s\": %w", executable, err)
+	}
+
+	// Store the value in the cache for future generations.
+	if cacheKey != "" {
+		valueCache.Set(cacheKey, result)
+	}
+
+	return result, nil
 }
 
 func (getter CustomGetter) getAncestorFileValue(

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/jwalton/gchalk"
+	"github.com/jwalton/kitsch-prompt/internal/cache"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/config"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/env"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/modules"
@@ -41,6 +42,7 @@ func BenchmarkPrompt(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		renderPrompt(configuration, globals, dummyEnv)
+		valueCache := cache.NewMemoryCache()
+		renderPrompt(configuration, globals, dummyEnv, valueCache)
 	}
 }

@@ -37,14 +37,19 @@ type defaultEnv struct {
 	git            *gitutils.GitUtils
 }
 
+// Options is a struct that can be used to customize the behavior of Env.
+type Options struct {
+	// CWD is the current working directory.
+	CWD string
+	// Jobs is the number of jobs running in the background.
+	Jobs int
+}
+
 // New creates a new instance of Env.
-func New(
-	cwd string,
-	jobs int,
-) Env {
+func New(options Options) Env {
 	return &defaultEnv{
-		cwd:  cwd,
-		jobs: jobs,
+		cwd:  options.CWD,
+		jobs: options.Jobs,
 	}
 }
 

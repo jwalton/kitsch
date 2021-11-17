@@ -18,6 +18,7 @@ var DefaultProjectTypes = []ProjectType{
 			From: "java -Xinternalversion",
 			// Based on https://stackoverflow.com/questions/66601929/how-can-i-determine-whether-the-installed-java-supports-modules-or-not
 			Regex: `\(([\d\.]+)[^\d\.]?[^\s]*\)(:?, built|from)`,
+			Cache: getters.CacheSettings{Enabled: true},
 		},
 	},
 	{
@@ -31,6 +32,7 @@ var DefaultProjectTypes = []ProjectType{
 			Type:  "custom",
 			From:  "go version",
 			Regex: `go version go(\d+\.\d+\.\d+)`,
+			Cache: getters.CacheSettings{Enabled: true},
 		},
 	},
 	{
@@ -44,6 +46,7 @@ var DefaultProjectTypes = []ProjectType{
 			Type:  "custom",
 			From:  "rustc version",
 			Regex: `rustc (\d+\.\d+\.\d+)`,
+			Cache: getters.CacheSettings{Enabled: true},
 		},
 		PackageVersion: getters.CustomGetter{
 			Type:          "file",
@@ -62,16 +65,13 @@ var DefaultProjectTypes = []ProjectType{
 			Type:  "custom",
 			From:  "node --version",
 			Regex: `v(.*)`,
+			Cache: getters.CacheSettings{Enabled: true},
 		},
 		PackageManagerSymbol: "yarn",
 		PackageManagerVersion: getters.CustomGetter{
-			Type: "custom",
-			// TODO: This is pretty slow - should use the same trick we use for NPM.
-			// With yarn v1.x installed via Brew, we want to follow that yarn symlink,
-			// then look in ../libexec/package.json.  On the alpine docker container,
-			// the file is ../package.json.  For some reason in my `v14.18.1` node installed
-			// via nvm, `yarn` is in v14.18.1/lib/node_modules/corepack/dist???
-			From: "yarn --version",
+			Type:  "custom",
+			From:  "yarn --version",
+			Cache: getters.CacheSettings{Enabled: true},
 		},
 		PackageVersion: getters.CustomGetter{
 			Type:          "file",
@@ -90,9 +90,14 @@ var DefaultProjectTypes = []ProjectType{
 			Type:  "custom",
 			From:  "node --version",
 			Regex: `v(.*)`,
+			Cache: getters.CacheSettings{Enabled: true},
 		},
-		PackageManagerSymbol:  "npm",
-		PackageManagerVersion: npmVersionGetter{},
+		PackageManagerSymbol: "npm",
+		PackageManagerVersion: getters.CustomGetter{
+			Type:  "custom",
+			From:  "npm --version",
+			Cache: getters.CacheSettings{Enabled: true},
+		},
 		PackageVersion: getters.CustomGetter{
 			Type:          "file",
 			From:          "package.json",
@@ -110,6 +115,7 @@ var DefaultProjectTypes = []ProjectType{
 			Type:  "custom",
 			From:  "deno --version",
 			Regex: `deno (\d+\.\d+\.\d+)`,
+			Cache: getters.CacheSettings{Enabled: true},
 		},
 	},
 	{
@@ -122,6 +128,7 @@ var DefaultProjectTypes = []ProjectType{
 			Type:  "custom",
 			From:  "helm version",
 			Regex: `^version.BuildInfo{Version:"v(\d+\.\d+\.\d+)"`,
+			Cache: getters.CacheSettings{Enabled: true},
 		},
 	},
 }

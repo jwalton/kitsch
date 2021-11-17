@@ -4,6 +4,7 @@ import (
 	"testing"
 	"testing/fstest"
 
+	"github.com/jwalton/kitsch-prompt/internal/cache"
 	"github.com/jwalton/kitsch-prompt/internal/fileutils"
 	"github.com/stretchr/testify/assert"
 )
@@ -22,7 +23,7 @@ func TestYamlGetterFromFile(t *testing.T) {
 		From: "version.txt",
 	}
 
-	val, err := getter.GetValue(directory)
+	val, err := getter.GetValue(directory, cache.NewMemoryCache())
 
 	assert.Nil(t, err)
 	assert.Equal(t, "v1.0.0", val)
@@ -45,7 +46,7 @@ func TestYamlGetterTextFromFile(t *testing.T) {
 		As:   "text",
 	}
 
-	val, err := getter.GetValue(directory)
+	val, err := getter.GetValue(directory, cache.NewMemoryCache())
 
 	assert.Nil(t, err)
 	assert.Equal(t, "v1.0.0", val)
@@ -67,7 +68,7 @@ func TestYamlGetterJsonFromFile(t *testing.T) {
 		ValueTemplate: `{{.version}}`,
 	}
 
-	val, err := getter.GetValue(directory)
+	val, err := getter.GetValue(directory, cache.NewMemoryCache())
 
 	assert.Nil(t, err)
 	assert.Equal(t, "v1.0.0", val)
@@ -88,7 +89,7 @@ func TestYamlGetterJsonFromFileNoTemplate(t *testing.T) {
 		As:   "json",
 	}
 
-	val, err := getter.GetValue(directory)
+	val, err := getter.GetValue(directory, cache.NewMemoryCache())
 
 	assert.Nil(t, err)
 	assert.Equal(t, map[string]interface{}{"version": "v1.0.0"}, val)
@@ -110,7 +111,7 @@ func TestYamlGetterYamlFromFile(t *testing.T) {
 		ValueTemplate: `{{.version}}`,
 	}
 
-	val, err := getter.GetValue(directory)
+	val, err := getter.GetValue(directory, cache.NewMemoryCache())
 
 	assert.Nil(t, err)
 	assert.Equal(t, "v1.0.0", val)
@@ -132,7 +133,7 @@ func TestYamlGetterTomlFromFile(t *testing.T) {
 		ValueTemplate: `{{.version}}`,
 	}
 
-	val, err := getter.GetValue(directory)
+	val, err := getter.GetValue(directory, cache.NewMemoryCache())
 
 	assert.Nil(t, err)
 	assert.Equal(t, "v1.0.0", val)
@@ -154,7 +155,7 @@ func TestYamlGetterNumericValue(t *testing.T) {
 		ValueTemplate: `{{.version}}`,
 	}
 
-	val, err := getter.GetValue(directory)
+	val, err := getter.GetValue(directory, cache.NewMemoryCache())
 
 	assert.Nil(t, err)
 	assert.Equal(t, "10", val)
@@ -175,7 +176,7 @@ func TestYamlGetterRegex(t *testing.T) {
 		Regex: `go version go(\d+\.\d+\.\d+)`,
 	}
 
-	val, err := getter.GetValue(directory)
+	val, err := getter.GetValue(directory, cache.NewMemoryCache())
 
 	assert.Nil(t, err)
 	assert.Equal(t, "1.17.1", val)
@@ -197,7 +198,7 @@ func TestYamlGetterRegexAndTemplate(t *testing.T) {
 		ValueTemplate: `v{{.Text}}`,
 	}
 
-	val, err := getter.GetValue(directory)
+	val, err := getter.GetValue(directory, cache.NewMemoryCache())
 
 	assert.Nil(t, err)
 	assert.Equal(t, "v1.17.1", val)
@@ -218,7 +219,7 @@ func TestYamlGetterTextTemplate(t *testing.T) {
 		ValueTemplate: `v{{.Text}}`,
 	}
 
-	val, err := getter.GetValue(directory)
+	val, err := getter.GetValue(directory, cache.NewMemoryCache())
 
 	assert.Nil(t, err)
 	assert.Equal(t, "v1.17.1", val)

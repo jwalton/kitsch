@@ -12,9 +12,13 @@ projectTypes:
     toolVersion:
       type: custom
       from: "node --version"
+      cache:
+        enabled: true
     packageManagerVersion:
       type: custom
       from: "npm --version"
+      cache:
+        enabled: true
     packageVersion:
       type: ancestorFile
       from: package.json
@@ -75,6 +79,7 @@ For any getter, you can also specify:
 - `as:` - how to interpret the retrieved value - one of `text`, `json`, `toml`, or `yaml`. For `json`, `toml`, or `yaml`, the file will be parsed and the results passed to the `valueTemplate`. For `text`, the valueTemplate will get a `{ Text }` object. If `as` is specified and `valueTemplate` is not, then this getter will never return a value.
 - `valueTemplate` - A template used to render the value. Note that the valueTemplate is passed the parsed object from "as" - `.Globals` are not available in this template, nor are style functions.
 - `regex` - A regular expression used to extract a value - if there are any capturing groups in the regex, then the first capturing group will be returned. Otherwise, the matched text will be returned. If `regex` is specified, then `as` will be ignored. If both `regex` and `valueTemplate` are specified, then `valueTemplate` will be run after the regex.
+- `cache` - Caching only applies to "custom" getters.  If `cache.enabled` is true, then the getter will resolve the full path of the executable (following any sym-links), and then use the full path, the last modified date, the size of the command, and the arguments as a cache key.  Caches are written to the "cache" subfolder in your configuration directory.  Caching means that, if we're interested in what version of npm is installed, we only need to run `npm --version` if and when the `npm` executable changes (which is good, because `npm version` takes almost half a second, which would add unacceptable delay to the command prompt).
 
 An example of the `regex` option can be seen in this example to fetch the version from the `go version` command. This will print a value like "go version go1.17.1 darwin/amd64", and the regex will extract the "1.17.1" part:
 

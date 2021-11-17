@@ -23,6 +23,7 @@ import (
 	"os/user"
 	"time"
 
+	"github.com/jwalton/kitsch-prompt/internal/cache"
 	"github.com/jwalton/kitsch-prompt/internal/fileutils"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/env"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/log"
@@ -135,6 +136,8 @@ type Context struct {
 	Environment env.Env
 	// Directory is the current working directory.
 	Directory fileutils.Directory
+	// The cache to retrieve values from.
+	ValueCache cache.Cache
 	// Styles is the style registry to use to create styles.
 	Styles styling.Registry
 	// Globals is a collection of "global" values that are passed to all modules.

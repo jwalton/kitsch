@@ -13,6 +13,7 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-runewidth v0.0.13
 	github.com/mattn/go-shellwords v1.0.12 // indirect
+	github.com/natefinch/atomic v1.0.1 // indirect
 	github.com/rivo/uniseg v0.2.0
 	github.com/spf13/cobra v1.1.3
 	github.com/stretchr/testify v1.7.0
