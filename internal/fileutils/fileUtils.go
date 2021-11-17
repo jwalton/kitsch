@@ -1,6 +1,7 @@
 package fileutils
 
 import (
+	"fmt"
 	"io/fs"
 	"os"
 	"os/exec"
@@ -9,7 +10,8 @@ import (
 	"syscall"
 )
 
-func findExecutable(file string) error {
+// isExecutable returns an error if file is not an executable.
+func isExecutable(file string) error {
 	d, err := os.Stat(file)
 	if err != nil {
 		return err
@@ -20,24 +22,31 @@ func findExecutable(file string) error {
 	return fs.ErrPermission
 }
 
-// LookPathSafe is like exec.LookPath, but does not search in ".", event
+// LookPathSafe is like exec.LookPath, but does not search in ".", even
 // if it is in the path.
 func LookPathSafe(file string) (string, error) {
-	if strings.Contains(file, "/") {
-		err := findExecutable(file)
-		if err == nil {
-			return file, nil
+	// If the file is absolute, don't try to search in the path.
+	if filepath.IsAbs(file) {
+		err := isExecutable(file)
+		if err != nil {
+			return "", &exec.Error{Name: file, Err: err}
 		}
-		return "", &exec.Error{Name: file, Err: err}
+		return file, nil
 	}
 
+	// If the file contains a "/", don't try to look it up - we do not allow relative paths.
+	if strings.ContainsRune(file, filepath.Separator) {
+		return "", &exec.Error{Name: file, Err: fmt.Errorf("invalid path")}
+	}
+
+	// Search the path.
 	path := os.Getenv("PATH")
 	for _, dir := range filepath.SplitList(path) {
 		if dir == "" || dir == "." {
 			continue
 		}
 		path := filepath.Join(dir, file)
-		if err := findExecutable(path); err == nil {
+		if err := isExecutable(path); err == nil {
 			return path, nil
 		}
 	}
