@@ -71,6 +71,7 @@ func (getter CustomGetter) GetValue(
 	case "ancestorFile":
 		bytesValue, err = getter.getAncestorFileValue(folder, getter.From)
 	case "env":
+		// TODO: This should use env.Getenv() instead of os.Getenv().
 		strValue := os.Getenv(getter.From)
 		if strValue == "" {
 			bytesValue = nil

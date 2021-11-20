@@ -46,7 +46,7 @@ func (mod HostnameModule) Execute(context *Context) ModuleResult {
 	defaultText := ""
 
 	if show {
-		defaultText = context.Globals.Username
+		defaultText = hostname
 	}
 
 	return executeModule(context, mod.CommonConfig, data, mod.Style, defaultText)

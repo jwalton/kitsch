@@ -12,7 +12,7 @@ import (
 func TestDirectory(t *testing.T) {
 	mod := moduleFromYAMLMust("{type: directory}")
 
-	context := testContext("jwalton")
+	context := newTestContext("jwalton")
 	context.Globals.CWD = "/tmp/test"
 
 	result := mod.Execute(context)
@@ -27,7 +27,7 @@ func TestDirectory(t *testing.T) {
 func TestHomeDirectory(t *testing.T) {
 	mod := moduleFromYAMLMust("{type: directory}")
 
-	context := testContext("jwalton")
+	context := newTestContext("jwalton")
 	context.Globals.CWD = context.Globals.Home
 
 	result := mod.Execute(context)
@@ -42,7 +42,7 @@ func TestHomeDirectory(t *testing.T) {
 func TestHomeDirectorySubdirectory(t *testing.T) {
 	mod := moduleFromYAMLMust("{type: directory}")
 
-	context := testContext("jwalton")
+	context := newTestContext("jwalton")
 	context.Globals.CWD = "/Users/jwalton/foo"
 
 	result := mod.Execute(context)
@@ -60,7 +60,7 @@ func TestHomeDirectorySubdirectoryTruncated(t *testing.T) {
 		truncationLength: 3
 	`))
 
-	context := testContext("jwalton")
+	context := newTestContext("jwalton")
 	context.Globals.CWD = "/Users/jwalton/foo/bar/baz/qux"
 
 	assert.Equal(t, "…/bar/baz/qux", mod.Execute(context).Text)
@@ -77,7 +77,7 @@ func TestDirectoryTruncateToHome(t *testing.T) {
 		truncationLength: 3
 	`))
 
-	context := testContext("jwalton")
+	context := newTestContext("jwalton")
 	context.Globals.CWD = "/tmp/foo/bar/baz/qux"
 
 	assert.Equal(t, "…/bar/baz/qux", mod.Execute(context).Text)
@@ -89,14 +89,18 @@ func TestDirectoryTruncateToGitRepo(t *testing.T) {
 		truncationLength: 3
 	`))
 
-	context := testContext("jwalton")
+	context := newTestContext("jwalton")
 	context.Environment = &env.DummyEnv{
 		Env: map[string]string{
 			"USER": "jwalton",
 			"HOME": "/Users/jwalton",
 		},
-		TestGit: &gitutils.GitUtils{RepoRoot: "/Users/jwalton/dev/kitsch-prompt"},
 	}
+
+	// FIXME: Create a test git instance.  This won't work unless git is installed
+	// and this is in the right directory.
+	context.gitInitialized = true
+	context.git = &gitutils.GitUtils{RepoRoot: "/Users/jwalton/dev/kitsch-prompt"}
 
 	context.Globals.CWD = "/Users/jwalton/dev/kitsch-prompt/src"
 	assert.Equal(t, "…/kitsch-prompt/src", mod.Execute(context).Text)

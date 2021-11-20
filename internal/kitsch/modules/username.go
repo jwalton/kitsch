@@ -1,6 +1,9 @@
 package modules
 
 import (
+	"os/user"
+
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/log"
 	"gopkg.in/yaml.v3"
 )
 
@@ -31,10 +34,8 @@ type UsernameModule struct {
 }
 
 type usernameModuleData struct {
-	// Username is the current user's username.
-	Username string
-	// FullName is the current user's full name, if available.
-	FullName string
+	// username is the current user's username.
+	username string
 	// IsRoot is true if the current user is root.
 	IsRoot bool
 	// IsSSH is true if the user is in an SSH session.
@@ -43,15 +44,32 @@ type usernameModuleData struct {
 	Show bool
 }
 
+// Username is the current user's username.
+func (data usernameModuleData) Username() string {
+	if data.username != "" {
+		return data.username
+	}
+
+	// Fetch the user from the OS.  This can be a little slow, eating up around
+	// 6ms on MaxOS and Linux style systems, which is why we prefer to get
+	// the username from the env.  The good news is that `os/user` caches this
+	// value for us, so repeated calls shouldn't be slow.
+	user, err := user.Current()
+	if err != nil {
+		log.Info("Unable to get current user: " + err.Error())
+		return ""
+	}
+	return user.Username
+}
+
 // Execute the username module.
 func (mod UsernameModule) Execute(context *Context) ModuleResult {
-	isRoot := context.Environment.IsRoot()
+	isRoot := context.Globals.IsRoot
 	isSSH := context.Environment.HasSomeEnv("SSH_CLIENT", "SSH_CONNECTION", "SSH_TTY")
 	show := isSSH || isRoot || mod.ShowAlways
 
 	data := usernameModuleData{
-		Username: context.Globals.Username,
-		FullName: context.Globals.UserFullName,
+		username: context.Environment.Getenv("USER"),
 		IsRoot:   isRoot,
 		IsSSH:    isSSH,
 		Show:     show,
@@ -61,7 +79,7 @@ func (mod UsernameModule) Execute(context *Context) ModuleResult {
 	style := mod.Style
 
 	if show {
-		defaultText = context.Globals.Username
+		defaultText = data.Username()
 		if isRoot && mod.RootStyle != "" {
 			style = mod.RootStyle
 		}

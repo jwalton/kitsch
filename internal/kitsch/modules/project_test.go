@@ -13,7 +13,7 @@ import (
 )
 
 func TestProject(t *testing.T) {
-	context := testContext("jwalton")
+	context := newTestContext("jwalton")
 
 	fsys := fstest.MapFS{
 		"tool.txt": &fstest.MapFile{

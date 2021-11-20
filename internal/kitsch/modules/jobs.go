@@ -33,7 +33,7 @@ type jobsModuleData struct {
 
 // Execute the module.
 func (mod JobsModule) Execute(context *Context) ModuleResult {
-	jobs := context.Environment.Jobs()
+	jobs := context.Globals.Jobs
 	showSymbol := jobs >= mod.SymbolThreshold
 	showCount := jobs >= mod.CountThreshold
 

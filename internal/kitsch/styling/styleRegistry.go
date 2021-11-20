@@ -2,8 +2,10 @@ package styling
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/jwalton/gchalk"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/log"
 )
 
 // Registry is used to store and retrieve styles.
@@ -24,6 +26,17 @@ func (registry *Registry) AddCustomColor(name string, color string) {
 		registry.CustomColors = map[string]string{}
 	}
 	registry.CustomColors[name] = color
+}
+
+// AddCustomColors adds a collection of custom colors to the registry.
+func (registry *Registry) AddCustomColors(colors map[string]string) {
+	for colorName, color := range colors {
+		if !strings.HasPrefix(colorName, "$") {
+			log.Warn("Custom color \"" + colorName + "must start with $")
+		} else {
+			registry.AddCustomColor(colorName, color)
+		}
+	}
 }
 
 // Get compiles a style string into a style, and returns the style.  Styles

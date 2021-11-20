@@ -19,16 +19,10 @@ package modules
 
 import (
 	"fmt"
-	"os"
-	"os/user"
 	"time"
 
-	"github.com/jwalton/kitsch-prompt/internal/cache"
-	"github.com/jwalton/kitsch-prompt/internal/fileutils"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/env"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/log"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/modtemplate"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/projects"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/styling"
 )
 
@@ -61,90 +55,6 @@ type ModuleResult struct {
 	EndStyle styling.CharacterColors
 	// ChildDurations is an array of execution times for children of this module.
 	ChildDurations []ModuleDuration
-}
-
-// Globals is a collection of "global" values that are passed to all modules.
-// These values are available to templates via the ".Globals" property.
-type Globals struct {
-	// CWD is the current wordking directory.
-	CWD string
-	// Home is the user's home directory.
-	Home string
-	// Username is the user's username.
-	Username string
-	// UserFullName is the user's full name.
-	UserFullName string
-	// Hostname is the name of the current machine.
-	Hostname string
-	// Status is the return status of the previous command.
-	Status int
-	// PreviousCommandDuration is the duration of the previous command, in milliseconds.
-	PreviousCommandDuration int64
-	// Keymap is the zsh/fish keymap. This will be "" if vi mode is not enabled,
-	// "" or "main" in insert mode, and "vicmd" in normal mode.
-	Keymap string
-	// Shell is the type of the shell (e.g. "zsh", "bash", "powershell", etc...).
-	Shell string
-}
-
-// NewGlobals creates a new Globals object.
-func NewGlobals(
-	shell string,
-	status int,
-	previousCommandDuration int64,
-	keymap string,
-) Globals {
-	cwd, err := os.Getwd()
-	if err != nil {
-		cwd = "."
-	}
-
-	home, err := os.UserHomeDir()
-	if err != nil {
-		home = "~"
-	}
-
-	user, err := user.Current()
-	username := ""
-	userFullName := ""
-	if err == nil {
-		username = user.Username
-		userFullName = user.Name
-	}
-
-	hostname, err := os.Hostname()
-	if err != nil {
-		hostname = ""
-	}
-
-	return Globals{
-		CWD:                     cwd,
-		Home:                    home,
-		Username:                username,
-		UserFullName:            userFullName,
-		Hostname:                hostname,
-		Status:                  status,
-		PreviousCommandDuration: previousCommandDuration,
-		Keymap:                  keymap,
-		Shell:                   shell,
-	}
-}
-
-// Context is a set of common parameters passed to Module.Execute.
-type Context struct {
-	// Environment is the environment to fetch data from.
-	Environment env.Env
-	// Directory is the current working directory.
-	Directory fileutils.Directory
-	// The cache to retrieve values from.
-	ValueCache cache.Cache
-	// Styles is the style registry to use to create styles.
-	Styles styling.Registry
-	// Globals is a collection of "global" values that are passed to all modules.
-	// These values are available to templates via the ".Globals" property.
-	Globals Globals
-	// ProjectTypes is the list of available project types.
-	ProjectTypes []projects.ProjectType
 }
 
 // Module represnts a module that generates some output to show in the prompt.

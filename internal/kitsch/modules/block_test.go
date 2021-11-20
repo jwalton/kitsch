@@ -17,7 +17,7 @@ func TestBlock(t *testing.T) {
 		  text: world
     `))
 
-	result := blockMod.Execute(testContext("jwalton"))
+	result := blockMod.Execute(newTestContext("jwalton"))
 	assert.Equal(t, "hello world", result.Text)
 }
 
@@ -34,7 +34,7 @@ func TestBlockStyles(t *testing.T) {
 		  text: world
     `))
 
-	result := blockMod.Execute(testContext("jwalton"))
+	result := blockMod.Execute(newTestContext("jwalton"))
 	assert.Equal(t, "hello redblue world", result.Text)
 }
 
@@ -51,7 +51,7 @@ func TestBlockSubIDs(t *testing.T) {
 		- type: prompt
     `))
 
-	result := blockMod.Execute(testContext("oriana"))
+	result := blockMod.Execute(newTestContext("oriana"))
 
 	assert.Equal(t, "oriana", result.Text)
 }

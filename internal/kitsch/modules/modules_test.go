@@ -11,7 +11,7 @@ func TestExecuteModule(t *testing.T) {
 	data := map[string]interface{}{}
 
 	result := executeModule(
-		testContext("jwalton"),
+		newTestContext("jwalton"),
 		CommonConfig{},
 		data,
 		"",
@@ -36,7 +36,7 @@ func TestExecuteModuleWithTemplate(t *testing.T) {
 	moduleStyle := ""
 
 	result := executeModule(
-		testContext("jwalton"),
+		newTestContext("jwalton"),
 		CommonConfig{
 			Template: "--{{.Data.Text}}--",
 		},

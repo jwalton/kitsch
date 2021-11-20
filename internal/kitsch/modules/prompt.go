@@ -8,12 +8,6 @@ import (
 //
 // The prompt module displays a "$", or a "#" if the current user is root.
 //
-// The prompt module provides the following template variables:
-//
-// • IsRoot - True if the user is root, false otherwise.
-//
-// • Status - An `int` which represents the return status of the last command.
-//
 type PromptModule struct {
 	CommonConfig `yaml:",inline"`
 	// Prompt is what to display as the prompt.  Defaults to "$ ".
@@ -32,20 +26,26 @@ type PromptModule struct {
 	ErrorStyle string `yaml:"errorStyle"`
 }
 
+type promptModuleData struct {
+	// PromptString is the chosen prompt string, before styling.
+	PromptString string
+	// PromptStyle is the chosen prompt style.
+	PromptStyle string
+	// ViCmdMode is true if the shell is in vicmd mode.
+	ViCmdMode bool
+}
+
 // Execute the prompt module.
 func (mod PromptModule) Execute(context *Context) ModuleResult {
-	isRoot := context.Environment.IsRoot()
-
-	data := map[string]interface{}{
-		"IsRoot": isRoot,
-	}
-
 	var text string
 	var style string
-	if context.Globals.Keymap == "vicmd" {
+
+	viCmdMode := context.Globals.Keymap == "vicmd"
+
+	if viCmdMode {
 		text = mod.VicmdPrompt
 		style = defaultString(mod.VicmdStyle, mod.Style)
-	} else if !isRoot {
+	} else if !context.Globals.IsRoot {
 		text = mod.Prompt
 		style = mod.Style
 	} else {
@@ -55,6 +55,12 @@ func (mod PromptModule) Execute(context *Context) ModuleResult {
 
 	if context.Globals.Status != 0 {
 		style = defaultString(mod.ErrorStyle, mod.Style)
+	}
+
+	data := promptModuleData{
+		PromptString: text,
+		PromptStyle:  style,
+		ViCmdMode:    viCmdMode,
 	}
 
 	return executeModule(context, mod.CommonConfig, data, style, text)

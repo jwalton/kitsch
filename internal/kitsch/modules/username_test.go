@@ -12,7 +12,7 @@ func TestUsernameNoSSH(t *testing.T) {
 	mod := moduleFromYAMLMust(heredoc.Doc(`
 		type: username
 	`))
-	context := testContext("jwalton")
+	context := newTestContext("jwalton")
 
 	result := mod.Execute(context)
 	assert.Equal(t, "", result.Text)
@@ -23,7 +23,7 @@ func TestUsernameNoSSHWithTemplate(t *testing.T) {
 		type: username
 		template: '{{ .Data.Username }}'
 	`))
-	context := testContext("jwalton")
+	context := newTestContext("jwalton")
 
 	result := mod.Execute(context)
 	assert.Equal(t, "jwalton", result.Text)
@@ -34,7 +34,7 @@ func TestUsername(t *testing.T) {
 		type: username
 	`))
 
-	context := testContext("jwalton")
+	context := newTestContext("jwalton")
 	context.Environment = &env.DummyEnv{
 		Env: map[string]string{
 			"USER":    "jwalton",
@@ -48,12 +48,12 @@ func TestUsername(t *testing.T) {
 	assert.Equal(t, "jwalton", result.Text)
 	assert.Equal(t,
 		usernameModuleData{
-			Username: "jwalton",
-			FullName: "Jason Walton",
+			username: "jwalton",
 			IsRoot:   false,
 			IsSSH:    true,
 			Show:     true,
 		},
 		result.Data.(usernameModuleData),
 	)
+	assert.Equal(t, "jwalton", result.Data.(usernameModuleData).Username())
 }

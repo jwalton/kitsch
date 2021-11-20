@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/env"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/styling"
 	"github.com/stretchr/testify/assert"
 )
@@ -12,14 +11,16 @@ import (
 func TestPrompt(t *testing.T) {
 	mod := moduleFromYAMLMust("{type: prompt}")
 
-	context := testContext("jwalton")
+	context := newTestContext("jwalton")
 
 	result := mod.Execute(context)
 
 	assert.Equal(t, ModuleResult{
 		Text: "$ ",
-		Data: map[string]interface{}{
-			"IsRoot": false,
+		Data: promptModuleData{
+			PromptString: "$ ",
+			PromptStyle:  "",
+			ViCmdMode:    false,
 		},
 		StartStyle: styling.CharacterColors{},
 		EndStyle:   styling.CharacterColors{},
@@ -29,15 +30,17 @@ func TestPrompt(t *testing.T) {
 func TestRootPrompt(t *testing.T) {
 	mod := moduleFromYAMLMust("{type: prompt}")
 
-	context := testContext("jwalton")
-	context.Environment = &env.DummyEnv{Root: true}
+	context := newTestContext("jwalton")
+	context.Globals.IsRoot = true
 
 	result := mod.Execute(context)
 
 	assert.Equal(t, ModuleResult{
 		Text: "# ",
-		Data: map[string]interface{}{
-			"IsRoot": true,
+		Data: promptModuleData{
+			PromptString: "# ",
+			PromptStyle:  "",
+			ViCmdMode:    false,
 		},
 		StartStyle: styling.CharacterColors{},
 		EndStyle:   styling.CharacterColors{},
@@ -51,12 +54,11 @@ func TestStyle(t *testing.T) {
 		rootStyle: red
 	`))
 
-	context := testContext("jwalton")
-	context.Environment = &env.DummyEnv{Root: false}
+	context := newTestContext("jwalton")
 
 	result := mod.Execute(context)
 
-	context.Environment = &env.DummyEnv{Root: true}
+	context.Globals.IsRoot = true
 	rootResult := mod.Execute(context)
 
 	assert.Equal(t, "blue", result.StartStyle.FG)

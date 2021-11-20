@@ -50,7 +50,7 @@ type GitStatusModule struct {
 
 // Execute runs a git module.
 func (mod GitStatusModule) Execute(context *Context) ModuleResult {
-	git := context.Environment.Git()
+	git := context.Git()
 
 	if git == nil {
 		return ModuleResult{}

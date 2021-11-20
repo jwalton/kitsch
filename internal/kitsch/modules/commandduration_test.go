@@ -7,7 +7,7 @@ import (
 )
 
 func TestCmdDuration(t *testing.T) {
-	context := testContext("jwalton")
+	context := newTestContext("jwalton")
 
 	forTime := func(mod Module, time int) string {
 		context.Globals.PreviousCommandDuration = int64(time)

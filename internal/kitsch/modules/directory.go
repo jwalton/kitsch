@@ -52,7 +52,7 @@ func (mod DirectoryModule) Execute(context *Context) ModuleResult {
 
 	path := context.Globals.CWD
 
-	git := context.Environment.Git()
+	git := context.Git()
 	if mod.TruncateToRepo && git != nil && strings.HasPrefix(path, git.RepoRoot) {
 		// Truncate to root of git repo if we're in a git repo.
 		truncateToParts := strings.Split(git.RepoRoot, string(os.PathSeparator))

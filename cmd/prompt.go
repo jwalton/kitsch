@@ -6,13 +6,10 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/jwalton/gchalk"
 	"github.com/jwalton/go-supportscolor"
-	"github.com/jwalton/kitsch-prompt/internal/cache"
-	"github.com/jwalton/kitsch-prompt/internal/fileutils"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/config"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/env"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/log"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/modules"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/styling"
@@ -24,13 +21,16 @@ var promptCmd = &cobra.Command{
 	Use:   "prompt",
 	Short: "Show the prompt",
 	Run: func(cmd *cobra.Command, args []string) {
+		start := time.Now()
+		cacheDir := filepath.Join(userConfigDir, "cache")
+
 		jobs, _ := cmd.Flags().GetInt("jobs")
 		status, _ := cmd.Flags().GetInt("status")
 		keymap, _ := cmd.Flags().GetString("keymap")
 		shell, _ := cmd.Flags().GetString("shell")
 		perf, _ := cmd.Flags().GetBool("perf")
-		verbose, _ := cmd.Flags().GetBool("verbose")
 
+		verbose, _ := cmd.Flags().GetBool("verbose")
 		if verbose {
 			log.SetVerbose(true)
 		}
@@ -48,63 +48,39 @@ var promptCmd = &cobra.Command{
 		gchalk.SetLevel(level.Level)
 		gchalk.Stderr.SetLevel(level.Level)
 
+		setupDuration := time.Since(start)
+
+		// Read configuration
+		start = time.Now()
 		configuration, err := readConfig()
 		if err != nil {
 			println(gchalk.Red("Fatal error parsing configuration: ", err.Error()))
+			fmt.Print("$ ")
 			os.Exit(1)
 		}
+		configurationParsingDuration := time.Since(start)
 
-		globals := modules.NewGlobals(shell, status, cmdDuration, keymap)
-		runtimeEnv := env.New(env.Options{
-			CWD:  globals.CWD,
-			Jobs: jobs,
-		})
+		// Create our context.
+		start = time.Now()
+		globals := modules.NewGlobals(shell, status, jobs, cmdDuration, keymap)
+		styles := styling.Registry{}
+		styles.AddCustomColors(configuration.Colors)
+		context := modules.NewContext(globals, configuration.ProjectsTypes, cacheDir, styles)
+		contextDuration := time.Since(start)
 
-		if err != nil {
-			log.Error(err)
-			fmt.Print("$ ")
-		} else {
-			cacheDir := filepath.Join(userConfigDir, "cache")
-			valueCache := cache.NewFileCache(cacheDir)
+		// Execute the prompt
+		result := configuration.Prompt.Module.Execute(&context)
 
-			result := renderPrompt(configuration, globals, runtimeEnv, valueCache)
-			if perf {
-				renderPerf(result.ChildDurations, 0)
-			}
-
-			withEscapes := shellprompt.AddZeroWidthCharacterEscapes(globals.Shell, result.Text)
-			fmt.Print(withEscapes)
+		if perf {
+			fmt.Printf("Setup time: %v\n", setupDuration)
+			fmt.Printf("Parsing configuration: %v\n", configurationParsingDuration)
+			fmt.Printf("Context setup: %v\n", contextDuration)
+			renderPerf(result.ChildDurations, 0)
 		}
+
+		withEscapes := shellprompt.AddZeroWidthCharacterEscapes(globals.Shell, result.Text)
+		fmt.Print(withEscapes)
 	},
-}
-
-// renderPrompt will render the prompt with the given configuration.
-func renderPrompt(
-	configuration *config.Config,
-	globals modules.Globals,
-	runtimeEnv env.Env,
-	valueCache cache.Cache,
-) modules.ModuleResult {
-	// Load custom colors
-	styles := styling.Registry{}
-	for colorName, color := range configuration.Colors {
-		if !strings.HasPrefix(colorName, "$") {
-			log.Warn("Custom color \"" + colorName + "must start with $")
-		} else {
-			styles.AddCustomColor(colorName, color)
-		}
-	}
-
-	context := modules.Context{
-		Environment:  runtimeEnv,
-		Directory:    fileutils.NewDirectory(globals.CWD),
-		ValueCache:   valueCache,
-		Styles:       styles,
-		Globals:      globals,
-		ProjectTypes: configuration.ProjectsTypes,
-	}
-
-	return configuration.Prompt.Module.Execute(&context)
 }
 
 func renderPerf(durations []modules.ModuleDuration, indent int) {
