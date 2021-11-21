@@ -7,7 +7,8 @@ import (
 
 // Env is an interface to environment variables which can be overridden for testing.
 type Env interface {
-	// Getenv returns the value of the specified environment variable.
+	// Getenv returns the value of the specified environment variable, or an empty
+	// string if the variable does not exist.
 	Getenv(key string) string
 	// HasSomeEnv returns true if at least one of the specified environment variables
 	// is defined and non-empty.  For example:

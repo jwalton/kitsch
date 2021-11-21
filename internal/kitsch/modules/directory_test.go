@@ -97,8 +97,6 @@ func TestDirectoryTruncateToGitRepo(t *testing.T) {
 		},
 	}
 
-	// FIXME: Create a test git instance.  This won't work unless git is installed
-	// and this is in the right directory.
 	context.gitInitialized = true
 	context.git = gitutils.DemoGit{
 		RepoRootDirectory:     "/Users/jwalton/dev/kitsch-prompt",

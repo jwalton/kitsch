@@ -9,32 +9,34 @@ import (
 	"github.com/jwalton/kitsch-prompt/internal/fileutils"
 	"github.com/jwalton/kitsch-prompt/internal/gitutils"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/env"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/getters"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/projects"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/styling"
+	"gopkg.in/yaml.v3"
 )
 
 // Globals is a collection of "global" values that are passed to all modules.
 // These values are available to templates via the ".Globals" property.
 type Globals struct {
 	// CWD is the current wordking directory.
-	CWD string
+	CWD string `yaml:"cwd"`
 	// Home is the user's home directory.
-	Home string
+	Home string `yaml:"home"`
 	// IsRoot is true if this is a non-windows system, and the user is UID 0.
-	IsRoot bool
+	IsRoot bool `yaml:"isRoot"`
 	// Hostname is the name of the current machine.
-	Hostname string
-	// Status is the return status of the previous command.
-	Status int
+	Hostname string `yaml:"hostname"`
 	// Jobs is the number of jobs that the shell is currently running.
-	Jobs int
+	Jobs int `yaml:"jobs"`
+	// Status is the return status of the previous command.
+	Status int `yaml:"previousCommandStatus"`
 	// PreviousCommandDuration is the duration of the previous command, in milliseconds.
-	PreviousCommandDuration int64
+	PreviousCommandDuration int64 `yaml:"previousCommandDuration"`
 	// Keymap is the zsh/fish keymap. This will be "" if vi mode is not enabled,
 	// "" or "main" in insert mode, and "vicmd" in normal mode.
-	Keymap string
+	Keymap string `yaml:"keymap"`
 	// Shell is the type of the shell (e.g. "zsh", "bash", "powershell", etc...).
-	Shell string
+	Shell string `yaml:"shell"`
 }
 
 // NewGlobals creates a new Globals object.
@@ -94,6 +96,24 @@ type Context struct {
 	git            gitutils.Git
 }
 
+// GetWorkingDirectory returns the current working directory.
+func (context *Context) GetWorkingDirectory() fileutils.Directory {
+	return context.Directory
+}
+
+// Getenv returns the value of the specified environment variable.
+func (context *Context) Getenv(key string) string {
+	return context.Environment.Getenv(key)
+}
+
+// GetValueCache returns the value cache.
+func (context *Context) GetValueCache() cache.Cache {
+	return context.ValueCache
+}
+
+// Make sure that Context implements the GetterContext interface.
+var _ getters.GetterContext = (*Context)(nil)
+
 // Git returns a git instance for the current repo, or nil if the current
 // working directory is not part of a git repo, or git is not installed.
 func (context *Context) Git() gitutils.Git {
@@ -121,6 +141,59 @@ func NewContext(
 		ProjectTypes: projectTypes,
 		ValueCache:   cache.NewFileCache(cacheDir),
 		Styles:       styles,
+	}
+}
+
+// DemoConfig is a structure used to create a "demo context".  This is used for
+// unit testing, and for running Kitsch-Prompt in "demo mode" where kitsch-prompt
+// will not attempt to access the filesystem or environment.
+type DemoConfig struct {
+	// Globals are global values that are passed to all modules.
+	Globals Globals `yaml:"globals"`
+	// Env are environment variables to use.
+	Env map[string]string `yaml:"env"`
+	// Git is the git instance to use.
+	Git gitutils.DemoGit `yaml:"git"`
+}
+
+// Load will load the demo configuration from the specified file.
+func (demoConfig *DemoConfig) Load(filename string) error {
+	// Set sensible defaults.
+	demoConfig.Globals = Globals{
+		CWD:      "/users/jwalton",
+		Home:     "/users/jwalton",
+		IsRoot:   false,
+		Hostname: "orac",
+		Shell:    "demo",
+	}
+	demoConfig.Env = map[string]string{
+		"USER": "jwalton",
+	}
+
+	yamlData, err := os.ReadFile(filename)
+	if err != nil {
+		return err
+	}
+
+	// FIXME: Should do strict validation of the yaml content.
+
+	return yaml.Unmarshal(yamlData, demoConfig)
+}
+
+// NewDemoContext creates a demo context object.
+func NewDemoContext(
+	config DemoConfig,
+	styles styling.Registry,
+) Context {
+	return Context{
+		Globals:        config.Globals,
+		Directory:      fileutils.NewDirectoryTestFS(config.Globals.CWD, fstest.MapFS{}),
+		Environment:    env.DummyEnv{Env: config.Env},
+		ProjectTypes:   []projects.ProjectType{},
+		ValueCache:     cache.NewMemoryCache(),
+		Styles:         styles,
+		gitInitialized: true,
+		git:            config.Git,
 	}
 }
 

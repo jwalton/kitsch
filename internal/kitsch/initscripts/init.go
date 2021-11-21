@@ -11,7 +11,7 @@ import (
 //go:embed templates/init.zsh
 var zshTemplate string
 
-// InitScript returns the kitsch-prompt initalization script for the given
+// InitScript returns the kitsch-prompt initialization script for the given
 // shell type.
 func InitScript(shell string, configFile string) (string, error) {
 	kitschCommand, err := os.Executable()

@@ -54,14 +54,14 @@ type CustomGetter struct {
 // GetValue gets the value for this getter.  The return value will be either a string,
 // of if the value is a JSON, YAML, or TOML object, and the `ValueTemplate` is not set,
 // the parsed contents of the object.
-func (getter CustomGetter) GetValue(
-	folder fileutils.Directory,
-	valueCache cache.Cache,
-) (interface{}, error) {
+func (getter CustomGetter) GetValue(context GetterContext) (interface{}, error) {
 	// Get the raw value for the getter.
 	var bytesValue []byte
 	var err error
 	var result interface{}
+
+	folder := context.GetWorkingDirectory()
+	valueCache := context.GetValueCache()
 
 	switch getter.Type {
 	case "custom":
@@ -71,8 +71,7 @@ func (getter CustomGetter) GetValue(
 	case "ancestorFile":
 		bytesValue, err = getter.getAncestorFileValue(folder, getter.From)
 	case "env":
-		// TODO: This should use env.Getenv() instead of os.Getenv().
-		strValue := os.Getenv(getter.From)
+		strValue := context.Getenv(getter.From)
 		if strValue == "" {
 			bytesValue = nil
 		} else {

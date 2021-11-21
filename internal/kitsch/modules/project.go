@@ -52,8 +52,7 @@ type ProjectModule struct {
 
 // Execute the module.
 func (mod ProjectModule) Execute(context *Context) ModuleResult {
-	directory := context.Directory
-	projectInfo := projects.ResolveProjectType(context.ProjectTypes, directory, context.ValueCache)
+	projectInfo := projects.ResolveProjectType(context.ProjectTypes, context)
 
 	if projectInfo == nil {
 		return ModuleResult{}

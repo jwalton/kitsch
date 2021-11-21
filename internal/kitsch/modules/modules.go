@@ -102,7 +102,7 @@ func executeModule(
 	var endStyle styling.CharacterColors
 
 	if config.Template != "" {
-		tmpl, err := modtemplate.CompileTemplate(&context.Styles, "module-template", config.Template)
+		tmpl, err := modtemplate.CompileTemplate(&context.Styles, context.Environment, "module-template", config.Template)
 		if err != nil {
 			// FIX: Should add this error to a list of warnings for this module.
 			log.Warn(fmt.Sprintf("Error compiling template: %v", err))

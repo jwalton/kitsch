@@ -7,24 +7,29 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/env"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/powerline"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/styling"
 )
 
 const recursionMaxNums = 1000
 
-var sprigTemplateFunctions = sprig.TxtFuncMap()
+var sprigTemplateFunctions template.FuncMap
+
+func init() {
+	sprigTemplateFunctions = sprig.TxtFuncMap()
+	delete(sprigTemplateFunctions, "env")
+}
 
 // CompileTemplate compiles a module template and adds default template functions.
-func CompileTemplate(styles *styling.Registry, name string, templateString string) (*template.Template, error) {
-
+func CompileTemplate(styles *styling.Registry, environment env.Env, name string, templateString string) (*template.Template, error) {
 	tmpl := template.New(name)
 
 	funcMap := template.FuncMap{}
 
 	// Borrowed from Helm.
 	// TODO: Make `data` optional.
-	includedNames := make(map[string]int)
+	includedNames := make(map[string]int) // Recursion guard.
 	funcMap["include"] = func(name string, data interface{}) (string, error) {
 		var buf strings.Builder
 		if v, ok := includedNames[name]; ok {
@@ -38,6 +43,10 @@ func CompileTemplate(styles *styling.Registry, name string, templateString strin
 		err := tmpl.ExecuteTemplate(&buf, name, data)
 		includedNames[name]--
 		return buf.String(), err
+	}
+
+	funcMap["env"] = func(name string) string {
+		return environment.Getenv(name)
 	}
 
 	tmpl, err := tmpl.

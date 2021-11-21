@@ -118,7 +118,7 @@ func (mod BlockModule) joinChildren(context *Context, children []ModuleResult) s
 		// Compile the join template
 		if mod.Join != "" {
 			var err error
-			join, err = modtemplate.CompileTemplate(&context.Styles, "join", mod.Join)
+			join, err = modtemplate.CompileTemplate(&context.Styles, context.Environment, "join", mod.Join)
 			if err != nil {
 				join = nil
 			}

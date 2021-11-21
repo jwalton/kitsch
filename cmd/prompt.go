@@ -29,6 +29,7 @@ var promptCmd = &cobra.Command{
 		keymap, _ := cmd.Flags().GetString("keymap")
 		shell, _ := cmd.Flags().GetString("shell")
 		perf, _ := cmd.Flags().GetBool("perf")
+		demo, _ := cmd.Flags().GetString("demo")
 
 		verbose, _ := cmd.Flags().GetBool("verbose")
 		if verbose {
@@ -58,14 +59,27 @@ var promptCmd = &cobra.Command{
 			fmt.Print("$ ")
 			os.Exit(1)
 		}
+
+		styles := styling.Registry{}
+		styles.AddCustomColors(configuration.Colors)
+
 		configurationParsingDuration := time.Since(start)
 
 		// Create our context.
 		start = time.Now()
-		globals := modules.NewGlobals(shell, status, jobs, cmdDuration, keymap)
-		styles := styling.Registry{}
-		styles.AddCustomColors(configuration.Colors)
-		context := modules.NewContext(globals, configuration.ProjectsTypes, cacheDir, styles)
+		var context modules.Context
+		if demo != "" {
+			demoConfig := &modules.DemoConfig{}
+			err := demoConfig.Load(demo)
+			if err != nil {
+				log.Error("Failed to load demo config:", err)
+				os.Exit(1)
+			}
+			context = modules.NewDemoContext(*demoConfig, styles)
+		} else {
+			globals := modules.NewGlobals(shell, status, jobs, cmdDuration, keymap)
+			context = modules.NewContext(globals, configuration.ProjectsTypes, cacheDir, styles)
+		}
 		contextDuration := time.Since(start)
 
 		// Execute the prompt
@@ -78,7 +92,7 @@ var promptCmd = &cobra.Command{
 			renderPerf(result.ChildDurations, 0)
 		}
 
-		withEscapes := shellprompt.AddZeroWidthCharacterEscapes(globals.Shell, result.Text)
+		withEscapes := shellprompt.AddZeroWidthCharacterEscapes(context.Globals.Shell, result.Text)
 		fmt.Print(withEscapes)
 	},
 }
@@ -116,4 +130,5 @@ func init() {
 	promptCmd.Flags().IntP("status", "s", 0, "The status code of the previously run command")
 	promptCmd.Flags().Bool("perf", false, "Print performance information about each module")
 	promptCmd.Flags().Bool("verbose", false, "Print verbose output")
+	promptCmd.Flags().String("demo", "", "If present, kitsch-prompt will run in demo mode, loading values from the specified file.")
 }
