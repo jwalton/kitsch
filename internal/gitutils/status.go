@@ -3,7 +3,7 @@ package gitutils
 import "os/exec"
 
 // Stats returns status counters for the given git repo.
-func (utils *GitUtils) Stats() (GitStats, error) {
+func (utils *gitUtils) Stats() (GitStats, error) {
 	if utils.pathToGit == "" {
 		return GitStats{}, ErrNoGit
 	}
@@ -11,7 +11,7 @@ func (utils *GitUtils) Stats() (GitStats, error) {
 	// This uses `exec.Command` instead of go-git's worktree.Status(),
 	// because worktree.Status() is crazy slow: https://github.com/go-git/go-git/issues/181
 	cmd := exec.Command(utils.pathToGit, "status", "-z")
-	cmd.Dir = utils.RepoRoot
+	cmd.Dir = utils.repoRoot
 	stats := GitStats{}
 	cmd.Stdout = &statusWriter{stats: &stats}
 	err := cmd.Run()
@@ -22,21 +22,21 @@ func (utils *GitUtils) Stats() (GitStats, error) {
 // and files which are unmerged.
 type GitStats struct {
 	// Index contains counts of files in the index.
-	Index GitFileStats
+	Index GitFileStats `yaml:"index"`
 	// Unstaged contains counts of unstaged changes in the work tree.
-	Unstaged GitFileStats
+	Unstaged GitFileStats `yaml:"unstaged"`
 	// Unmerged is a count of unmerged files.
-	Unmerged int
+	Unmerged int `yaml:"unmerged"`
 }
 
 // GitFileStats contains counts of files in the index or in the work tree.
 type GitFileStats struct {
 	// Added is the number of files that have been added.
-	Added int
+	Added int `yaml:"added"`
 	// Modified is the number of files that have been modified.
-	Modified int
+	Modified int `yaml:"modified"`
 	// Deleted is the number of files that have been deleted.
-	Deleted int
+	Deleted int `yaml:"deleted"`
 }
 
 type statusWriter struct {

@@ -40,22 +40,22 @@ const (
 // RepositoryState represents the overall state of a git repository.
 type RepositoryState struct {
 	// State is the current state of this repo.
-	State RepositoryStateType
+	State RepositoryStateType `yaml:"state"`
 	// Step is the current step number if we are rebasing, 0 otherwise.
-	Step string
+	Step string `yaml:"step"`
 	// Total is the total number of steps to complete to finish the rebase, or 0
 	// if not rebasing.
-	Total string
+	Total string `yaml:"total"`
 	// HeadDescription is the name of the branch we are currently on if the head
 	// is not detached.  If the head is detached, this will be  the branch name
 	// if we are in the middle of a rebase or merge, the tag name if the head is
 	// at a tag, or the short hash otherwise.
-	HeadDescription string
+	HeadDescription string `yaml:"headDescription"`
 	// IsDetached is true if the head is currently detached.
-	IsDetached bool
+	IsDetached bool `yaml:"isDetached"`
 }
 
-func (g *GitUtils) readFileIfExist(path string) string {
+func (g *gitUtils) readFileIfExist(path string) string {
 	if g.fsys == nil {
 		return ""
 	}
@@ -70,7 +70,7 @@ func (g *GitUtils) readFileIfExist(path string) string {
 // State returns the current state of the repository.
 // Based loosely on posh-git's Get-GitBranch.
 // https://github.com/dahlbyk/posh-git/blob/b79c2dc39c9387847642bc3b38fa2186b29f6113/src/GitUtils.ps1#L62
-func (g *GitUtils) State() RepositoryState {
+func (g *gitUtils) State() RepositoryState {
 	var result RepositoryState
 
 	if g.fsys == nil {
@@ -121,7 +121,7 @@ func (g *GitUtils) State() RepositoryState {
 // getHeadDescription returns a description of the current "HEAD".  This will
 // be the branch name, or if the head is detached this will be the tag name or
 // short hash.
-func (g *GitUtils) getHeadDescription() (description string, isDetached bool) {
+func (g *gitUtils) getHeadDescription() (description string, isDetached bool) {
 	isDetached = true
 
 	head := g.readFileIfExist(".git/HEAD")
@@ -170,7 +170,7 @@ var errNotFound = errors.New("Not found")
 
 // GetTagNameForHash returns the tag name for the hash, or an error if no such
 // tag exists.  "hash" can be a short hash.
-func (g *GitUtils) GetTagNameForHash(hash string) (string, error) {
+func (g *gitUtils) GetTagNameForHash(hash string) (string, error) {
 	if g.fsys == nil {
 		return "", errNotFound
 	}
@@ -221,7 +221,7 @@ func (g *GitUtils) GetTagNameForHash(hash string) (string, error) {
 
 // resolveSymbolicRef returns the hash for a given symbolic ref.
 // e.g. this turns "refs/heads/master" into a hash.
-func (g *GitUtils) resolveSymbolicRef(ref string) (string, error) {
+func (g *gitUtils) resolveSymbolicRef(ref string) (string, error) {
 	if g.fsys == nil {
 		return "", errNotFound
 	}

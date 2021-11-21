@@ -26,10 +26,10 @@ func TestGetUpstream(t *testing.T) {
 		},
 	}
 
-	git := &GitUtils{
+	git := &gitUtils{
 		pathToGit: "git",
 		fsys:      files,
-		RepoRoot:  "/Users/oriana/dev/kitsch-prompt",
+		repoRoot:  "/Users/oriana/dev/kitsch-prompt",
 	}
 
 	assert.Equal(t,
@@ -55,10 +55,10 @@ func TestGetUpstreamNoConfig(t *testing.T) {
 		},
 	}
 
-	git := &GitUtils{
+	git := &gitUtils{
 		pathToGit: "git",
 		fsys:      files,
-		RepoRoot:  "/Users/oriana/dev/kitsch-prompt",
+		repoRoot:  "/Users/oriana/dev/kitsch-prompt",
 	}
 
 	assert.Equal(t,

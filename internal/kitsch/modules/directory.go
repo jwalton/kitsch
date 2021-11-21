@@ -53,9 +53,9 @@ func (mod DirectoryModule) Execute(context *Context) ModuleResult {
 	path := context.Globals.CWD
 
 	git := context.Git()
-	if mod.TruncateToRepo && git != nil && strings.HasPrefix(path, git.RepoRoot) {
+	if mod.TruncateToRepo && git != nil && strings.HasPrefix(path, git.RepoRoot()) {
 		// Truncate to root of git repo if we're in a git repo.
-		truncateToParts := strings.Split(git.RepoRoot, string(os.PathSeparator))
+		truncateToParts := strings.Split(git.RepoRoot(), string(os.PathSeparator))
 		truncateToPath := strings.Join(truncateToParts[:len(truncateToParts)-1], string(os.PathSeparator))
 		path = truncationSymbol + mod.truncateToFolder(path, truncateToPath)
 		isTruncated = true

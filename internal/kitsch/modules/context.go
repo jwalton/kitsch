@@ -91,12 +91,12 @@ type Context struct {
 
 	mutex          sync.Mutex
 	gitInitialized bool
-	git            *gitutils.GitUtils
+	git            gitutils.Git
 }
 
 // Git returns a git instance for the current repo, or nil if the current
 // working directory is not part of a git repo, or git is not installed.
-func (context *Context) Git() *gitutils.GitUtils {
+func (context *Context) Git() gitutils.Git {
 	context.mutex.Lock()
 	defer context.mutex.Unlock()
 
@@ -148,8 +148,10 @@ func newTestContext(username string) *Context {
 				"HOME": "/Users/" + username,
 			},
 		},
-		ProjectTypes: projects.DefaultProjectTypes,
-		ValueCache:   cache.NewMemoryCache(),
-		Styles:       styling.Registry{},
+		ProjectTypes:   projects.DefaultProjectTypes,
+		ValueCache:     cache.NewMemoryCache(),
+		Styles:         styling.Registry{},
+		gitInitialized: true,
+		git:            nil,
 	}
 }

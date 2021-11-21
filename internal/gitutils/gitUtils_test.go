@@ -25,10 +25,10 @@ b0592fb675bd471541928aa8c9900ba76f748ac8 9f139fbbde7200508adecc1b9adad67e99204ae
 		},
 	}
 
-	git := &GitUtils{
+	git := &gitUtils{
 		pathToGit: "git",
 		fsys:      files,
-		RepoRoot:  "/Users/oriana/dev/kitsch-prompt",
+		repoRoot:  "/Users/oriana/dev/kitsch-prompt",
 	}
 
 	result, err := git.GetStashCount()
@@ -43,10 +43,10 @@ func TestGetStashCountNoStashes(t *testing.T) {
 		},
 	}
 
-	git := &GitUtils{
+	git := &gitUtils{
 		pathToGit: "git",
 		fsys:      files,
-		RepoRoot:  "/Users/oriana/dev/kitsch-prompt",
+		repoRoot:  "/Users/oriana/dev/kitsch-prompt",
 	}
 
 	result, err := git.GetStashCount()
@@ -78,10 +78,10 @@ func TestReadObject(t *testing.T) {
 		},
 	}
 
-	git := &GitUtils{
+	git := &gitUtils{
 		pathToGit: "git",
 		fsys:      files,
-		RepoRoot:  "/Users/oriana/dev/kitsch-prompt",
+		repoRoot:  "/Users/oriana/dev/kitsch-prompt",
 	}
 
 	objectType, content, err := git.ReadObject("b0592fb675bd471541928aa8c9900ba76f748ac8")

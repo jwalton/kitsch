@@ -17,10 +17,10 @@ func TestStateOnBranch(t *testing.T) {
 		},
 	}
 
-	git := &GitUtils{
+	git := &gitUtils{
 		pathToGit: "git",
 		fsys:      files,
-		RepoRoot:  "/Users/oriana/dev/kitsch-prompt",
+		repoRoot:  "/Users/oriana/dev/kitsch-prompt",
 	}
 
 	state := git.State()
@@ -46,10 +46,10 @@ func TestStateDetached(t *testing.T) {
 		},
 	}
 
-	git := &GitUtils{
+	git := &gitUtils{
 		pathToGit: "git",
 		fsys:      files,
-		RepoRoot:  "/Users/oriana/dev/kitsch-prompt",
+		repoRoot:  "/Users/oriana/dev/kitsch-prompt",
 	}
 
 	state := git.State()
@@ -78,10 +78,10 @@ func TestStateOnTag(t *testing.T) {
 		},
 	}
 
-	git := &GitUtils{
+	git := &gitUtils{
 		pathToGit: "git",
 		fsys:      files,
-		RepoRoot:  "/Users/oriana/dev/kitsch-prompt",
+		repoRoot:  "/Users/oriana/dev/kitsch-prompt",
 	}
 
 	state := git.State()
@@ -98,10 +98,10 @@ func TestStateOnTag(t *testing.T) {
 }
 
 func TestStateInNonGitRepo(t *testing.T) {
-	git := &GitUtils{
+	git := &gitUtils{
 		pathToGit: "git",
 		fsys:      nil,
-		RepoRoot:  "",
+		repoRoot:  "",
 	}
 
 	state := git.State()

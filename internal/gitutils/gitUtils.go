@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/jwalton/kitsch-prompt/internal/fileutils"
 )
@@ -19,17 +20,36 @@ var ErrNoGit = errors.New("Git is not installed")
 
 // GitUtils is an object that allows you to retrieve information about
 // a git repository.
-type GitUtils struct {
+type gitUtils struct {
 	// pathToGit is the path to the git executable.
 	pathToGit string
 	// fsys is an fs.FS instance bound to the root of the git repository.
 	fsys fs.FS
 	// RepoRoot is the root folder of the git repository.
-	RepoRoot string
+	repoRoot string
 }
 
-// New returns a new instance of `GitUtils` for the specified repository.
-func New(pathToGit string, folder string) *GitUtils {
+// Git is an interface for interacting with a git repository.
+type Git interface {
+	// RepoRoot returns the root of the git repository.
+	RepoRoot() string
+	// GetStashCount returns the number of stashes.
+	GetStashCount() (int, error)
+	// GetUpstream returns the upstream of the current branch if one exists, or
+	// an empty string otherwise.
+	GetUpstream(branch string) string
+	// GetAheadBehind returns how many commits ahead and behind the given
+	// branch is compared to compareToBranch.  You can use `HEAD` for the branch name.
+	GetAheadBehind(branch string, compareToBranch string) (ahead int, behind int, err error)
+	// State returns the current state of the repository.
+	State() RepositoryState
+	// Stats returns status counters for the given git repo.
+	Stats() (GitStats, error)
+}
+
+// New returns a new instance of `GitUtils` for the specified folder.
+// If the folder is not a git repository, it will return nil.
+func New(pathToGit string, folder string) Git {
 	// Resolve the path to the git executable
 	pathToGit, err := fileutils.LookPathSafe(pathToGit)
 	if err != nil {
@@ -48,10 +68,10 @@ func New(pathToGit string, folder string) *GitUtils {
 		return nil
 	}
 
-	return &GitUtils{
+	return &gitUtils{
 		pathToGit: pathToGit,
 		fsys:      fsys,
-		RepoRoot:  gitRoot,
+		repoRoot:  gitRoot,
 	}
 }
 
@@ -66,13 +86,13 @@ func FindGitRoot(cwd string) string {
 
 // git will run a git command in the root folder of the git repository.
 // Returns empty string if there was an error running the command.
-func (g *GitUtils) git(args ...string) (string, error) {
+func (g *gitUtils) git(args ...string) (string, error) {
 	if g.pathToGit == "" {
 		return "", ErrNoGit
 	}
 
 	cmd := exec.Command(g.pathToGit, args...)
-	cmd.Dir = g.RepoRoot
+	cmd.Dir = g.repoRoot
 
 	out, err := cmd.Output()
 	if err != nil {
@@ -81,33 +101,11 @@ func (g *GitUtils) git(args ...string) (string, error) {
 	return string(out), nil
 }
 
-func countLines(r io.Reader) (int, error) {
-	buf := make([]byte, 32*1024)
-	count := 0
-
-	for {
-		n, err := r.Read(buf)
-		for i := 0; i < n; i++ {
-			if buf[i] == '\n' {
-				count++
-			}
-		}
-
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			return 0, err
-		}
-	}
-
-	return count, nil
+func (g *gitUtils) RepoRoot() string {
+	return g.repoRoot
 }
 
-// GetStashCount returns the number of stashes, or 0 if there are none or
-// the path is not a git repo.
-//
-// `path` should be the git root folder.
-func (g *GitUtils) GetStashCount() (int, error) {
+func (g *gitUtils) GetStashCount() (int, error) {
 	// TODO: Read .git/logs/refs/stash, and count the number of `\n`s.`
 	file, err := g.fsys.Open(".git/logs/refs/stash")
 	if err != nil {
@@ -121,8 +119,38 @@ func (g *GitUtils) GetStashCount() (int, error) {
 	return countLines(file)
 }
 
+func (g *gitUtils) GetUpstream(branch string) string {
+	config, err := g.localConfig()
+	if err != nil {
+		return ""
+	}
+
+	// TODO: If `branch` is HEAD, resolve it.
+	branchConfig := config.Branches[branch]
+	if branchConfig == nil {
+		return ""
+	}
+
+	if !strings.HasPrefix(branchConfig.Merge, "refs/heads/") {
+		return ""
+	}
+
+	return branchConfig.Remote + "/" + branchConfig.Merge[11:]
+}
+
+func (g *gitUtils) GetAheadBehind(branch string, compareToBranch string) (ahead int, behind int, err error) {
+	aheadBehind, err := g.git("rev-list", "--left-right", "--count", branch+"..."+compareToBranch)
+
+	if err != nil {
+		return 0, 0, err
+	}
+
+	fmt.Sscanf(aheadBehind, "%d %d", &ahead, &behind)
+	return ahead, behind, nil
+}
+
 // ReadObject reads a git object from the repo.
-func (g *GitUtils) ReadObject(hash string) (objectType string, data []byte, err error) {
+func (g *gitUtils) ReadObject(hash string) (objectType string, data []byte, err error) {
 	filename := ".git/objects/" + hash[0:2] + "/" + hash[2:]
 	file, err := g.fsys.Open(filename)
 	if err != nil {
@@ -158,7 +186,7 @@ var ErrIncorrectType = errors.New("incorrect object type")
 
 // ReadObjectOfType reads a git object from repo, but only if it is of the
 // provided type.  If the object is not the correct type, returns ErrIncorrectType.
-func (g *GitUtils) ReadObjectOfType(objectType string, hash string) (data []byte, err error) {
+func (g *gitUtils) ReadObjectOfType(objectType string, hash string) (data []byte, err error) {
 	filename := ".git/objects/" + hash[0:2] + "/" + hash[2:]
 	file, err := g.fsys.Open(filename)
 	if err != nil {
@@ -185,23 +213,25 @@ func (g *GitUtils) ReadObjectOfType(objectType string, hash string) (data []byte
 	return getContent(content)
 }
 
-// getContent reads a length-of-content, then a null byte, then the content.
-func getContent(content []byte) ([]byte, error) {
+// getContent reads a "length-of-content", then a null byte, then the content.
+func getContent(from []byte) ([]byte, error) {
 	// Read the size of the contents.
-	sizeStr, sizeLen := readUntil(content, '\x00')
+	sizeStr, sizeLen := readUntil(from, '\x00')
 	size, err := strconv.ParseInt(sizeStr, 10, 64)
 	if err != nil {
 		return nil, fmt.Errorf("invalid size in git object: %s, %w", sizeStr, err)
 	}
 
-	data := content[sizeLen+1:]
-	if len(data) != int(size) {
-		return nil, fmt.Errorf("expected %d bytes but only got %d", size, len(data))
+	content := from[sizeLen+1:]
+	if len(content) != int(size) {
+		return nil, fmt.Errorf("expected %d bytes but only got %d", size, len(content))
 	}
 
-	return data, nil
+	return content, nil
 }
 
+// Read bytes from "bytes" until we find the specified byte.  Returns the read data
+// as a string up until but not including the `until` byte.
 func readUntil(bytes []byte, until byte) (string, int) {
 	index := 0
 	for index < len(bytes) && bytes[index] != until {

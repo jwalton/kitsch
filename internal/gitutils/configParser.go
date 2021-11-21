@@ -20,7 +20,7 @@ type gitconfig struct {
 	Branches map[string]*gitconfigBranch
 }
 
-func (utils *GitUtils) localConfig() (gitconfig, error) {
+func (utils *gitUtils) localConfig() (gitconfig, error) {
 	configFile, err := utils.fsys.Open(".git/config")
 	if err != nil {
 		return gitconfig{}, err
