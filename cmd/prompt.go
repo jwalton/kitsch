@@ -26,6 +26,7 @@ var promptCmd = &cobra.Command{
 
 		jobs, _ := cmd.Flags().GetInt("jobs")
 		status, _ := cmd.Flags().GetInt("status")
+		terminalWidth, _ := cmd.Flags().GetInt("terminal-width")
 		keymap, _ := cmd.Flags().GetString("keymap")
 		shell, _ := cmd.Flags().GetString("shell")
 		perf, _ := cmd.Flags().GetBool("perf")
@@ -77,7 +78,7 @@ var promptCmd = &cobra.Command{
 			}
 			context = modules.NewDemoContext(*demoConfig, styles)
 		} else {
-			globals := modules.NewGlobals(shell, status, jobs, cmdDuration, keymap)
+			globals := modules.NewGlobals(shell, terminalWidth, status, jobs, cmdDuration, keymap)
 			context = modules.NewContext(globals, configuration.ProjectsTypes, cacheDir, styles)
 		}
 		contextDuration := time.Since(start)
@@ -128,6 +129,7 @@ func init() {
 	promptCmd.Flags().StringP("keymap", "k", "", "The keymap of fish/zsh")
 	promptCmd.Flags().IntP("jobs", "j", 0, "The number of currently running jobs")
 	promptCmd.Flags().IntP("status", "s", 0, "The status code of the previously run command")
+	promptCmd.Flags().Int("terminal-width", 0, "The width of the terminal")
 	promptCmd.Flags().Bool("perf", false, "Print performance information about each module")
 	promptCmd.Flags().Bool("verbose", false, "Print verbose output")
 	promptCmd.Flags().String("demo", "", "If present, kitsch-prompt will run in demo mode, loading values from the specified file.")

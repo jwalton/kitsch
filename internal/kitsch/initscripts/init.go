@@ -2,35 +2,45 @@ package initscripts
 
 import (
 	"bytes"
-	// embed required for templates below.
-	_ "embed"
+	"embed"
+	"fmt"
 	"os"
 	"text/template"
 )
 
-//go:embed templates/init.zsh
-var zshTemplate string
+//go:embed templates/init*
+var initTemplates embed.FS
 
-// InitScript returns the kitsch-prompt initialization script for the given
-// shell type.
-func InitScript(shell string, configFile string) (string, error) {
+func getKitschCommand() string {
 	kitschCommand, err := os.Executable()
 	if err != nil {
 		kitschCommand = "kitsch-prompt"
 	}
+	return kitschCommand
+}
 
+// ShortInitScript returns the kitsch-prompt initialization script for the given shell type.
+func ShortInitScript(shell string, configFile string) (string, error) {
+	return getInitScript("templates/init-short.", shell, configFile)
+}
+
+// InitScript returns the full kitsch-prompt initialization script for the given shell type.
+func InitScript(shell string, configFile string) (string, error) {
+	return getInitScript("templates/init.", shell, configFile)
+}
+
+func getInitScript(filename string, shell string, configFile string) (string, error) {
 	data := map[string]string{
-		"kitschCommand": kitschCommand,
+		"kitschCommand": getKitschCommand(),
 		"configFile":    configFile,
 	}
 
-	switch shell {
-	case "zsh":
-		return execTemplate(zshTemplate, data)
-	default:
-		panic("Invalid shell type: " + shell)
+	initTemplate, err := initTemplates.ReadFile(filename + shell)
+	if err != nil {
+		return "", fmt.Errorf("Invalid shell %s", shell)
 	}
 
+	return execTemplate(string(initTemplate), data)
 }
 
 func execTemplate(templateSrc string, data interface{}) (string, error) {

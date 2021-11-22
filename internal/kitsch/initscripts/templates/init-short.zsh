@@ -1,0 +1,1 @@
+source <("{{ .kitschCommand }}" init {{with .configFile}}--config "{{.}}" {{end}}--print-full-init zsh)

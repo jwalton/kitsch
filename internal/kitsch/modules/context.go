@@ -12,6 +12,7 @@ import (
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/getters"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/projects"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/styling"
+	"golang.org/x/term"
 	"gopkg.in/yaml.v3"
 )
 
@@ -37,11 +38,14 @@ type Globals struct {
 	Keymap string `yaml:"keymap"`
 	// Shell is the type of the shell (e.g. "zsh", "bash", "powershell", etc...).
 	Shell string `yaml:"shell"`
+	// TerminalWidth is the width of the terminal, in characters.
+	TerminalWidth int `yaml:"width"`
 }
 
 // NewGlobals creates a new Globals object.
 func NewGlobals(
 	shell string,
+	terminalWidth int,
 	status int,
 	jobs int,
 	previousCommandDuration int64,
@@ -62,6 +66,13 @@ func NewGlobals(
 		hostname = ""
 	}
 
+	if terminalWidth <= 0 {
+		terminalWidth, _, err = term.GetSize(0)
+		if err != nil {
+			terminalWidth = 80
+		}
+	}
+
 	return Globals{
 		CWD:                     cwd,
 		Home:                    home,
@@ -72,6 +83,7 @@ func NewGlobals(
 		PreviousCommandDuration: previousCommandDuration,
 		Keymap:                  keymap,
 		Shell:                   shell,
+		TerminalWidth:           terminalWidth,
 	}
 }
 
@@ -160,11 +172,12 @@ type DemoConfig struct {
 func (demoConfig *DemoConfig) Load(filename string) error {
 	// Set sensible defaults.
 	demoConfig.Globals = Globals{
-		CWD:      "/users/jwalton",
-		Home:     "/users/jwalton",
-		IsRoot:   false,
-		Hostname: "orac",
-		Shell:    "demo",
+		CWD:           "/users/jwalton",
+		Home:          "/users/jwalton",
+		IsRoot:        false,
+		Hostname:      "orac",
+		Shell:         "demo",
+		TerminalWidth: 80,
 	}
 	demoConfig.Env = map[string]string{
 		"USER": "jwalton",

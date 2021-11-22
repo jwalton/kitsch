@@ -16,7 +16,7 @@ func toText(text interface{}) string {
 
 // TxtFuncMap returns template functions for styling text.
 func TxtFuncMap(styles *Registry) template.FuncMap {
-	// fgColor applyies a foreground color to the given text.
+	// fgColor applies a foreground color to the given text.
 	fgColor := func(color string, text interface{}) string {
 		textString := toText(text)
 		color = ToFgColor(color)
