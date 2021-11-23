@@ -19,22 +19,12 @@ package modules
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/log"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/modtemplate"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/styling"
+	"github.com/jwalton/kitsch-prompt/internal/perf"
 )
-
-// ModuleDuration is used to store stats about execution times for each module.
-type ModuleDuration struct {
-	// Module is the module that was executed.
-	Module *ModuleSpec
-	// Duration is the time taken to execute the module.
-	Duration time.Duration
-	// Children is the time taken to execute each of the module's children.
-	Children []ModuleDuration
-}
 
 // ModuleResult represents the output of a module.
 type ModuleResult struct {
@@ -54,7 +44,7 @@ type ModuleResult struct {
 	// character in Text.
 	EndStyle styling.CharacterColors
 	// ChildDurations is an array of execution times for children of this module.
-	ChildDurations []ModuleDuration
+	ChildDurations *perf.Performance
 }
 
 // Module represnts a module that generates some output to show in the prompt.

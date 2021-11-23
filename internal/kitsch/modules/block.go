@@ -1,13 +1,14 @@
 package modules
 
 import (
+	"fmt"
 	"strings"
 	"text/template"
-	"time"
 
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/log"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/modtemplate"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/styling"
+	"github.com/jwalton/kitsch-prompt/internal/perf"
 	"gopkg.in/yaml.v3"
 )
 
@@ -43,20 +44,21 @@ type BlockModule struct {
 // Execute the block module.
 func (mod BlockModule) Execute(context *Context) ModuleResult {
 	resultsArray := make([]ModuleResult, 0, len(mod.Modules))
-	childDurations := make([]ModuleDuration, 0, len(mod.Modules))
+	childDurations := perf.New(len(mod.Modules))
 	resultsByID := make(map[string]ModuleResult, len(mod.Modules))
 
 	for index := range mod.Modules {
 		item := &mod.Modules[index]
-		start := time.Now()
 
+		moduleDescription := fmt.Sprintf("%s(%d:%d)",
+			item.ID,
+			item.Line,
+			item.Column,
+		)
+
+		childDurations.Start(moduleDescription)
 		result := item.Module.Execute(context)
-
-		childDurations = append(childDurations, ModuleDuration{
-			Module:   item,
-			Duration: time.Since(start),
-			Children: result.ChildDurations,
-		})
+		childDurations.EndWithChildren(moduleDescription, result.ChildDurations)
 
 		if len(result.Text) != 0 {
 			resultsArray = append(resultsArray, result)

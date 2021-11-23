@@ -5,14 +5,13 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
-	"time"
 
 	"github.com/jwalton/gchalk"
 	"github.com/jwalton/go-supportscolor"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/log"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/modules"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/styling"
+	"github.com/jwalton/kitsch-prompt/internal/perf"
 	"github.com/jwalton/kitsch-prompt/internal/shellprompt"
 	"github.com/spf13/cobra"
 )
@@ -21,7 +20,8 @@ var promptCmd = &cobra.Command{
 	Use:   "prompt",
 	Short: "Show the prompt",
 	Run: func(cmd *cobra.Command, args []string) {
-		start := time.Now()
+		performance := perf.New(4)
+
 		cacheDir := filepath.Join(userConfigDir, "cache")
 
 		jobs, _ := cmd.Flags().GetInt("jobs")
@@ -49,11 +49,9 @@ var promptCmd = &cobra.Command{
 		level := supportscolor.SupportsColor(stdoutFd, supportscolor.IsTTYOption(true))
 		gchalk.SetLevel(level.Level)
 		gchalk.Stderr.SetLevel(level.Level)
-
-		setupDuration := time.Since(start)
+		performance.End("Option parsing")
 
 		// Read configuration
-		start = time.Now()
 		configuration, err := readConfig()
 		if err != nil {
 			println(gchalk.Red("Fatal error parsing configuration: ", err.Error()))
@@ -64,10 +62,9 @@ var promptCmd = &cobra.Command{
 		styles := styling.Registry{}
 		styles.AddCustomColors(configuration.Colors)
 
-		configurationParsingDuration := time.Since(start)
+		performance.End("Config parsing")
 
 		// Create our context.
-		start = time.Now()
 		var context modules.Context
 		if demo != "" {
 			demoConfig := &modules.DemoConfig{}
@@ -81,45 +78,20 @@ var promptCmd = &cobra.Command{
 			globals := modules.NewGlobals(shell, terminalWidth, status, jobs, cmdDuration, keymap)
 			context = modules.NewContext(globals, configuration.ProjectsTypes, cacheDir, styles)
 		}
-		contextDuration := time.Since(start)
+		performance.End("Context setup")
 
 		// Execute the prompt
 		result := configuration.Prompt.Module.Execute(&context)
 
+		performance.EndWithChildren("Prompt", result.ChildDurations)
+
 		if perf {
-			fmt.Printf("Setup time: %v\n", setupDuration)
-			fmt.Printf("Parsing configuration: %v\n", configurationParsingDuration)
-			fmt.Printf("Context setup: %v\n", contextDuration)
-			renderPerf(result.ChildDurations, 0)
+			performance.Print()
 		}
 
 		withEscapes := shellprompt.AddZeroWidthCharacterEscapes(context.Globals.Shell, result.Text)
 		fmt.Print(withEscapes)
 	},
-}
-
-func renderPerf(durations []modules.ModuleDuration, indent int) {
-	for _, duration := range durations {
-		printDuration := duration.Duration.String()
-		if duration.Duration > 1000000 {
-			printDuration = gchalk.Yellow(printDuration)
-		} else if duration.Duration > 250000000 {
-			printDuration = gchalk.Red(printDuration)
-		} else {
-			printDuration = gchalk.Green(printDuration)
-		}
-
-		fmt.Printf("%s%s(%d:%d) - %s\n",
-			strings.Repeat(" ", indent),
-			duration.Module.Type,
-			duration.Module.Line,
-			duration.Module.Column,
-			printDuration,
-		)
-		if len(duration.Children) > 0 {
-			renderPerf(duration.Children, indent+2)
-		}
-	}
 }
 
 func init() {
