@@ -20,8 +20,6 @@ import (
 //
 // • indexStyle - The style to use for the index status.  Defaults to green.
 //
-// • unmergedStyle - The style to use for the unmerged files count.  Defaults to bright magenta.
-//
 // • stashStyle - The style to use for the stasg count.  Defaults to bright red.
 //
 // Provides the following template variables:
@@ -42,8 +40,6 @@ type GitStatusModule struct {
 	IndexStyle string `yaml:"indexStyle"`
 	// UnstagedStyle is the style to use for the unstaged file status.
 	UnstagedStyle string `yaml:"unstagedStyle"`
-	// UnmergedStyle is the style to use for the unmerged files count.
-	UnmergedStyle string `yaml:"unmergedStyle"`
 	// StashStyle is the style to use for the stash count.
 	StashStyle string `yaml:"stashStyle"`
 }
@@ -92,30 +88,28 @@ func (mod GitStatusModule) renderDefault(
 ) string {
 	parts := []string{}
 	indexTotal := stats.Index.Added + stats.Index.Modified + stats.Index.Deleted
-	filesTotal := stats.Unstaged.Added + stats.Unstaged.Modified + stats.Unstaged.Deleted
+	unstagedTotal := stats.Unstaged.Added + stats.Unstaged.Modified + stats.Unstaged.Deleted
 
 	indexStyle := defaultStyle(context, mod.IndexStyle, "green")
 	unstagedStyle := defaultStyle(context, mod.UnstagedStyle, "red")
-	unmergedStyle := defaultStyle(context, mod.UnmergedStyle, "brightMagenta")
 	stashStyle := defaultStyle(context, mod.StashStyle, "brightRed")
 
-	if (indexTotal) > 0 {
-		indexStats := indexStyle.Apply(mod.renderStats(stats.Index))
+	if (indexTotal) > 0 || stats.Unmerged > 0 {
+		indexPart := mod.renderStats(stats.Index)
+		if stats.Unmerged > 0 {
+			indexPart += fmt.Sprintf(" !%d", stats.Unmerged)
+		}
+		indexStats := indexStyle.Apply(indexPart)
 		parts = append(parts, indexStats)
 	}
 
-	if indexTotal > 0 && filesTotal > 0 {
+	if indexTotal > 0 && unstagedTotal > 0 {
 		parts = append(parts, "|")
 	}
 
-	if (filesTotal) > 0 {
-		fileStats := unstagedStyle.Apply(mod.renderStats(stats.Unstaged))
-		parts = append(parts, fileStats)
-	}
-
-	if stats.Unmerged > 0 {
-		unmergedStats := unmergedStyle.Apply(fmt.Sprintf("!%d", stats.Unmerged))
-		parts = append(parts, unmergedStats)
+	if (unstagedTotal) > 0 {
+		unstagedStats := unstagedStyle.Apply(mod.renderStats(stats.Unstaged))
+		parts = append(parts, unstagedStats)
 	}
 
 	if stashCount > 0 {
@@ -127,10 +121,7 @@ func (mod GitStatusModule) renderDefault(
 }
 
 func (mod GitStatusModule) renderStats(stats gitutils.GitFileStats) string {
-	if stats.Added > 0 || stats.Modified > 0 || stats.Deleted > 0 {
-		return fmt.Sprintf("+%d ~%d -%d", stats.Added, stats.Modified, stats.Deleted)
-	}
-	return ""
+	return fmt.Sprintf("+%d ~%d -%d", stats.Added, stats.Modified, stats.Deleted)
 }
 
 func init() {
