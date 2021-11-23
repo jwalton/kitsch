@@ -32,7 +32,7 @@ prompt:
       style: $commandDurationFg
   template: |
     {{- $pl := newPowerline " " "\ue0b0" " " -}}
-    {{- $global := .Global -}}
+    {{- $globals := .Globals -}}
     {{- with .Data.Modules -}}
       {{- printf " %s" .time.Text | style "$timeFg" | $pl.Segment "$timeBg" -}}
       {{- .directory.Text | style "$directoryFg" | $pl.Segment "$directoryBg" -}}
@@ -56,13 +56,13 @@ prompt:
       {{- .command_duration.Text | $pl.Segment "$commandDurationBg" -}}
 
       {{- /* Jobs and Status */ -}}
-      {{- if or (ne $global.Status 0) .jobs.Text (eq $global.Keymap "vicmd") -}}
-        {{- $color := (ne $global.Status 0) | ternary "#b00" "#00b" -}}
+      {{- if or (ne $globals.Status 0) .jobs.Text (eq $globals.Keymap "vicmd") -}}
+        {{- $color := (ne $globals.Status 0) | ternary "#b00" "#00b" -}}
         {{- $out := list .jobs.Text -}}
-        {{- if (ne $global.Status 0) -}}
-          {{- $out = mustAppend $out $global.Status -}}
+        {{- if (ne $globals.Status 0) -}}
+          {{- $out = mustAppend $out $globals.Status -}}
         {{- end -}}
-        {{- if (eq $global.Keymap "vicmd") -}}
+        {{- if (eq $globals.Keymap "vicmd") -}}
           {{- $out = mustAppend $out ":" -}}
         {{- end -}}
         {{- $out | join " " | style "#fff" | $pl.Segment $color -}}

@@ -24,6 +24,6 @@ prompt:
       style: bgBlack
       errorStyle: bgRed brightWhite
       prompt: "\ue0b0"
-      template: "{{ if (ne .Global.Status 0) }}{{.Global.Status}}{{ end }}"
+      template: "{{ if (ne .Globals.Status 0) }}{{.Globals.Status}}{{ end }}"
     - type: text
       text: " "

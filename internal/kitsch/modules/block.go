@@ -94,7 +94,7 @@ func (mod BlockModule) Execute(context *Context) ModuleResult {
 
 // blockJoinData is the data passed to the join template.
 type blockJoinData struct {
-	Global     *Globals
+	Globals    *Globals
 	PrevColors styling.CharacterColors
 	NextColors styling.CharacterColors
 	Index      int
@@ -128,7 +128,7 @@ func (mod BlockModule) joinChildren(context *Context, children []ModuleResult) s
 			if join != nil && index != 0 {
 				prev := children[index-1]
 				joiner, err := modtemplate.TemplateToString(join, blockJoinData{
-					Global:     &context.Globals,
+					Globals:    &context.Globals,
 					PrevColors: prev.EndStyle,
 					NextColors: child.StartStyle,
 					Index:      index,

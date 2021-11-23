@@ -78,7 +78,7 @@ type TemplateData struct {
 	// Data is the data for this template.
 	Data interface{}
 	// Global is the global data.
-	Global *Globals
+	Globals *Globals
 }
 
 // executeModule is called to execute a module.  This handles "common" stuff that
@@ -108,9 +108,9 @@ func executeModule(
 			log.Warn(fmt.Sprintf("Error compiling template: %v", err))
 		} else {
 			templateData := TemplateData{
-				Data:   data,
-				Global: &context.Globals,
-				Text:   defaultText,
+				Data:    data,
+				Globals: &context.Globals,
+				Text:    defaultText,
 			}
 
 			text, err = modtemplate.TemplateToString(tmpl, templateData)
