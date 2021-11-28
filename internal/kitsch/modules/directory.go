@@ -27,14 +27,16 @@ type DirectoryModule struct {
 	// HomeSymbol is the symbol to replace the home directory with in directory
 	// strings.  Defaults to "~".
 	HomeSymbol string `yaml:"homeSymbol"`
+	// ReadOnlySymbol is the symbol to append to the directory if it is read-only.
+	ReadOnlySymbol string `yaml:"readOnlySymbol"`
 	// TruncateToRepo controls whether we truncate to the root directory of the
 	// git repo or not.  If this is true, and we are in a source code repository,
 	// we will replace everything up to the repo root directory with RepoSymbol.
 	TruncateToRepo bool `yaml:"truncateToRepo"`
 	// RepoSymbol is a string that will be added as a prefix when we truncate to a repo.
 	RepoSymbol string `yaml:"repoSymbol"`
-	// TruncationLength is the number of parent folders that the current directory
-	// should be truncated to.  If 0, truncation will be disabled.
+	// TruncationLength is the maximum number of directories to show. If 0,
+	// truncation will be disabled.
 	TruncationLength int `yaml:"truncationLength"`
 	// TruncationSymbol will be added to the start of the string in place of any
 	// paths that were removed.  Defaults to "…".
@@ -48,6 +50,10 @@ type directoryModuleResult struct {
 	Path string
 	// PathSeparator is the system defined path separator.
 	PathSeparator string
+	// ReadOnly is true if the current directory is read-only.
+	ReadOnly bool
+	// ReadOnlySymbol is the same as ReadOnlySymbol from the module configuration.
+	ReadOnlySymbol string
 }
 
 // Removes `truncatePath` from the start of `path`.  The returned path will always
@@ -111,20 +117,29 @@ func (mod DirectoryModule) Execute(context *Context) ModuleResult {
 		}
 	}
 
-	// TODO: Add read-only icon if read-only directory.
+	dirInfo, err := context.Directory.Stat(".")
+	readOnly := err == nil && dirInfo.Mode()&0200 == 0
 
 	data := directoryModuleResult{
-		Path:          prefix + path,
-		PathSeparator: pathSeparator,
+		Path:           prefix + path,
+		PathSeparator:  pathSeparator,
+		ReadOnly:       readOnly,
+		ReadOnlySymbol: mod.ReadOnlySymbol,
 	}
 
-	return executeModule(context, mod.CommonConfig, data, mod.Style, data.Path)
+	text := data.Path
+	if readOnly {
+		text += data.ReadOnlySymbol
+	}
+
+	return executeModule(context, mod.CommonConfig, data, mod.Style, text)
 }
 
 func init() {
 	registerFactory("directory", func(node *yaml.Node) (Module, error) {
 		var module DirectoryModule = DirectoryModule{
 			HomeSymbol:       defaultHomeSymbol,
+			ReadOnlySymbol:   "🔒",
 			TruncationSymbol: defaultTruncationSymbol,
 			TruncationLength: defaultTruncationLength,
 			TruncateToRepo:   true,

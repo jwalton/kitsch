@@ -217,7 +217,9 @@ func NewDemoContext(
 // newTestContext creates a Context with reasonable defaults that can
 // be passed in to modules when unit testing.
 func newTestContext(username string) *Context {
-	fsys := fstest.MapFS{}
+	fsys := fstest.MapFS{
+		".": {Mode: 0755},
+	}
 
 	return &Context{
 		Globals: Globals{

@@ -2,8 +2,10 @@ package modules
 
 import (
 	"testing"
+	"testing/fstest"
 
 	"github.com/MakeNowJust/heredoc"
+	"github.com/jwalton/kitsch-prompt/internal/fileutils"
 	"github.com/jwalton/kitsch-prompt/internal/gitutils"
 	"github.com/stretchr/testify/assert"
 )
@@ -17,6 +19,13 @@ func makeTestDirectoryModule(
 	context := newTestContext("jwalton")
 	context.Globals.CWD = cwd
 	context.Globals.PathSeparator = pathSeparator
+
+	fsys := fstest.MapFS{
+		".": {Mode: 0755},
+	}
+	fileutils.NewDirectoryTestFS(cwd, fsys)
+
+	// Setup git
 	context.gitInitialized = true
 	if gitRoot != "" {
 		context.git = gitutils.DemoGit{
@@ -45,10 +54,31 @@ func TestDirectory(t *testing.T) {
 	result := mod.Execute(context)
 	assert.Equal(t, ModuleResult{
 		Data: directoryModuleResult{
-			Path:          "/tmp/test",
-			PathSeparator: "/",
+			Path:           "/tmp/test",
+			PathSeparator:  "/",
+			ReadOnly:       false,
+			ReadOnlySymbol: "🔒",
 		},
 		Text: "/tmp/test",
+	}, result)
+}
+
+func TestReadOnlyDirectory(t *testing.T) {
+	context, mod := makeTestDirectoryModule("/", "/tmp/test", "", "{type: directory}")
+	fsys := fstest.MapFS{
+		".": {Mode: 0555},
+	}
+	context.Directory = fileutils.NewDirectoryTestFS(context.Globals.CWD, fsys)
+
+	result := mod.Execute(context)
+	assert.Equal(t, ModuleResult{
+		Data: directoryModuleResult{
+			Path:           "/tmp/test",
+			PathSeparator:  "/",
+			ReadOnly:       true,
+			ReadOnlySymbol: "🔒",
+		},
+		Text: "/tmp/test🔒",
 	}, result)
 }
 

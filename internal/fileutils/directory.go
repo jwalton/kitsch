@@ -29,6 +29,8 @@ type Directory interface {
 	// ancestor of this directory in the file system.  If the file is found,
 	// the complete path is returned.
 	FindFileInAncestors(name string) string
+	// Stat returns the os.FileInfo for the specified file.
+	Stat(path string) (os.FileInfo, error)
 }
 
 // NewDirectory creates a new Directory object for the directory at the given path.
@@ -162,4 +164,8 @@ func (dir *directory) FindFileInAncestors(name string) string {
 		return ""
 	}
 	return FindFileInAncestors(dir.Path(), name)
+}
+
+func (dir *directory) Stat(path string) (os.FileInfo, error) {
+	return fs.Stat(dir.fileSystem, path)
 }
