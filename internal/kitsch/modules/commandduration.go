@@ -7,11 +7,9 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// CmdDurationModule shows the amount of the previous command took to execute.
+// CmdDurationModule shows the amount of time the previous command took to execute.
 //
-// The prompt module displays a "$", or a "#" if the current user is root.
-//
-// The prompt module provides the following template variables:
+// The module provides the following template variables:
 //
 // • Duration - A string describing the duration of the previous command.
 //   Defaults to 2000ms.
@@ -24,16 +22,25 @@ type CmdDurationModule struct {
 	ShowMilliseconds bool `yaml:"showMilliseconds"`
 }
 
+type cmdDurationModuleResult struct {
+	// Duration is the duration the command took, in milliseconds.
+	Duration int64
+	// PrettyDuration is the duration the command took, in a human-readable format.
+	PrettyDuration string
+}
+
 // Execute the module.
 func (mod CmdDurationModule) Execute(context *Context) ModuleResult {
+	var durationStr string
 	if context.Globals.PreviousCommandDuration < mod.MinTime {
-		return ModuleResult{}
+		durationStr = ""
+	} else {
+		durationStr = mod.formatDuration(context.Globals.PreviousCommandDuration)
 	}
 
-	durationStr := mod.formatDuration(context.Globals.PreviousCommandDuration)
-
-	data := map[string]interface{}{
-		"Duration": durationStr,
+	data := cmdDurationModuleResult{
+		Duration:       context.Globals.PreviousCommandDuration,
+		PrettyDuration: durationStr,
 	}
 
 	return executeModule(context, mod.CommonConfig, data, mod.Style, durationStr)

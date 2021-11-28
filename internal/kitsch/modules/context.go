@@ -40,6 +40,8 @@ type Globals struct {
 	Shell string `yaml:"shell"`
 	// TerminalWidth is the width of the terminal, in characters.
 	TerminalWidth int `yaml:"width"`
+	// PathSeparator is the path separator for the current system.
+	PathSeparator string `yaml:"pathSeparator"`
 }
 
 // NewGlobals creates a new Globals object.
@@ -84,6 +86,7 @@ func NewGlobals(
 		Keymap:                  keymap,
 		Shell:                   shell,
 		TerminalWidth:           terminalWidth,
+		PathSeparator:           string(os.PathSeparator),
 	}
 }
 
@@ -178,6 +181,7 @@ func (demoConfig *DemoConfig) Load(filename string) error {
 		Hostname:      "orac",
 		Shell:         "demo",
 		TerminalWidth: 80,
+		PathSeparator: "/",
 	}
 	demoConfig.Env = map[string]string{
 		"USER": "jwalton",
