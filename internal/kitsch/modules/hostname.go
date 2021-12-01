@@ -9,19 +9,20 @@ import (
 // HostnameModule shows the name of the current hostname.  This is,
 // by default, hidden unless the session is an SSH session.
 //
-// The hostname module provides the following template variables:
-//
-// • Hostname - The current hostname.
-//
-// • IsSSH - True if this is an SSH session, false otherwise.
-//
-// • Show - True if we should show the hostname module, false otherwise.
-//
 type HostnameModule struct {
 	CommonConfig `yaml:",inline"`
 	// ShowAlways will cause the hostname to always be shown.  If false (the default),
 	// then the hostname will only be shown if the current session is an SSH session.
 	ShowAlways bool `yaml:"showAlways"`
+}
+
+type hostnameResult struct {
+	// Hostname is the current hostname.
+	Hostname string `yaml:"hostname"`
+	// IsSSH is true if this is an SSH session, false otherwise.
+	IsSSH bool `yaml:"isSSH"`
+	// Show is true if we should show the hostname, false otherwise.
+	Show bool `yaml:"show"`
 }
 
 // Execute the module.
@@ -37,14 +38,13 @@ func (mod HostnameModule) Execute(context *Context) ModuleResult {
 		hostname = strings.Split(hostname, ".")[0]
 	}
 
-	data := map[string]interface{}{
-		"Hostname": hostname,
-		"IsSSH":    isSSH,
-		"Show":     show,
+	data := hostnameResult{
+		Hostname: hostname,
+		IsSSH:    isSSH,
+		Show:     show,
 	}
 
 	defaultText := ""
-
 	if show {
 		defaultText = hostname
 	}

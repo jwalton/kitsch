@@ -14,26 +14,6 @@ import (
 // The default implementation of the git status module is loosely based on
 // https://github.com/lyze/posh-git-sh and https://github.com/dahlbyk/posh-git.
 //
-// Configuration:
-//
-// • unstagedStyle - The style to use for the unstaged file status.  Defaults to red.
-//
-// • indexStyle - The style to use for the index status.  Defaults to green.
-//
-// • stashStyle - The style to use for the stasg count.  Defaults to bright red.
-//
-// Provides the following template variables:
-//
-// • Index - An `{ Added, Modified, Deleted, Total }` object.  Each is an `int`
-//   representing the number of files in the index in that state.
-//
-// • Unstaged - An `{ Added, Modified, Deleted, Total }` object.  Each is an `int`
-//   representing the number of unstaged files in that state.
-//
-// • Unmerged - An `int` representing the number of unmerged files.
-//
-// • StashCount - An `int` representing the number of stashes.
-//
 type GitStatusModule struct {
 	CommonConfig `yaml:",inline"`
 	// IndexStyle is the style to use for the index status.
@@ -44,12 +24,25 @@ type GitStatusModule struct {
 	StashStyle string `yaml:"stashStyle"`
 }
 
+type gitStatusModuleResult struct {
+	// Index is a `{ Added, Modified, Deleted }` object.  Each is an `int`
+	// representing the number of files in the index in that state.
+	Index gitutils.GitFileStats
+	// Unstaged is a `{ Added, Modified, Deleted }` object.  Each is an `int`
+	// representing the number of unstaged files in that state.
+	Unstaged gitutils.GitFileStats
+	// Unmerged is the total number of unmerged paths in the git repo.
+	Unmerged int
+	// StashCount is the number of stashes in the git repo.
+	StashCount int
+}
+
 // Execute runs a git module.
 func (mod GitStatusModule) Execute(context *Context) ModuleResult {
 	git := context.Git()
 
 	if git == nil {
-		return ModuleResult{}
+		return executeModule(context, mod.CommonConfig, gitStatusModuleResult{}, mod.Style, "")
 	}
 
 	stats, _ := git.Stats()
@@ -59,21 +52,11 @@ func (mod GitStatusModule) Execute(context *Context) ModuleResult {
 		log.Warn("Error getting stash count: ", err)
 	}
 
-	data := map[string]interface{}{
-		"Index": map[string]interface{}{
-			"Added":    stats.Index.Added,
-			"Modified": stats.Index.Modified,
-			"Deleted":  stats.Index.Deleted,
-			"Total":    stats.Index.Added + stats.Index.Modified + stats.Index.Deleted,
-		},
-		"Unstaged": map[string]interface{}{
-			"Added":    stats.Unstaged.Added,
-			"Modified": stats.Unstaged.Modified,
-			"Deleted":  stats.Unstaged.Deleted,
-			"Total":    stats.Unstaged.Added + stats.Unstaged.Modified + stats.Unstaged.Deleted,
-		},
-		"Unmerged":   stats.Unmerged,
-		"StashCount": stashCount,
+	data := gitStatusModuleResult{
+		Index:      stats.Index,
+		Unstaged:   stats.Unstaged,
+		Unmerged:   stats.Unmerged,
+		StashCount: stashCount,
 	}
 
 	defaultOutput := mod.renderDefault(context, stats, stashCount)

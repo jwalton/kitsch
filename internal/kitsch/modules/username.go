@@ -36,8 +36,6 @@ type UsernameModule struct {
 type usernameModuleData struct {
 	// username is the current user's username.
 	username string
-	// IsRoot is true if the current user is root.
-	IsRoot bool
 	// IsSSH is true if the user is in an SSH session.
 	IsSSH bool
 	// Show is true if the username module should be displayed.
@@ -70,7 +68,6 @@ func (mod UsernameModule) Execute(context *Context) ModuleResult {
 
 	data := usernameModuleData{
 		username: context.Environment.Getenv("USER"),
-		IsRoot:   isRoot,
 		IsSSH:    isSSH,
 		Show:     show,
 	}

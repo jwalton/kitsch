@@ -26,18 +26,18 @@ type projectModuleData struct {
 	ToolSymbol string
 	// ToolVersion is the version of this project's build tool.
 	ToolVersion string
-	// PackageManagerSymbol is, if available, the symbol for this project's package manager.
+	// PackageManagerSymbol is the symbol for this project's package manager, or "" if unavailable.
 	PackageManagerSymbol string
-	// ProjectStyle is the style for this project, if any.
+	// ProjectStyle is the style for this project, or "" if none.
 	ProjectStyle string
 }
 
-// PackageManagerVersion is, if available, the version of this project's package manager.
+// PackageManagerVersion returns the version of the package manager, or "" if unavailable.
 func (p projectModuleData) PackageManagerVersion() string {
 	return p.projectInfo.PackageManagerVersion()
 }
 
-// PackageVersion returns, if available, the version of this project.
+// PackageVersion returns the version of the package in the current folder, or "" if unavailable.
 func (p projectModuleData) PackageVersion() string {
 	return p.projectInfo.PackageVersion()
 }

@@ -49,7 +49,6 @@ func TestUsername(t *testing.T) {
 	assert.Equal(t,
 		usernameModuleData{
 			username: "jwalton",
-			IsRoot:   false,
 			IsSSH:    true,
 			Show:     true,
 		},

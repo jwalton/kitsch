@@ -39,6 +39,11 @@ type GitFileStats struct {
 	Deleted int `yaml:"deleted"`
 }
 
+// Total is the sum of Added, Modifed, and Deleted.
+func (stats GitFileStats) Total() int {
+	return stats.Added + stats.Modified + stats.Deleted
+}
+
 type statusWriter struct {
 	linePos int
 	stats   *GitStats
