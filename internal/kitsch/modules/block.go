@@ -17,14 +17,6 @@ import (
 // Any module that outputs no text is considered "inactive" and will not be
 // part of the result.
 //
-// Provides the following template variables:
-//
-// • ModuleArray - The results of executing each child module.  Only modules that
-//   actually generated output will be included.
-//
-// • Modules - A map of results from executing each child module, indexed by
-//   module ID.  Only modules that actually generated output will be included.
-//
 type BlockModule struct {
 	CommonConfig `yaml:",inline"`
 	// Modules is a list of child modules to be rendered under this block
@@ -39,6 +31,15 @@ type BlockModule struct {
 	// • Index - The index of the next module in the Modules array.
 	//
 	Join string
+}
+
+type blockModuleResult struct {
+	// Modules is a map of results from executing each child module, indexed by
+	// module ID.  Only modules that actually generated output will be included.
+	Modules map[string]ModuleResult
+	// ModuleArray is an array of results from executing each child module.  Only
+	// modules that actually generated output will be included.
+	ModuleArray []ModuleResult
 }
 
 // Execute the block module.
@@ -70,9 +71,9 @@ func (mod BlockModule) Execute(context *Context) ModuleResult {
 
 	defaultText := mod.joinChildren(context, resultsArray)
 
-	data := map[string]interface{}{
-		"Modules":     resultsByID,
-		"ModuleArray": resultsArray,
+	data := blockModuleResult{
+		Modules:     resultsByID,
+		ModuleArray: resultsArray,
 	}
 
 	result := executeModule(context, mod.CommonConfig, data, mod.Style, defaultText)
@@ -96,10 +97,14 @@ func (mod BlockModule) Execute(context *Context) ModuleResult {
 
 // blockJoinData is the data passed to the join template.
 type blockJoinData struct {
-	Globals    *Globals
+	// Globals are the global variables.
+	Globals *Globals
+	// PrevColors is an `{FG, BG}` object containing color strings for the previous module's end style.
 	PrevColors styling.CharacterColors
+	// NextColors is an `{FG, BG}` object containing color strings for the next module's start style.
 	NextColors styling.CharacterColors
-	Index      int
+	// Index is the index of the next module in the Modules array.
+	Index int
 }
 
 func (mod BlockModule) joinChildren(context *Context, children []ModuleResult) string {
