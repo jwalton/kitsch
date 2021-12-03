@@ -45,7 +45,7 @@ func TestYamlGetterFromFile(t *testing.T) {
 	context := makeTestGetterContext(fsys)
 
 	getter := CustomGetter{
-		Type: "file",
+		Type: TypeFile,
 		From: "version.txt",
 	}
 
@@ -66,9 +66,9 @@ func TestYamlGetterTextFromFile(t *testing.T) {
 	// Verify if we specify "As: text" with no template or regex, we get the
 	// right result.
 	getter := CustomGetter{
-		Type: "file",
+		Type: TypeFile,
 		From: "version.txt",
-		As:   "text",
+		As:   AsText,
 	}
 
 	val, err := getter.GetValue(context)
@@ -86,9 +86,9 @@ func TestYamlGetterJsonFromFile(t *testing.T) {
 	context := makeTestGetterContext(fsys)
 
 	getter := CustomGetter{
-		Type:          "file",
+		Type:          TypeFile,
 		From:          "version.json",
-		As:            "json",
+		As:            AsJSON,
 		ValueTemplate: `{{.version}}`,
 	}
 
@@ -107,9 +107,9 @@ func TestYamlGetterJsonFromFileNoTemplate(t *testing.T) {
 	context := makeTestGetterContext(fsys)
 
 	getter := CustomGetter{
-		Type: "file",
+		Type: TypeFile,
 		From: "version.json",
-		As:   "json",
+		As:   AsJSON,
 	}
 
 	val, err := getter.GetValue(context)
@@ -127,9 +127,9 @@ func TestYamlGetterYamlFromFile(t *testing.T) {
 	context := makeTestGetterContext(fsys)
 
 	getter := CustomGetter{
-		Type:          "file",
+		Type:          TypeFile,
 		From:          "version.yaml",
-		As:            "yaml",
+		As:            AsYAML,
 		ValueTemplate: `{{.version}}`,
 	}
 
@@ -148,9 +148,9 @@ func TestYamlGetterTomlFromFile(t *testing.T) {
 	context := makeTestGetterContext(fsys)
 
 	getter := CustomGetter{
-		Type:          "file",
+		Type:          TypeFile,
 		From:          "version.toml",
-		As:            "toml",
+		As:            AsTOML,
 		ValueTemplate: `{{.version}}`,
 	}
 
@@ -169,9 +169,9 @@ func TestYamlGetterNumericValue(t *testing.T) {
 	context := makeTestGetterContext(fsys)
 
 	getter := CustomGetter{
-		Type:          "file",
+		Type:          TypeFile,
 		From:          "version.yaml",
-		As:            "yaml",
+		As:            AsYAML,
 		ValueTemplate: `{{.version}}`,
 	}
 
@@ -190,7 +190,7 @@ func TestYamlGetterRegex(t *testing.T) {
 	context := makeTestGetterContext(fsys)
 
 	getter := CustomGetter{
-		Type:  "file",
+		Type:  TypeFile,
 		From:  "version.txt",
 		Regex: `go version go(\d+\.\d+\.\d+)`,
 	}
@@ -210,7 +210,7 @@ func TestYamlGetterRegexAndTemplate(t *testing.T) {
 	context := makeTestGetterContext(fsys)
 
 	getter := CustomGetter{
-		Type:          "file",
+		Type:          TypeFile,
 		From:          "version.txt",
 		Regex:         `go version go(\d+\.\d+\.\d+)`,
 		ValueTemplate: `v{{.Text}}`,
@@ -231,7 +231,7 @@ func TestYamlGetterTextTemplate(t *testing.T) {
 	context := makeTestGetterContext(fsys)
 
 	getter := CustomGetter{
-		Type:          "file",
+		Type:          TypeFile,
 		From:          "version.txt",
 		ValueTemplate: `v{{.Text}}`,
 	}

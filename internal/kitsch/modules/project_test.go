@@ -34,9 +34,9 @@ func TestProject(t *testing.T) {
 			Conditions:            condition.Conditions{IfExtensions: []string{"txt"}},
 			ToolSymbol:            "txt",
 			PackageManagerSymbol:  "txt",
-			ToolVersion:           getters.CustomGetter{Type: "file", From: "tool.txt"},
-			PackageManagerVersion: getters.CustomGetter{Type: "file", From: "pm.txt"},
-			PackageVersion:        getters.CustomGetter{Type: "file", From: "package.txt"},
+			ToolVersion:           getters.CustomGetter{Type: getters.TypeFile, From: "tool.txt"},
+			PackageManagerVersion: getters.CustomGetter{Type: getters.TypeFile, From: "pm.txt"},
+			PackageVersion:        getters.CustomGetter{Type: getters.TypeFile, From: "package.txt"},
 		},
 	}
 

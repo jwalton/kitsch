@@ -20,11 +20,6 @@ func makeTestDirectoryModule(
 	context.Globals.CWD = cwd
 	context.Globals.PathSeparator = pathSeparator
 
-	fsys := fstest.MapFS{
-		".": {Mode: 0755},
-	}
-	fileutils.NewDirectoryTestFS(cwd, fsys)
-
 	// Setup git
 	context.gitInitialized = true
 	if gitRoot != "" {

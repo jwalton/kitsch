@@ -22,6 +22,87 @@ import (
 
 var sprigTemplateFunctions = sprig.TxtFuncMap()
 
+//go:generate stringer -type=GetterType
+
+// GetterType is the type of getter.
+type GetterType int
+
+const (
+	// TypeCustom is a getter which runs a command and returns the output.
+	TypeCustom GetterType = iota
+	// TypeFile is a getter which reads a file and returns the contents.
+	TypeFile
+	// TypeAncestorFile is a getter which reads a file in the current folder or
+	// any ancestor folder and returns the contents.
+	TypeAncestorFile
+	// TypeEnv is a getter which reads an environment variable and returns the value.
+	TypeEnv
+)
+
+// UnmarshalYAML unmarshals a YAML node into a GetterType.
+func (item *GetterType) UnmarshalYAML(node *yaml.Node) error {
+	var value string
+	if err := node.Decode(&value); err != nil {
+		return err
+	}
+
+	switch value {
+	case "custom":
+		*item = TypeCustom
+	case "file":
+		*item = TypeFile
+	case "ancestorFile":
+		*item = TypeAncestorFile
+	case "env":
+		*item = TypeEnv
+	default:
+		return fmt.Errorf("unknown GetterType: %s", value)
+	}
+
+	return nil
+}
+
+//go:generate stringer -type=AsType
+
+// AsType describes how to interpret the retrieved value.
+type AsType int
+
+const (
+	// AsUndefined will parse the returned value as the default type.
+	AsUndefined AsType = iota
+	// AsText will parse the returned value as a string.
+	AsText
+	// AsJSON will parse the returned value as a JSON object.
+	AsJSON
+	// AsYAML will parse the returned value as a YAML file.
+	AsYAML
+	// AsTOML will parse the returned value as a TOML file.
+	AsTOML
+)
+
+// UnmarshalYAML unmarshals a YAML node into an AsType.
+func (item *AsType) UnmarshalYAML(node *yaml.Node) error {
+	var value string
+	if err := node.Decode(&value); err != nil {
+		return err
+	}
+
+	switch value {
+	case "text":
+		*item = AsText
+	case "json":
+		*item = AsJSON
+	case "yaml":
+		*item = AsYAML
+	case "toml":
+		*item = AsTOML
+	default:
+		return fmt.Errorf("unknown AsType: %s", value)
+	}
+
+	return nil
+}
+
 // CacheSettings are cache settings for a CustomGetter.
 type CacheSettings struct {
 	// Enabled is true if caching should be enabled for this getter.
@@ -35,12 +116,12 @@ type CacheSettings struct {
 // CustomGetter is a getter that can be configured from a YAML file.
 type CustomGetter struct {
 	// Type is the type of getter.  One of "custom", "file", "ancestorFile", or "env".
-	Type string `yaml:"type"`
+	Type GetterType `yaml:"type"`
 	// From is the source to get data from.  The meaning of "From" is based on
 	// the provided "Type".
 	From string `yaml:"from"`
 	// As will determine how to interpret the result of the getter.  One of "text", "json", "toml", or "yaml".
-	As string `yaml:"as"`
+	As AsType `yaml:"as"`
 	// ValueTemplate is a golang template used to parse values out of the result of
 	// the getter.
 	ValueTemplate string `yaml:"valueTemplate"`
@@ -64,13 +145,13 @@ func (getter CustomGetter) GetValue(context GetterContext) (interface{}, error) 
 	valueCache := context.GetValueCache()
 
 	switch getter.Type {
-	case "custom":
+	case TypeCustom:
 		bytesValue, err = getter.getCustomValue(folder, valueCache, getter.From)
-	case "file":
+	case TypeFile:
 		bytesValue, err = fs.ReadFile(folder.FileSystem(), getter.From)
-	case "ancestorFile":
+	case TypeAncestorFile:
 		bytesValue, err = getter.getAncestorFileValue(folder, getter.From)
-	case "env":
+	case TypeEnv:
 		strValue := context.Getenv(getter.From)
 		if strValue == "" {
 			bytesValue = nil
@@ -106,7 +187,7 @@ func (getter CustomGetter) GetValue(context GetterContext) (interface{}, error) 
 		}
 
 		if getter.ValueTemplate != "" {
-			result, err = getter.applyTemplate("text", []byte(strValue))
+			result, err = getter.applyTemplate(AsText, []byte(strValue))
 			if err != nil {
 				return "", err
 			}
@@ -114,10 +195,10 @@ func (getter CustomGetter) GetValue(context GetterContext) (interface{}, error) 
 			result = strValue
 		}
 
-	} else if (getter.As != "" || getter.ValueTemplate != "") && !(getter.As == "text" && getter.ValueTemplate == "") {
+	} else if (getter.As != AsUndefined || getter.ValueTemplate != "") && !(getter.As == AsText && getter.ValueTemplate == "") {
 		as := getter.As
-		if as == "" {
-			as = "text"
+		if as == AsUndefined {
+			as = AsText
 		}
 		result, err = getter.applyTemplate(as, bytesValue)
 		if err != nil {
@@ -208,28 +289,28 @@ func (getter CustomGetter) getAncestorFileValue(
 }
 
 func (getter CustomGetter) getValueAs(
-	as string,
+	as AsType,
 	value []byte,
 ) (map[string]interface{}, error) {
 	result := map[string]interface{}{}
 
 	switch as {
-	case "json":
+	case AsJSON:
 		err := json.Unmarshal(value, &result)
 		if err != nil {
 			return nil, fmt.Errorf("invalid json: \"%s\": %w", value, err)
 		}
-	case "yaml":
+	case AsYAML:
 		err := yaml.Unmarshal(value, &result)
 		if err != nil {
 			return nil, fmt.Errorf("invalid yaml: \"%s\": %w", value, err)
 		}
-	case "toml":
+	case AsTOML:
 		err := toml.Unmarshal(value, &result)
 		if err != nil {
 			return nil, fmt.Errorf("invalid toml: \"%s\": %w", value, err)
 		}
-	case "text":
+	case AsText:
 		result = map[string]interface{}{
 			"Text": strings.TrimSpace(string(value)),
 		}
@@ -241,7 +322,7 @@ func (getter CustomGetter) getValueAs(
 	return result, nil
 }
 
-func (getter CustomGetter) applyTemplate(as string, bytesValue []byte) (interface{}, error) {
+func (getter CustomGetter) applyTemplate(as AsType, bytesValue []byte) (interface{}, error) {
 	var result interface{}
 
 	// Parse the value into a map.
@@ -252,7 +333,7 @@ func (getter CustomGetter) applyTemplate(as string, bytesValue []byte) (interfac
 
 	if getter.ValueTemplate != "" {
 		// Run the value through the ValueTemplate.
-		tmpl := template.New(getter.Type).Funcs(sprigTemplateFunctions)
+		tmpl := template.New(getter.Type.String()).Funcs(sprigTemplateFunctions)
 		tmpl, err = tmpl.Parse(getter.ValueTemplate)
 		if err != nil {
 			return "", fmt.Errorf("invalid template: \"%s\": %w", getter.ValueTemplate, err)

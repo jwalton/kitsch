@@ -44,13 +44,13 @@ func (item *ProjectType) UnmarshalYAML(node *yaml.Node) error {
 	item.Conditions = spec.Conditions
 	item.ToolSymbol = spec.ToolSymbol
 	item.PackageManagerSymbol = spec.PackageManagerSymbol
-	if spec.ToolVersion.Type != "" {
+	if spec.ToolVersion.From != "" {
 		item.ToolVersion = spec.ToolVersion
 	}
-	if spec.PackageManagerVersion.Type != "" {
+	if spec.PackageManagerVersion.From != "" {
 		item.PackageManagerVersion = spec.PackageManagerVersion
 	}
-	if spec.PackageVersion.Type != "" {
+	if spec.PackageVersion.From != "" {
 		item.PackageVersion = spec.PackageVersion
 	}
 

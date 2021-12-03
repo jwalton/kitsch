@@ -33,7 +33,7 @@ func TestLoadProjects(t *testing.T) {
 				},
 				ToolSymbol: "Node",
 				ToolVersion: getters.CustomGetter{
-					Type: "custom",
+					Type: getters.TypeCustom,
 					From: "node --version",
 				},
 			},
@@ -50,7 +50,7 @@ var from = []ProjectType{
 		},
 		ToolSymbol: "Java",
 		ToolVersion: getters.CustomGetter{
-			Type: "custom",
+			Type: getters.TypeCustom,
 			From: "java --version",
 		},
 	},
@@ -61,7 +61,7 @@ var from = []ProjectType{
 		},
 		ToolSymbol: "Node",
 		ToolVersion: getters.CustomGetter{
-			Type: "custom",
+			Type: getters.TypeCustom,
 			From: "node --version",
 		},
 	},
@@ -112,7 +112,7 @@ func TestMergeAlteredProjectTypes(t *testing.T) {
 				},
 				ToolSymbol: "JS",
 				ToolVersion: getters.CustomGetter{
-					Type: "custom",
+					Type: getters.TypeCustom,
 					From: "node --version",
 				},
 			},
