@@ -1,0 +1,82 @@
+---
+sidebar_position: 3
+---
+
+# Styles
+
+import ExamplePrompt from "../src/components/ExamplePrompt";
+
+Styling text in kitsch-prompt is done using "style strings". A style string can contain a color, a background color, and zero or more modifiers. For example: `brightCyan bg:blue bold` would make bold bright-cyan text on a blue background:
+
+```kitsch
+prompt:
+  type: block
+  join: "\n"
+  modules:
+    - type: text
+      style: brightCyan bg:blue bold
+      text: brightCyan bg:blue bold
+    - type: text
+      text: "$ "
+```
+
+## Colors
+
+A valid color is any of the following:
+
+- A color name - one of "black", "red", "green", "yellow", "blue", "magenta", "cyan", "white". Basic color names will set color using "16-color" ANSI.
+- A color name prefixed with "bright" (e.g. "<span style={{color: "#e74856"}}>brightRed</span>").
+- A hex color (e.g. "<span style={{color: "#f04"}}>#f04</span>" or "<span style={{color: "#b042f9"}}>#b042f9</span>").
+- A CSS3 color name (other than those listed above).
+- A CSS-style linear gradient (e.g. "<span style={{color: "rgb(53, 168, 255)"}}>l</span><span style={{color: "rgb(58, 164, 255)"}}>i</span><span style={{color: "rgb(63, 160, 255)"}}>n</span><span style={{color: "rgb(68, 156, 255)"}}>e</span><span style={{color: "rgb(73, 153, 255)"}}>a</span><span style={{color: "rgb(78, 149, 255)"}}>r</span><span style={{color: "rgb(83, 145, 255)"}}>-</span><span style={{color: "rgb(88, 141, 255)"}}>g</span><span style={{color: "rgb(93, 137, 255)"}}>r</span><span style={{color: "rgb(98, 134, 255)"}}>a</span><span style={{color: "rgb(103, 130, 255)"}}>d</span><span style={{color: "rgb(108, 126, 255)"}}>i</span><span style={{color: "rgb(113, 122, 255)"}}>e</span><span style={{color: "rgb(119, 119, 255)"}}>n</span><span style={{color: "rgb(124, 115, 255)"}}>t</span><span style={{color: "rgb(129, 111, 255)"}}>(</span><span style={{color: "rgb(134, 107, 255)"}}>#</span><span style={{color: "rgb(139, 103, 255)"}}>3</span><span style={{color: "rgb(144, 100, 255)"}}>a</span><span style={{color: "rgb(149, 96, 255)"}}>f</span><span style={{color: "rgb(154, 92, 255)"}}>,</span><span style={{color: "rgb(159, 88, 255)"}}> </span><span style={{color: "rgb(164, 85, 255)"}}>#</span><span style={{color: "rgb(169, 81, 255)"}}>b</span><span style={{color: "rgb(174, 77, 255)"}}>4</span><span style={{color: "rgb(179, 73, 255)"}}>f</span><span style={{color: "rgb(184, 69, 255)"}}>)</span>") See more on [linear-gradients](#gradients) below.
+- Any of the above prefixed with "bg:" to set the background color. For example, the style string "<span style={{color: "#c50f1f"}}>red</span>" would set the foreground color to red, the string "bg:red" would set the background to red.
+
+Note that when using color names, the color will be set with a 16-color ANSI code. The exact color that will be shown for "red" will depend on your terminal. iTerm2 on a Mac would default "red" to "#c91b00", where the Windows 10 Console would show "red" as "#c50f1f".
+
+### Custom Colors
+
+At the top of your configuration file, you can specify a list of "custom colors". Custom colors must start with a "$".  You can use these anywhere you can use a valid color:
+
+```yaml
+colors:
+  $foreground: brightCyan
+  $background: blue
+prompt:
+  block:
+    style: $foreground bg:$background
+    ...
+```
+
+Note that you should explicitly quote your hex colors, otherwise YAML will think they are comments.
+
+### Gradients
+
+A linear-gradient is specified almost exactly the same way as a CSS gradient. The only difference is that you may not set the direction of the gradient - it is always left-to-right. A linear-gradient can have any number of stops, and stop positions may be specified as relative positions (e.g. "20%") or with absolute positions (e.g. "3px" - each character is considered 1px wide, since we can only set the color of an entire character), or even with a mix of the two. Gradients can be applied to the background by prefixing them with "bg:", like any other color.
+
+If color names are used inside a linear-gradient, they will be [CSS Color Level 3 colors](https://www.w3.org/TR/2018/REC-css-color-3-20180619/#svg-color). A word of caution; this can cause some unexpected behavior when mixing a base color name in a style and in a linear-gradient. As mentioned above, when using a color name like "red" in a style, the style will use a 16-color ANSI color, and the exact color will depend on the terminal you are using and how it is configured. Since kitsch-prompt has no way to know what the exact color "red" represents in your terminal, if you use the color "red" inside a linear-gradient, it will likely not show as the same color as "red" in a style:
+
+```yaml
+colors:
+  # This red is #ff0000
+  $red1: linear-gradient(red, red)
+  # This red is a 16-color ANSI color
+  # and is whatever the terminal says it is.
+  $red2: red
+```
+
+To get around this, use hex colors instead of the base color names to get the exact color you want. Also note that "bright" colors like "brightRed" cannot be used in a linear-gradient.
+
+If the user is using a terminal that only supports 256 colors, linear-gradients will be gracefully down sampled to the ANSI 256 color pallette.
+
+## Modifiers
+
+The following are all valid modifiers. Note that some modifiers are not supported on some terminals:
+
+- `bold` - Make text bold.
+- `dim` - Emitting only a small amount of light.
+- `italic` - Make text italic. _(Not widely supported)_
+- `underline` - Make text underline. _(Not widely supported)_
+- `inverse`- Inverse background and foreground colors.
+- `hidden` - Prints the text, but makes it invisible.
+- `strikethrough` - Puts a horizontal line through the center of the text. _(Not widely supported)_
+- `visible`- Prints the text only when gchalk has a color level > 0. Can be useful for things that are purely cosmetic.

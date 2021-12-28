@@ -1,0 +1,36 @@
+:root {
+    --kitsch-window-border: #444;
+}
+
+html[data-theme="dark"] {
+  --kitsch-window-border: #444;
+}
+
+.container {
+  margin: 0 2em var(--ifm-paragraph-margin-bottom) 2em;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.top {
+  background: var(--kitsch-window-border);
+  padding: 6px 0 0 6px;
+}
+
+.dot {
+  height: 12px;
+  width: 12px;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+  margin: 3px;
+}
+
+.content {
+  background: #000;
+  color: #cccccc;
+  font-family: 'CaskaydiaCove', monospace;
+  padding: 1em;
+  white-space: nowrap;
+  overflow: auto;
+}

@@ -1,0 +1,209 @@
+---
+sidebar_position: 2
+---
+
+# Template Functions
+
+import ExamplePrompt from "../../src/components/ExamplePrompt";
+
+## Style Functions
+
+### bgColor
+
+`bgColor <color>` applies a color to the background of some text. The color can be any foreground color or background color, including a linear-gradient. These two examples will both color the background of the text red:
+
+```gotemplate
+{{ .name | fgColor "red" }}
+{{ .name | fgColor "bg:red" }}
+```
+
+### fgColor
+
+`fgColor <color>` applies a color to the foreground. These two examples will both color the foreground of the text red:
+
+```gotemplate
+{{ .name | fgColor "red" }}
+{{ .name | fgColor "bg:red" }}
+```
+
+### style
+
+`style <stylestring> <text>` applies a style to some text.
+
+```gotemplate
+style "green" "Hello World"
+```
+
+will return a green "Hello World". Nesting works correctly so:
+
+```gotemplate
+{{- $bar := style "green" "bar" -}}
+{{ print "foo " $bar " baz" | style "red" }}
+```
+
+will print "foo" in red, "bar" in green, and "baz" in red, as you would expect.
+
+## Powerline Functions
+
+### newPowerline
+
+`newPowerline <prefix> <separator> <suffix>` returns a powerline object, used as a helper to render powerline prompts from a template.
+
+The `powerline` object has the following functions:
+
+- `$pl.Segment <color> <text>` - Render a new powerline segment with the specific background color and text. Between each segment, the powerline object will render a separator, consisting of the `prefix` (with the last segment's background color and the new segment's color as the foreground) then the `separator + suffix` (with the last segment's color as the foreground and the new segment's background color).
+- `$pl.Finish` - Render a "prefix + separator" in the last segment's background color. If there are no previous segments, this will return an empty string.
+
+For example:
+
+```yaml
+colors:
+  $timeBg: "linear-gradient(#555, #222)"
+  $timeFg: "#ccc"
+  $directoryBg: "linear-gradient(#088 0px, #008 15px)"
+  $directoryFg: "#cfc"
+prompt:
+  type: block
+  modules:
+    - type: time
+    - type: directory
+  template: |
+    {{- $pl := newPowerline " " "\ue0b0" " " -}}
+    {{- with .Data.Modules -}}
+      {{- printf " %s" .time.Text | style "$timeFg" | $pl.Segment "$timeBg" -}}
+      {{- .directory.Text | style "$directoryFg" | $pl.Segment "$directoryBg" -}}
+      {{- $pl.Finish -}}{{- " " -}}
+    {{- end -}}
+```
+
+Would produce a result like:
+
+```kitsch
+colors:
+  $timeBg: "linear-gradient(#555, #222)"
+  $timeFg: "#ccc"
+  $directoryBg: "linear-gradient(#088 0px, #008 15px)"
+  $directoryFg: "#cfc"
+prompt:
+  type: block
+  modules:
+    - type: time
+    - type: directory
+  template: |
+    {{- $pl := newPowerline " " "\ue0b0" " " -}}
+    {{- with .Data.Modules -}}
+      {{- printf " %s" .time.Text | style "$timeFg" | $pl.Segment "$timeBg" -}}
+      {{- .directory.Text | style "$directoryFg" | $pl.Segment "$directoryBg" -}}
+      {{- $pl.Finish -}}{{- " " -}}
+    {{- end -}}
+```
+
+### newReversePowerline
+
+`newReversePowerline <prefix> <separator> <suffix>` is the same as `newPowerline`, except the colors of the "separator" are flipped. This is useful when you want to use the "left-pointing powerline arrow" (`\ue0b0`) for an rprompt.
+
+## Utility Functions
+
+### include
+
+`include <templatename> <pipeline>` is similar to the built-in "template", but can be used as part of a pipeline. Note that "pipeline" _must_ be provided.
+
+```yaml
+prompt:
+  type: text
+  template: |
+    {{- define "test" }}Hello World{{ end -}}
+    {{- include "test" . | fgColor "brightYellow" -}}
+```
+
+## Built-in Functions
+
+The following functions are [built-in functions](https://pkg.go.dev/text/template#hdr-Functions) from the go template language:
+
+### eq
+
+`eq <arg1> <arg2>` returns the boolean truth of arg1 == arg2
+
+### ne
+
+`ne <arg1> <arg2>` returns the boolean truth of arg1 != arg2
+
+### lt
+
+`lt <arg1> <arg2>` returns the boolean truth of arg1 < arg2
+
+### le
+
+`le <arg1> <arg2>` returns the boolean truth of arg1 <= arg2
+
+### gt
+
+`gt <arg1> <arg2>` returns the boolean truth of arg1 > arg2
+
+### ge
+
+`ge <arg1> <arg2>` returns the boolean truth of arg1 >= arg2
+
+### and
+
+```gotemplate
+and <value1> [value2] [value3] ...
+```
+
+Returns the boolean AND of its arguments by returning the first empty argument or the last argument, that is, "and x y" behaves as "if x then y else x". All the arguments are evaluated.
+
+### or
+
+```gotemplate
+or <value1> [value2] [value3] ...
+```
+
+Returns the boolean OR of its arguments by returning the first non-empty argument or the last argument, that is, "or x y" behaves as "if x then x else y". All the arguments are evaluated.
+
+### not
+
+`not <value>` returns the boolean negation of "value".
+
+### call
+
+```gotemplate
+call <fn>
+```
+
+Returns the result of calling the first argument, which must be a function, with the remaining arguments as parameters. Thus "call .X.Y 1 2" is, in Go notation, dot.X.Y(1, 2) where Y is a func-valued field, map entry, or the like. The first argument must be the result of an evaluation that yields a value of function type (as distinct from a predefined function such as print). The function must return either one or two result values, the second of which is of type error. If the arguments don't match the function or the returned error value is non-nil, execution stops.
+
+### index
+
+Returns the result of indexing its first argument by the following arguments. Thus "index x 1 2 3" is, in Go syntax, `x[1][2][3]`. Each indexed item must be a map, slice, or array.
+
+### slice
+
+`slice` returns the result of slicing its first argument by the remaining arguments. Thus "slice x 1 2" is, in Go syntax, `x[1:2]`, while "slice x" is `x[:]`, "slice x 1" is `x[1:]`, and "slice x 1 2 3" is `x[1:2:3]`. The first argument must be a string, slice, or array.
+
+### len
+
+`len <value>` returns the integer length of "value".
+
+### print
+
+```gotemplate
+print [value1] [value2] [value3] ...
+```
+
+`print` is an alias for go's `fmt.Sprint()`, and will concatenate together all passed in values.
+
+### printf
+
+```gotemplate
+printf <format> [value1] [value2] ...
+```
+
+`printf` is an alias for go's [`fmt.Sprintf()`](https://pkg.go.dev/fmt#hdr-Printing).
+
+### println
+
+`println` is an alias for go's `fmt.Sprintln()`.
+
+## Sprig Template Functions
+
+All [sprig template functions](http://masterminds.github.io/sprig/) are available for use.

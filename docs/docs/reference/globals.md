@@ -1,0 +1,47 @@
+---
+sidebar_position: 2
+---
+
+# Template Globals
+
+Template globals are available via the `.Globals` object in module templates and block join templates.
+
+## CWD
+
+`{{ .Globals.CWD }}` is the current working directory.
+
+## Home
+
+`{{ .Globals.Home }}` is the user's home directory.
+
+## IsRoot
+
+`{{ .Globals.IsRoot }}` is a boolean and is true if this is a non-windows system, and the user is UID 0.
+
+## Hostname
+
+`{{ .Globals.Hostname }}` is the name of the current machine.
+
+## Jobs
+
+`{{ .Globals.Jobs }}` is the number of jobs that the shell is currently running.
+
+## Status
+
+`{{ .Globals.Status }}` is an integer representing the return status of the previous command.
+
+## PreviousCommandDuration
+
+`{{ .Globals.PreviousCommandDuration }}` is the duration of the previous command, in milliseconds.
+
+## Keymap
+
+`{{ .Globals.Keymap }}` is the zsh/fish keymap. This will be "" if vi mode is not enabled, "" or "main" in insert mode, and "vicmd" in normal mode.
+
+## Shell
+
+`{{ .Globals.Shell }}` is the type of the shell (e.g. "zsh", "bash", "powershell", etc...).
+
+## TerminalWidth
+
+`{{ .Globals.TerminalWidth }}` is the width of the terminal, in characters.
