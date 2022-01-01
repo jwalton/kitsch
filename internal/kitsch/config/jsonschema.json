@@ -1,0 +1,30 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "https://kitschprompt.com/kitschpromptconfig.schema.json",
+    "title": "Kitsch-prompt Configuration",
+    "description": "A kitsch-prompt configuration file",
+    "type": "object",
+    "definitions": {
+      {{ .Definitions }}
+    },
+    "properties": {
+        "colors": {
+            "type": "object",
+            "patternProperties": {
+                "^\\$": {
+                    "type": "string"
+                }
+            }
+        },
+        "projectTypes": {
+            "type": "array",
+            "items": {
+                "type": "object"
+            }
+        },
+        "prompt": {
+            "$ref": "#/definitions/module"
+        }
+    },
+    "additionalProperties": false
+}

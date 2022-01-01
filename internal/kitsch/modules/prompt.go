@@ -1,8 +1,11 @@
 package modules
 
 import (
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/modules/schemas"
 	"gopkg.in/yaml.v3"
 )
+
+//go:generate go run ../genSchema/main.go --pkg schemas PromptModule
 
 // PromptModule shows a prompt to the user.
 //
@@ -10,6 +13,8 @@ import (
 //
 type PromptModule struct {
 	CommonConfig `yaml:",inline"`
+	// Type is the type of this module.
+	Type string `yaml:"type" jsonschema:",enum=prompt"`
 	// Prompt is what to display as the prompt.  Defaults to "$ ".
 	Prompt string `yaml:"prompt"`
 	// RootPrompt is what to display as the prompt if the current user is root.  Defaults to "# ".
@@ -67,13 +72,20 @@ func (mod PromptModule) Execute(context *Context) ModuleResult {
 }
 
 func init() {
-	registerFactory("prompt", func(node *yaml.Node) (Module, error) {
-		module := PromptModule{
-			Prompt:      "$ ",
-			RootPrompt:  "# ",
-			VicmdPrompt: ": ",
-		}
-		err := node.Decode(&module)
-		return &module, err
-	})
+	registerModule(
+		"prompt",
+		registeredModule{
+			jsonSchema: schemas.PromptModuleJSONSchema,
+			factory: func(node *yaml.Node) (Module, error) {
+				module := PromptModule{
+					Type:        "prompt",
+					Prompt:      "$ ",
+					RootPrompt:  "# ",
+					VicmdPrompt: ": ",
+				}
+				err := node.Decode(&module)
+				return &module, err
+			},
+		},
+	)
 }

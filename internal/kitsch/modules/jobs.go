@@ -3,8 +3,11 @@ package modules
 import (
 	"fmt"
 
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/modules/schemas"
 	"gopkg.in/yaml.v3"
 )
+
+//go:generate go run ../genSchema/main.go --pkg schemas JobsModule
 
 // JobsModule shows the current count of running background jobs.  If
 // the number of running jobs is greater than or equal to "SymbolThreshold",
@@ -14,6 +17,8 @@ import (
 //
 type JobsModule struct {
 	CommonConfig `yaml:",inline"`
+	// Type is the type of this module.
+	Type string `yaml:"type" jsonschema:",enum=jobs"`
 	// Symbol is the symbol to show when there are background jobs.  Defaults to "+".
 	Symbol string `yaml:"symbol"`
 	// SymbolThreshold is the threshold for showing the symbol.  Defaults to 1.
@@ -56,13 +61,20 @@ func (mod JobsModule) Execute(context *Context) ModuleResult {
 }
 
 func init() {
-	registerFactory("jobs", func(node *yaml.Node) (Module, error) {
-		module := JobsModule{
-			Symbol:          "+",
-			SymbolThreshold: 1,
-			CountThreshold:  2,
-		}
-		err := node.Decode(&module)
-		return &module, err
-	})
+	registerModule(
+		"jobs",
+		registeredModule{
+			jsonSchema: schemas.JobsModuleJSONSchema,
+			factory: func(node *yaml.Node) (Module, error) {
+				module := JobsModule{
+					Type:            "jobs",
+					Symbol:          "+",
+					SymbolThreshold: 1,
+					CountThreshold:  2,
+				}
+				err := node.Decode(&module)
+				return &module, err
+			},
+		},
+	)
 }

@@ -3,14 +3,19 @@ package modules
 import (
 	"time"
 
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/modules/schemas"
 	"gopkg.in/yaml.v3"
 )
+
+//go:generate go run ../genSchema/main.go --pkg schemas TimeModule
 
 const defaultTimeFormat = "15:04:05"
 
 // TimeModule shows the current time.
 type TimeModule struct {
 	CommonConfig `yaml:",inline"`
+	// Type is the type of this module.
+	Type string `yaml:"type" jsonschema:",enum=time"`
 	// Layout is the format to show the time in.  Layout defines the format by
 	// showing how the reference time, defined to be
 	//
@@ -53,9 +58,15 @@ func (mod TimeModule) Execute(context *Context) ModuleResult {
 }
 
 func init() {
-	registerFactory("time", func(node *yaml.Node) (Module, error) {
-		var module TimeModule
-		err := node.Decode(&module)
-		return &module, err
-	})
+	registerModule(
+		"time",
+		registeredModule{
+			jsonSchema: schemas.TimeModuleJSONSchema,
+			factory: func(node *yaml.Node) (Module, error) {
+				module := TimeModule{Type: "time"}
+				err := node.Decode(&module)
+				return &module, err
+			},
+		},
+	)
 }

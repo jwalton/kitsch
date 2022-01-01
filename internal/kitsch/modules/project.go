@@ -2,9 +2,12 @@ package modules
 
 import (
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/log"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/modules/schemas"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/projects"
 	"gopkg.in/yaml.v3"
 )
+
+//go:generate go run ../genSchema/main.go --pkg schemas ProjectModule
 
 // ProjectConfig represents configuration overrides for individual project types
 // within the project module.
@@ -46,6 +49,8 @@ func (p projectModuleData) PackageVersion() string {
 //
 type ProjectModule struct {
 	CommonConfig `yaml:",inline"`
+	// Type is the type of this module.
+	Type string `yaml:"type" jsonschema:",enum=project"`
 	// Projects is project-specific configuration.
 	Projects map[string]ProjectConfig `yaml:"projects"`
 }
@@ -87,9 +92,15 @@ func (mod ProjectModule) Execute(context *Context) ModuleResult {
 }
 
 func init() {
-	registerFactory("project", func(node *yaml.Node) (Module, error) {
-		var module ProjectModule
-		err := node.Decode(&module)
-		return &module, err
-	})
+	registerModule(
+		"project",
+		registeredModule{
+			jsonSchema: schemas.ProjectModuleJSONSchema,
+			factory: func(node *yaml.Node) (Module, error) {
+				module := ProjectModule{Type: "project"}
+				err := node.Decode(&module)
+				return &module, err
+			},
+		},
+	)
 }

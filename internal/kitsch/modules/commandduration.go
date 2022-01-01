@@ -4,8 +4,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/log"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/modules/schemas"
 	"gopkg.in/yaml.v3"
 )
+
+//go:generate go run ../genSchema/main.go --pkg schemas CmdDurationModule
 
 // CmdDurationModule shows the amount of time the previous command took to execute.
 //
@@ -16,6 +20,8 @@ import (
 //
 type CmdDurationModule struct {
 	CommonConfig `yaml:",inline"`
+	// Type is the type of this module.
+	Type string `yaml:"type" jsonschema:",enum=command_duration"`
 	// MinTime is the minimum duration to show, in milliseconds.
 	MinTime int64 `yaml:"minTime"`
 	// ShowMilliseconds - If true, show milliseconds.
@@ -57,10 +63,29 @@ func (mod CmdDurationModule) formatDuration(timeInMs int64) string {
 	return result
 }
 
-func init() {
-	registerFactory("command_duration", func(node *yaml.Node) (Module, error) {
-		module := CmdDurationModule{MinTime: 2000}
-		err := node.Decode(&module)
-		return &module, err
+// Validate validates this module.
+func (mod CmdDurationModule) Validate(context *Context, prefix string) {
+	mod.CommonConfig.validate(context, prefix)
+	if mod.MinTime < 0 {
+		log.Warn(fmt.Sprintf("%s: Invalid minTime: %d", prefix, mod.MinTime))
+	}
+
+	testTemplate(context, prefix, mod.Template, map[string]interface{}{
+		"Zero duration": cmdDurationModuleResult{Duration: 0, PrettyDuration: ""},
+		"With duration": cmdDurationModuleResult{Duration: 20, PrettyDuration: "20s"},
 	})
+}
+
+func init() {
+	registerModule(
+		"command_duration",
+		registeredModule{
+			jsonSchema: schemas.CmdDurationModuleJSONSchema,
+			factory: func(node *yaml.Node) (Module, error) {
+				module := CmdDurationModule{Type: "command_duration", MinTime: 2000}
+				err := node.Decode(&module)
+				return &module, err
+			},
+		},
+	)
 }

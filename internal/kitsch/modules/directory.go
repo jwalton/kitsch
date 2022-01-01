@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/modules/schemas"
 	"gopkg.in/yaml.v3"
 )
 
@@ -16,6 +17,8 @@ func getVolumeName(path string) string {
 	return filepath.VolumeName(path)
 }
 
+//go:generate go run ../genSchema/main.go --pkg schemas DirectoryModule
+
 // DirectoryModule shows the current working directory.
 //
 // Provides the following template variables:
@@ -24,6 +27,8 @@ func getVolumeName(path string) string {
 //
 type DirectoryModule struct {
 	CommonConfig `yaml:",inline"`
+	// Type is the type of this module.
+	Type string `yaml:"type" jsonschema:",enum=directory"`
 	// HomeSymbol is the symbol to replace the home directory with in directory
 	// strings.  Defaults to "~".
 	HomeSymbol string `yaml:"homeSymbol"`
@@ -136,16 +141,23 @@ func (mod DirectoryModule) Execute(context *Context) ModuleResult {
 }
 
 func init() {
-	registerFactory("directory", func(node *yaml.Node) (Module, error) {
-		var module DirectoryModule = DirectoryModule{
-			HomeSymbol:       defaultHomeSymbol,
-			ReadOnlySymbol:   "🔒",
-			TruncationSymbol: defaultTruncationSymbol,
-			TruncationLength: defaultTruncationLength,
-			TruncateToRepo:   true,
-			getVolumeName:    getVolumeName,
-		}
-		err := node.Decode(&module)
-		return &module, err
-	})
+	registerModule(
+		"directory",
+		registeredModule{
+			jsonSchema: schemas.DirectoryModuleJSONSchema,
+			factory: func(node *yaml.Node) (Module, error) {
+				var module DirectoryModule = DirectoryModule{
+					Type:             "directory",
+					HomeSymbol:       defaultHomeSymbol,
+					ReadOnlySymbol:   "🔒",
+					TruncationSymbol: defaultTruncationSymbol,
+					TruncationLength: defaultTruncationLength,
+					TruncateToRepo:   true,
+					getVolumeName:    getVolumeName,
+				}
+				err := node.Decode(&module)
+				return &module, err
+			},
+		},
+	)
 }

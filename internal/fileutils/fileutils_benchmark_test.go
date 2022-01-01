@@ -16,6 +16,6 @@ func BenchmarkFileExists(b *testing.B) {
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		fileExists("foo.txt")
+		FileExists("foo.txt")
 	}
 }

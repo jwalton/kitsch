@@ -103,6 +103,8 @@ func (item *AsType) UnmarshalYAML(node *yaml.Node) error {
 	return nil
 }
 
+//go:generate go run ../genSchema/main.go --private CacheSettings
+
 // CacheSettings are cache settings for a CustomGetter.
 type CacheSettings struct {
 	// Enabled is true if caching should be enabled for this getter.
@@ -347,3 +349,6 @@ func (getter CustomGetter) applyTemplate(as AsType, bytesValue []byte) (interfac
 
 	return result, nil
 }
+
+//JSONSchemaDefinitions is a string containing JSON schema definitions for objects in the getters package.
+var JSONSchemaDefinitions = "\"CacheSettings\": " + cacheSettingsJSONSchema

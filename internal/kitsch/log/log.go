@@ -15,7 +15,7 @@ var warningShowed = false
 
 // SetVerbose sets verbose logging.
 //
-// In non-verbose mode, most logging is hidden  (we're trying to show a prompt
+// In non-verbose mode, most logging is hidden (we're trying to show a prompt
 // here, so we don't want to bombard the user with messages).  "Info"s are hidden,
 // the first "Warn" will be displayed but the rest will be hidden.  "Error"s
 // are shown but should be rare.

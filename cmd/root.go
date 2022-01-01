@@ -66,14 +66,14 @@ func readConfig() (*config.Config, error) {
 	var err error
 
 	if cfgFile != "" {
-		configuration, err = config.LoadConfigFromFile(cfgFile)
+		configuration, err = config.LoadConfigFromFile(cfgFile, false)
 		if err != nil {
 			log.Error("Error loading config file "+cfgFile+": ", err)
 		}
 	}
 
 	if configuration == nil && cfgFile != defaultConfigFile {
-		configuration, err = config.LoadConfigFromFile(defaultConfigFile)
+		configuration, err = config.LoadConfigFromFile(defaultConfigFile, false)
 		if err != nil && !os.IsNotExist(err) {
 			log.Error("Error loading config file "+defaultConfigFile+": ", err)
 		}

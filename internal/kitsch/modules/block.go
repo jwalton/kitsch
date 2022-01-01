@@ -12,6 +12,37 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+var blockSchema = `{
+	"type":"object",
+	"properties": {
+		"type": {
+			"enum": [ "block" ],
+			"type": "string"
+		},
+	 	"style": {"type": "string"},
+	  	"template": {"type": "string"},
+      	"modules": {
+		 	"type": "array",
+		  	"items": {
+			    "type": "object",
+				"description": "Modules is a list of child modules to be rendered under this block",
+			    "allOf": [
+					{
+						"properties": {
+							"id": {"type": "string"}
+						}
+					},
+					{
+						"$ref": "#/definitions/module"
+					}
+		  	    ]
+		  	}
+	  	},
+	  	"join": {"type": "string", "description": "Join is a template to use to join together modules.  Defaults to \" \"."}
+	},
+	"required": ["type"]
+}`
+
 // BlockModule renders a collection of other modules.
 //
 // Any module that outputs no text is considered "inactive" and will not be
@@ -155,9 +186,15 @@ func (mod BlockModule) joinChildren(context *Context, children []ModuleResult) s
 }
 
 func init() {
-	registerFactory("block", func(node *yaml.Node) (Module, error) {
-		module := BlockModule{Join: " "}
-		err := node.Decode(&module)
-		return &module, err
-	})
+	registerModule(
+		"block",
+		registeredModule{
+			jsonSchema: blockSchema,
+			factory: func(node *yaml.Node) (Module, error) {
+				module := BlockModule{Join: " "}
+				err := node.Decode(&module)
+				return &module, err
+			},
+		},
+	)
 }

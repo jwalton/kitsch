@@ -2,6 +2,7 @@
 package config
 
 import (
+	"bytes"
 	"errors"
 	"os"
 
@@ -27,12 +28,14 @@ type Config struct {
 }
 
 // LoadFromYaml loads the configuration file from a YAML file.
-func (c *Config) LoadFromYaml(yamlData []byte) error {
-	return yaml.Unmarshal(yamlData, &c)
+func (c *Config) LoadFromYaml(yamlData []byte, strict bool) error {
+	decoder := yaml.NewDecoder(bytes.NewReader(yamlData))
+	decoder.KnownFields(strict)
+	return decoder.Decode(c)
 }
 
 // LoadConfigFromFile will load a configuration from a file.
-func LoadConfigFromFile(configFile string) (*Config, error) {
+func LoadConfigFromFile(configFile string, strict bool) (*Config, error) {
 	var config = Config{}
 
 	yamlData, err := os.ReadFile(configFile)
@@ -40,7 +43,7 @@ func LoadConfigFromFile(configFile string) (*Config, error) {
 		return nil, err
 	}
 
-	err = config.LoadFromYaml(yamlData)
+	err = config.LoadFromYaml(yamlData, strict)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +58,7 @@ func LoadConfigFromFile(configFile string) (*Config, error) {
 // LoadDefaultConfig will load a default configuration.
 func LoadDefaultConfig() (*Config, error) {
 	var config = Config{}
-	err := config.LoadFromYaml(sampleconfig.DefaultConfig)
+	err := config.LoadFromYaml(sampleconfig.DefaultConfig, false)
 	if err != nil {
 		// Default config should not have errors!
 		println("kitch: Error in default configuration", err)

@@ -5,8 +5,11 @@ import (
 
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/getters"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/log"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/modules/schemas"
 	"gopkg.in/yaml.v3"
 )
+
+//go:generate go run ../genSchema/main.go --pkg schemas GetterModule
 
 // GetterModule executes a custom getter and returns the result.
 //
@@ -19,19 +22,19 @@ import (
 //
 type GetterModule struct {
 	CommonConfig `yaml:",inline"`
-	getterType   getters.GetterType
+	Type         getters.GetterType `yaml:"type" jsonschema:",required,enum=file:custom"`
 
 	// From is the source to get data from.  The meaning of "From" is based on
 	// the provided "Type".
 	From string `yaml:"from"`
 	// As will determine how to interpret the result of the command.  One of
 	// "text", "json", "toml", or "yaml".
-	As getters.AsType `yaml:"as"`
+	As getters.AsType `yaml:"as" jsonschema:",enum=text:json:toml:yaml"`
 	// Regex is a regular expression used to parse values out of the result of
 	// the getter.  If specified, then "As" will be ignored.
 	Regex string `yaml:"regex"`
 	// Cache settings for the module.
-	Cache getters.CacheSettings `yaml:"cache"`
+	Cache getters.CacheSettings `yaml:"cache" jsonschema:",ref"`
 }
 
 type getterModuleTextResult struct {
@@ -42,7 +45,7 @@ type getterModuleTextResult struct {
 // Execute the module.
 func (mod GetterModule) Execute(context *Context) ModuleResult {
 	getter := getters.CustomGetter{
-		Type:  mod.getterType,
+		Type:  mod.Type,
 		From:  mod.From,
 		As:    mod.As,
 		Regex: mod.Regex,
@@ -67,15 +70,27 @@ func (mod GetterModule) Execute(context *Context) ModuleResult {
 }
 
 func init() {
-	registerFactory("custom", func(node *yaml.Node) (Module, error) {
-		module := GetterModule{getterType: getters.TypeCustom}
-		err := node.Decode(&module)
-		return &module, err
-	})
+	registerModule(
+		"custom",
+		registeredModule{
+			jsonSchema: schemas.GetterModuleJSONSchema,
+			factory: func(node *yaml.Node) (Module, error) {
+				module := GetterModule{Type: getters.TypeCustom}
+				err := node.Decode(&module)
+				return &module, err
+			},
+		},
+	)
 
-	registerFactory("file", func(node *yaml.Node) (Module, error) {
-		module := GetterModule{getterType: getters.TypeFile}
-		err := node.Decode(&module)
-		return &module, err
-	})
+	registerModule(
+		"file",
+		registeredModule{
+			jsonSchema: schemas.GetterModuleJSONSchema,
+			factory: func(node *yaml.Node) (Module, error) {
+				module := GetterModule{Type: getters.TypeFile}
+				err := node.Decode(&module)
+				return &module, err
+			},
+		},
+	)
 }

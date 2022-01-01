@@ -6,8 +6,11 @@ import (
 
 	"github.com/jwalton/kitsch-prompt/internal/gitutils"
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/log"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/modules/schemas"
 	"gopkg.in/yaml.v3"
 )
+
+//go:generate go run ../genSchema/main.go --pkg schemas GitStatusModule
 
 // GitStatusModule shows the current status of a git module.
 //
@@ -16,6 +19,8 @@ import (
 //
 type GitStatusModule struct {
 	CommonConfig `yaml:",inline"`
+	// Type is the type of this module.
+	Type string `yaml:"type" jsonschema:",enum=git_status"`
 	// IndexStyle is the style to use for the index status.
 	IndexStyle string `yaml:"indexStyle"`
 	// UnstagedStyle is the style to use for the unstaged file status.
@@ -108,9 +113,15 @@ func (mod GitStatusModule) renderStats(stats gitutils.GitFileStats) string {
 }
 
 func init() {
-	registerFactory("git_status", func(node *yaml.Node) (Module, error) {
-		var module GitStatusModule
-		err := node.Decode(&module)
-		return &module, err
-	})
+	registerModule(
+		"git_status",
+		registeredModule{
+			jsonSchema: schemas.GitStatusModuleJSONSchema,
+			factory: func(node *yaml.Node) (Module, error) {
+				module := GitStatusModule{Type: "git_status"}
+				err := node.Decode(&module)
+				return &module, err
+			},
+		},
+	)
 }

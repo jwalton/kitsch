@@ -4,8 +4,11 @@ import (
 	"os/user"
 
 	"github.com/jwalton/kitsch-prompt/internal/kitsch/log"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/modules/schemas"
 	"gopkg.in/yaml.v3"
 )
+
+//go:generate go run ../genSchema/main.go --pkg schemas UsernameModule
 
 // UsernameModule shows the name of the currently logged in user.  This is,
 // by default, hidden unless the user is root or the session is an SSH session.
@@ -24,6 +27,8 @@ import (
 //
 type UsernameModule struct {
 	CommonConfig `yaml:",inline"`
+	// Type is the type of this module.
+	Type string `yaml:"type" jsonschema:",enum=username"`
 	// ShowAlways will cause the username to always be shown.  If false (the default),
 	// then the username will only be shown if the user is root, or the current
 	// session is an SSH session.
@@ -86,9 +91,15 @@ func (mod UsernameModule) Execute(context *Context) ModuleResult {
 }
 
 func init() {
-	registerFactory("username", func(node *yaml.Node) (Module, error) {
-		var module UsernameModule
-		err := node.Decode(&module)
-		return &module, err
-	})
+	registerModule(
+		"username",
+		registeredModule{
+			jsonSchema: schemas.UsernameModuleJSONSchema,
+			factory: func(node *yaml.Node) (Module, error) {
+				module := UsernameModule{Type: "username"}
+				err := node.Decode(&module)
+				return &module, err
+			},
+		},
+	)
 }

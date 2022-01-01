@@ -5,8 +5,11 @@ import (
 	"strings"
 
 	"github.com/jwalton/kitsch-prompt/internal/gitutils"
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/modules/schemas"
 	"gopkg.in/yaml.v3"
 )
+
+//go:generate go run ../genSchema/main.go --pkg schemas GitModule
 
 // GitModule shows information about the current git repo.
 //
@@ -30,7 +33,9 @@ import (
 // • Symbol - The symbol to use to indicate the current state of the repo.
 //
 type GitModule struct {
-	CommonConfig     `yaml:",inline"`
+	CommonConfig `yaml:",inline"`
+	// Type is the type of this module.
+	Type             string `yaml:"type" jsonschema:",enum=git"`
 	AheadStyle       string `yaml:"aheadStyle"`
 	BehindStyle      string `yaml:"behindStyle"`
 	AheadBehindStyle string `yaml:"aheadBehindStyle"`
@@ -124,9 +129,15 @@ func (mod GitModule) renderDefault(
 }
 
 func init() {
-	registerFactory("git", func(node *yaml.Node) (Module, error) {
-		var module GitModule
-		err := node.Decode(&module)
-		return &module, err
-	})
+	registerModule(
+		"git",
+		registeredModule{
+			jsonSchema: schemas.GitModuleJSONSchema,
+			factory: func(node *yaml.Node) (Module, error) {
+				module := GitModule{Type: "git"}
+				err := node.Decode(&module)
+				return &module, err
+			},
+		},
+	)
 }

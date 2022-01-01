@@ -53,9 +53,9 @@ func LookPathSafe(file string) (string, error) {
 	return "", &exec.Error{Name: file, Err: exec.ErrNotFound}
 }
 
-// fileExists returns true if the file specified by "path" exists, and the
+// FileExists returns true if the file specified by "path" exists, and the
 // parent folder can be read, false otherwise.
-func fileExists(path string) bool {
+func FileExists(path string) bool {
 	// This saves us two allocs over using `os.Stat()`.`
 	var fs syscall.Stat_t
 	err := syscall.Stat(path, &fs)
@@ -82,7 +82,7 @@ func FindFileInAncestors(folder string, file string) string {
 	done := false
 	for !done {
 		testPath := filepath.Join(basePath, file)
-		if fileExists(testPath) {
+		if FileExists(testPath) {
 			result = testPath
 			break
 		}

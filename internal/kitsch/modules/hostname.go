@@ -3,14 +3,19 @@ package modules
 import (
 	"strings"
 
+	"github.com/jwalton/kitsch-prompt/internal/kitsch/modules/schemas"
 	"gopkg.in/yaml.v3"
 )
+
+//go:generate go run ../genSchema/main.go --pkg schemas HostnameModule
 
 // HostnameModule shows the name of the current hostname.  This is,
 // by default, hidden unless the session is an SSH session.
 //
 type HostnameModule struct {
 	CommonConfig `yaml:",inline"`
+	// Type is the type of this module.
+	Type string `yaml:"type" jsonschema:",enum=hostname"`
 	// ShowAlways will cause the hostname to always be shown.  If false (the default),
 	// then the hostname will only be shown if the current session is an SSH session.
 	ShowAlways bool `yaml:"showAlways"`
@@ -53,9 +58,15 @@ func (mod HostnameModule) Execute(context *Context) ModuleResult {
 }
 
 func init() {
-	registerFactory("hostname", func(node *yaml.Node) (Module, error) {
-		var module HostnameModule
-		err := node.Decode(&module)
-		return &module, err
-	})
+	registerModule(
+		"hostname",
+		registeredModule{
+			jsonSchema: schemas.HostnameModuleJSONSchema,
+			factory: func(node *yaml.Node) (Module, error) {
+				module := HostnameModule{Type: "hostname"}
+				err := node.Decode(&module)
+				return &module, err
+			},
+		},
+	)
 }
