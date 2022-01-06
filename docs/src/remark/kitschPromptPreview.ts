@@ -33,16 +33,20 @@ function runKitschPrompt(exmaple: string): string {
   }
 
   // Copy the example to a temporary file
-  const configFile = tmp.fileSync({ postfix: ".yaml" });
-  fs.writeFileSync(configFile.name, config);
-
   const demoFile = tmp.fileSync({ postfix: ".yaml" });
   fs.writeFileSync(demoFile.name, demo);
+
+  let options = "";
+  if(config.trim()) {
+    const configFile = tmp.fileSync({ postfix: ".yaml" });
+    fs.writeFileSync(configFile.name, config);
+    options += ` --config "${configFile.name}"`;
+  }
 
   // Run kitsch-prompt
   try {
     const output = execCombined(
-      `kitsch-prompt prompt --config "${configFile.name}" --demo "${demoFile.name}"`
+      `kitsch-prompt prompt ${options} --demo "${demoFile.name}"`
     );
 
 
