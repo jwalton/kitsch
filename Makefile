@@ -52,6 +52,10 @@ install: ; $(info $(M) installing executable…) @ ## Install program binary
 		-tags release \
 		-ldflags '-X $(MODULE)/cmd.Version=$(VERSION) -X $(MODULE)/cmd.Commit=$(COMMIT) -X $(MODULE)/cmd.BuildDate=$(DATE)'
 
+.PHONY: snapshot
+snapshot: ; $(info $(M) creating snapshot…) @ ## Run goreleaser snapshot
+	$Q goreleaser release --snapshot --rm-dist
+
 # Tests
 
 TEST_TARGETS := test-default test-bench test-short test-verbose test-race

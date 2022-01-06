@@ -7,7 +7,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"syscall"
 )
 
 // isExecutable returns an error if file is not an executable.
@@ -56,9 +55,7 @@ func LookPathSafe(file string) (string, error) {
 // FileExists returns true if the file specified by "path" exists, and the
 // parent folder can be read, false otherwise.
 func FileExists(path string) bool {
-	// This saves us two allocs over using `os.Stat()`.`
-	var fs syscall.Stat_t
-	err := syscall.Stat(path, &fs)
+	_, err := os.Stat(path)
 
 	if err == nil {
 		return true

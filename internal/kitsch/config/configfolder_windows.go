@@ -3,9 +3,22 @@
 
 package config
 
-import "os"
+import (
+	"os"
+	"path/filepath"
+)
 
 // GetConfigFolder returns the path to the config folder for the application.
 func GetConfigFolder(vendor string, application string) string {
-	return filepath.Join(os.Getenv("APPDATA"), vendor, application)
+	rootDir := os.Getenv("APPDATA")
+
+	if rootDir == "" {
+		var err error
+		rootDir, err = os.UserHomeDir()
+		if err != nil {
+			rootDir = os.Getenv("HOME")
+		}
+	}
+
+	return filepath.Join(rootDir, vendor, application)
 }

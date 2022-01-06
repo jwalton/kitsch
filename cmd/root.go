@@ -19,6 +19,10 @@ var userConfigDir string
 var cfgFile string
 var defaultConfigFile string
 
+// These are set by goreleaser.
+var version string = "unknown"
+var commit string = "unknown"
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   programName,
