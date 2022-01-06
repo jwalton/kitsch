@@ -1,6 +1,7 @@
 package modules
 
 import (
+	"io/fs"
 	"os"
 	"sync"
 	"testing/fstest"
@@ -169,6 +170,8 @@ type DemoConfig struct {
 	Env map[string]string `yaml:"env"`
 	// Git is the git instance to use.
 	Git gitutils.DemoGit `yaml:"git"`
+	// CWDIsReadOnly is true if the current working directory is read-only.
+	CWDIsReadOnly bool `yaml:"cwdIsReadOnly"`
 }
 
 // Load will load the demo configuration from the specified file.
@@ -202,9 +205,18 @@ func NewDemoContext(
 	config DemoConfig,
 	styles styling.Registry,
 ) Context {
+	var cwdMode fs.FileMode = 0755
+	if config.CWDIsReadOnly {
+		cwdMode = 0555
+	}
+
+	demoFsys := fstest.MapFS{
+		".": {Mode: cwdMode},
+	}
+
 	return Context{
 		Globals:        config.Globals,
-		Directory:      fileutils.NewDirectoryTestFS(config.Globals.CWD, fstest.MapFS{}),
+		Directory:      fileutils.NewDirectoryTestFS(config.Globals.CWD, demoFsys),
 		Environment:    env.DummyEnv{Env: config.Env},
 		ProjectTypes:   []projects.ProjectType{},
 		ValueCache:     cache.NewMemoryCache(),
