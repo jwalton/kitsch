@@ -22,13 +22,13 @@ builds:
     ldflags:
       - -s -w -X github.com/jwalton/kitsch-prompt/cmd.version={{.Version}} -X github.com/jwalton/kitsch-prompt/cmd.commit={{.Commit}}
 archives:
-  - replacements:
+  - name_template: "kitsch-prompt_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+    replacements:
       darwin: Darwin
       linux: Linux
       windows: Windows
       386: i386
       amd64: x86_64
-
     format_overrides:
       - goos: windows
         format: zip
