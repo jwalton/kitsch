@@ -104,5 +104,5 @@ func init() {
 	promptCmd.Flags().Int("terminal-width", 0, "The width of the terminal")
 	promptCmd.Flags().Bool("perf", false, "Print performance information about each module")
 	promptCmd.Flags().Bool("verbose", false, "Print verbose output")
-	promptCmd.Flags().String("demo", "", "If present, kitsch-prompt will run in demo mode, loading values from the specified file.")
+	promptCmd.Flags().String("demo", "", "If present, "+programName+" will run in demo mode, loading values from the specified file.")
 }

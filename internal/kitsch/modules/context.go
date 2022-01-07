@@ -161,7 +161,7 @@ func NewContext(
 }
 
 // DemoConfig is a structure used to create a "demo context".  This is used for
-// unit testing, and for running Kitsch-Prompt in "demo mode" where kitsch-prompt
+// unit testing, and for running kitsch-prompt in "demo mode" where kitsch-prompt
 // will not attempt to access the filesystem or environment.
 type DemoConfig struct {
 	// Globals are global values that are passed to all modules.

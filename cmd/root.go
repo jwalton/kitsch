@@ -13,8 +13,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const programName = "kitsch-prompt"
-
 var userConfigDir string
 var cfgFile string
 var defaultConfigFile string

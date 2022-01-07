@@ -10,8 +10,8 @@ import (
 
 var initCmd = &cobra.Command{
 	Use:       "init",
-	Short:     "Returns a script which can be used to initialize kitsch-prompt.",
-	ValidArgs: []string{"bash", "zsh"},
+	Short:     "Returns a script which can be used to initialize " + programName + ".",
+	ValidArgs: supportedShells,
 	Args:      cobra.ExactValidArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		shell := args[0]

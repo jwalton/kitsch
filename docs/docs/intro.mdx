@@ -29,13 +29,23 @@ git:
 
 ## Installation
 
+### Via Script
+
 Kitsch-prompt installs just a single executable, so it's easy to try out. It supports Linux, Windows, and MacOS, and supports a number of different shells.
 
-TODO
+On Linux or Mac, you can install kitsch-prompt by running:
+
+```sh
+$ curl https://kitschprompt.com/install.sh | sh
+```
+
+### Manually
+
+You can download the executable for the [most recent release](https://github.com/jwalton/kitsch-prompt/releases) for your platform, and copy the executable to /usr/local/bin, or anywhere else on your PATH.  Then run `kitsch-prompt setup` for instructions on how to configure your shell to use kitsch-prompt.
 
 ## Changing Your Prompt
 
-After following the installation instructions, kitsch-prompt is ready to go, and will display a beautiful prompt out-of-the-box. If you want change how your prompt looks, you can start by using one of the [sample configuration files](https://github.com/jwalton/kitsch-prompt/tree/master/sampleconfig). First, find your configuration folder. Kitsch-prompt stores configuration in a hierarchical YAML file. The location of this file will depend on your operating system:
+After following the setup instructions, kitsch-prompt is ready to go, and will display a beautiful prompt out-of-the-box. If you want change how your prompt looks, you can start by using one of the [sample configuration files](https://github.com/jwalton/kitsch-prompt/tree/master/sampleconfig). First, find your configuration folder. Kitsch-prompt stores configuration in a hierarchical YAML file. The location of this file will depend on your operating system:
 
 - On Linux and MacOS: `~/.config/kitsch-prompt/kitsch.yaml`.
 - On Windows: `%appdata%\Roaming\kitsch-prompt\kitsch-prompt\kitsch.yaml`
