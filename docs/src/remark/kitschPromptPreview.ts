@@ -5,7 +5,9 @@ import { Code, Parent } from "mdast";
 import tmp from "tmp";
 import { Transformer } from "unified";
 import visit from "unist-util-visit";
-import escapeHtml from 'escape-html';
+import escapeHtml from "escape-html";
+
+const KITSCH = process.env.KITSCH || "kitsch";
 
 const convert = new Convert({
   fg: "#cccccc",
@@ -13,9 +15,24 @@ const convert = new Convert({
 
 const examplePromptRegex = /^<ExamplePrompt>([^]*)<\/ExamplePrompt>$/;
 
-function execCombined(command: string): string {
+function escapeMdx(text: string): string {
+  let result = escapeHtml(text);
+
+  // Replace "{" and "}" because otherwise they will be interpreted as jsx.
+  result = result.replace(/([{}])/g, "{'$1'}");
+
+  // Replace " " with "&nbsp;".
+  result = result.replace(/ /g, "&nbsp;");
+
+  return result;
+}
+
+function execCombined(
+  command: string,
+  options: { env?: NodeJS.ProcessEnv | undefined }
+): string {
   const out = tmp.fileSync({ postfix: ".stdout" });
-  execSync(command, { stdio: ["ignore", out.fd, out.fd] });
+  execSync(command, { ...options, stdio: ["ignore", out.fd, out.fd] });
   return fs.readFileSync(out.name, { encoding: "utf-8" });
 }
 
@@ -37,7 +54,7 @@ function runKitschPrompt(exmaple: string): string {
   fs.writeFileSync(demoFile.name, demo);
 
   let options = "";
-  if(config.trim()) {
+  if (config.trim()) {
     const configFile = tmp.fileSync({ postfix: ".yaml" });
     fs.writeFileSync(configFile.name, config);
     options += ` --config "${configFile.name}"`;
@@ -45,18 +62,13 @@ function runKitschPrompt(exmaple: string): string {
 
   // Run kitsch
   try {
+    console.log(`Running ${KITSCH}...`);
     const output = execCombined(
-      `kitsch prompt ${options} --demo "${demoFile.name}"`
+      `${KITSCH} prompt ${options} --demo "${demoFile.name}"`,
+      { env: { ...process.env, FORCE_COLOR: "3" } }
     );
 
-
-    let html = escapeHtml(output);
-
-    // Replace "{" and "}" because otherwise they will be interpreted as jsx.
-    html = html.replace(/([{}])/g, "{'$1'}");
-
-    // Replace " " with "&nbsp;".
-    html = html.replace(/ /g, "&nbsp;");
+    let html = escapeMdx(output);
 
     // Convert ANSI to HTML.
     html = convert.toHtml(html);
@@ -78,7 +90,7 @@ function runKitschPrompt(exmaple: string): string {
 
     return html;
   } catch (err) {
-    return "Error running example: " + err.stack;
+    return escapeMdx("Error running example: " + err.stack);
   }
 }
 

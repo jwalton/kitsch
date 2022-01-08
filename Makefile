@@ -39,8 +39,7 @@ generate: ; $(info $(M) generating source…) @ ## Generate source code
 build: ; $(info $(M) building executable…) @ ## Build program binary
 	$Q $(GO) build \
 		-tags release \
-		-ldflags '-X $(MODULE)/cmd.Version=$(VERSION) -X $(MODULE)/cmd.Commit=$(COMMIT) -X $(MODULE)/cmd.BuildDate=$(DATE)' \
-		-o $(basename $(MODULE)) main.go
+		-ldflags '-X $(MODULE)/cmd.version=$(VERSION) -X $(MODULE)/cmd.commit=$(COMMIT)'
 
 .PHONY: goreleaser
 goreleaser: ; $(info $(M) running…) @ ## Dry run of goreleaser
@@ -50,11 +49,15 @@ goreleaser: ; $(info $(M) running…) @ ## Dry run of goreleaser
 install: ; $(info $(M) installing executable…) @ ## Install program binary
 	$Q $(GO) install \
 		-tags release \
-		-ldflags '-X $(MODULE)/cmd.Version=$(VERSION) -X $(MODULE)/cmd.Commit=$(COMMIT) -X $(MODULE)/cmd.BuildDate=$(DATE)'
+		-ldflags '-X $(MODULE)/cmd.version=$(VERSION) -X $(MODULE)/cmd.commit=$(COMMIT)'
 
 .PHONY: snapshot
 snapshot: ; $(info $(M) creating snapshot…) @ ## Run goreleaser snapshot
 	$Q goreleaser release --snapshot --rm-dist
+
+.PHONY: docs
+docs: build; $(info $(M) generating documentation…) @ ## Generate documentation
+	$Q cd docs && npm install && KITSCH=$(CURDIR)/kitsch npm run build
 
 # Tests
 
