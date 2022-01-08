@@ -8,9 +8,9 @@ import (
 	_ "embed"
 	"text/template"
 
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/getters"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/modules"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/schemautils"
+	"github.com/jwalton/kitsch/internal/kitsch/getters"
+	"github.com/jwalton/kitsch/internal/kitsch/modules"
+	"github.com/jwalton/kitsch/internal/kitsch/schemautils"
 )
 
 //go:embed jsonschema.json

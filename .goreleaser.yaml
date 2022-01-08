@@ -20,9 +20,9 @@ builds:
       - "6"
       - "7"
     ldflags:
-      - -s -w -X github.com/jwalton/kitsch-prompt/cmd.version={{.Version}} -X github.com/jwalton/kitsch-prompt/cmd.commit={{.Commit}}
+      - -s -w -X github.com/jwalton/kitsch/cmd.version={{.Version}} -X github.com/jwalton/kitsch/cmd.commit={{.Commit}}
 archives:
-  - name_template: "kitsch-prompt_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+  - name_template: "kitsch_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
     replacements:
       darwin: Darwin
       linux: Linux

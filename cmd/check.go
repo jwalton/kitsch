@@ -5,9 +5,9 @@ import (
 	"os"
 
 	"github.com/jwalton/gchalk"
-	"github.com/jwalton/kitsch-prompt/internal/fileutils"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/config"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/log"
+	"github.com/jwalton/kitsch/internal/fileutils"
+	"github.com/jwalton/kitsch/internal/kitsch/config"
+	"github.com/jwalton/kitsch/internal/kitsch/log"
 	"github.com/spf13/cobra"
 )
 

@@ -3,8 +3,8 @@
 package projects
 
 import (
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/getters"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/log"
+	"github.com/jwalton/kitsch/internal/kitsch/getters"
+	"github.com/jwalton/kitsch/internal/kitsch/log"
 )
 
 // ProjectInfo represents resolved information about the current project.

@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/config"
+	"github.com/jwalton/kitsch/internal/kitsch/config"
 	"github.com/spf13/cobra"
 )
 

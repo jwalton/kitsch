@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/log"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/modules/schemas"
+	"github.com/jwalton/kitsch/internal/kitsch/log"
+	"github.com/jwalton/kitsch/internal/kitsch/modules/schemas"
 	"gopkg.in/yaml.v3"
 )
 

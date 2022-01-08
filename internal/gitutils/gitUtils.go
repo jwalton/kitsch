@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jwalton/kitsch-prompt/internal/fileutils"
+	"github.com/jwalton/kitsch/internal/fileutils"
 )
 
 // ErrNoGit is emitted when we need to run the git executable, but git is not installed.

@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/jwalton/gchalk/pkg/ansistyles"
-	colortools "github.com/jwalton/kitsch-prompt/internal/colortools"
+	colortools "github.com/jwalton/kitsch/internal/colortools"
 )
 
 const linearGradientPrefix = "linear-gradient("

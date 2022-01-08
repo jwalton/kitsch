@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jwalton/kitsch-prompt/internal/gitutils"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/modules/schemas"
+	"github.com/jwalton/kitsch/internal/gitutils"
+	"github.com/jwalton/kitsch/internal/kitsch/modules/schemas"
 	"gopkg.in/yaml.v3"
 )
 

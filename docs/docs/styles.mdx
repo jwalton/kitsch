@@ -6,7 +6,7 @@ sidebar_position: 3
 
 import ExamplePrompt from "../src/components/ExamplePrompt";
 
-Styling text in kitsch-prompt is done using "style strings". A style string can contain a color, a background color, and zero or more modifiers. For example: `brightCyan bg:blue bold` would make bold bright-cyan text on a blue background:
+Styling text in kitsch prompt is done using "style strings". A style string can contain a color, a background color, and zero or more modifiers. For example: `brightCyan bg:blue bold` would make bold bright-cyan text on a blue background:
 
 ```kitsch
 prompt:
@@ -53,7 +53,7 @@ Note that you should explicitly quote your hex colors, otherwise YAML will think
 
 A linear-gradient is specified almost exactly the same way as a CSS gradient. The only difference is that you may not set the direction of the gradient - it is always left-to-right. A linear-gradient can have any number of stops, and stop positions may be specified as relative positions (e.g. "20%") or with absolute positions (e.g. "3px" - each character is considered 1px wide, since we can only set the color of an entire character), or even with a mix of the two. Gradients can be applied to the background by prefixing them with "bg:", like any other color.
 
-If color names are used inside a linear-gradient, they will be [CSS Color Level 3 colors](https://www.w3.org/TR/2018/REC-css-color-3-20180619/#svg-color). A word of caution; this can cause some unexpected behavior when mixing a base color name in a style and in a linear-gradient. As mentioned above, when using a color name like "red" in a style, the style will use a 16-color ANSI color, and the exact color will depend on the terminal you are using and how it is configured. Since kitsch-prompt has no way to know what the exact color "red" represents in your terminal, if you use the color "red" inside a linear-gradient, it will likely not show as the same color as "red" in a style:
+If color names are used inside a linear-gradient, they will be [CSS Color Level 3 colors](https://www.w3.org/TR/2018/REC-css-color-3-20180619/#svg-color). A word of caution; this can cause some unexpected behavior when mixing a base color name in a style and in a linear-gradient. As mentioned above, when using a color name like "red" in a style, the style will use a 16-color ANSI color, and the exact color will depend on the terminal you are using and how it is configured. Since kitsch prompt has no way to know what the exact color "red" represents in your terminal, if you use the color "red" inside a linear-gradient, it will likely not show as the same color as "red" in a style:
 
 ```yaml
 colors:

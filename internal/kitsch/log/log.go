@@ -1,4 +1,4 @@
-// Package log provides logging for kitsch-prompt.
+// Package log provides logging for kitsch prompt.
 package log
 
 import (

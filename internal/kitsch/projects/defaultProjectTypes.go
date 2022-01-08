@@ -1,8 +1,8 @@
 package projects
 
 import (
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/condition"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/getters"
+	"github.com/jwalton/kitsch/internal/kitsch/condition"
+	"github.com/jwalton/kitsch/internal/kitsch/getters"
 )
 
 // DefaultProjectTypes is a default list of project types, in priority order.

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/env"
+	"github.com/jwalton/kitsch/internal/kitsch/env"
 	"github.com/stretchr/testify/assert"
 )
 

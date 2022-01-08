@@ -6,7 +6,7 @@ import (
 	"io/fs"
 	"strings"
 
-	"github.com/jwalton/kitsch-prompt/internal/fileutils"
+	"github.com/jwalton/kitsch/internal/fileutils"
 )
 
 const shortSHALength = 7

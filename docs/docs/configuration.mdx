@@ -6,12 +6,12 @@ sidebar_position: 2
 
 import ExamplePrompt from "../src/components/ExamplePrompt";
 
-Kitsch-prompt stores configuration in a hierarchical YAML file. The location of this file will depend on your operating system:
+Kitsch prompt stores configuration in a hierarchical YAML file. The location of this file will depend on your operating system:
 
-- On Linux and MacOS: `~/.config/kitsch-prompt/kitsch.yaml`.
-- On Windows: `%appdata%\Roaming\kitsch-prompt\kitsch-prompt\kitsch.yaml`
+- On Linux and MacOS: `~/.config/kitsch/kitsch.yaml`.
+- On Windows: `%appdata%\Roaming\kitsch\kitsch\kitsch.yaml`
 
-You can figure out where configuration is stored by running `kitsch-prompt configdir`.
+You can figure out where configuration is stored by running `kitsch configdir`.
 
 Here is a pretty basic configuration file:
 
@@ -39,11 +39,11 @@ prompt:
     - type: prompt
 ```
 
-Let's break this file down line by line. The first line is `prompt:`, which defines the "root module" for the prompt. In kitsch-prompt, the basic building block is the module. Each module takes some configuration and generates some output. There are modules that print out the current username, the current directory, the type of project you are currently using, how long the last command took. If there's not a module that does what you want, you can use a custom module to call out to the shell.
+Let's break this file down line by line. The first line is `prompt:`, which defines the "root module" for the prompt. In kitsch prompt, the basic building block is the module. Each module takes some configuration and generates some output. There are modules that print out the current username, the current directory, the type of project you are currently using, how long the last command took. If there's not a module that does what you want, you can use a custom module to call out to the shell.
 
 The next line is `type: block` - this says that the root module is a "block" module. The "block" module is a special module which joins together multiple children, separating each by a space (by default). Line 3, the `modules:` line, gives the list of modules that this block will render.
 
-The `type: directory, style: cyan` creates a "directory" module, which renders the current working directory. The `style:` key is something that can be applied to any module, and tells kitsch-prompt to render the output of this module in cyan. View the [styles documentation](./styles.mdx) for a complete description of styles. Finally the `type: prompt` creates a prompt module, which displays the final "$ ".
+The `type: directory, style: cyan` creates a "directory" module, which renders the current working directory. The `style:` key is something that can be applied to any module, and tells kitsch to render the output of this module in cyan. View the [styles documentation](./styles.mdx) for a complete description of styles. Finally the `type: prompt` creates a prompt module, which displays the final "$ ".
 
 Let's see another example:
 
@@ -116,4 +116,4 @@ prompt:
     - type: prompt
 ```
 
-Something to note here is that the "directory" module colors it's output cyan, and the outer block colors it's content brightBlue, but the directory remains cyan.  Under the hood, kitsch-prompt uses the [gchalk](https://github.com/jwalton/gchalk) library, which will handle "nested" colors like this correctly.
+Something to note here is that the "directory" module colors it's output cyan, and the outer block colors it's content brightBlue, but the directory remains cyan.  Under the hood, kitsch uses the [gchalk](https://github.com/jwalton/gchalk) library, which will handle "nested" colors like this correctly.

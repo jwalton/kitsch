@@ -43,10 +43,10 @@ function runKitschPrompt(exmaple: string): string {
     options += ` --config "${configFile.name}"`;
   }
 
-  // Run kitsch-prompt
+  // Run kitsch
   try {
     const output = execCombined(
-      `kitsch-prompt prompt ${options} --demo "${demoFile.name}"`
+      `kitsch prompt ${options} --demo "${demoFile.name}"`
     );
 
 

@@ -8,8 +8,8 @@ import (
 
 	"github.com/jwalton/gchalk"
 	"github.com/jwalton/gchalk/pkg/ansistyles"
-	"github.com/jwalton/kitsch-prompt/internal/ansigradient"
-	"github.com/jwalton/kitsch-prompt/internal/colortools"
+	"github.com/jwalton/kitsch/internal/ansigradient"
+	"github.com/jwalton/kitsch/internal/colortools"
 )
 
 // Style represents a compiled style that can be applied to a string.

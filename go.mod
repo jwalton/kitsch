@@ -1,4 +1,4 @@
-module github.com/jwalton/kitsch-prompt
+module github.com/jwalton/kitsch
 
 go 1.16
 

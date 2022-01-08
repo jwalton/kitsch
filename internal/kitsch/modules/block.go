@@ -5,10 +5,10 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/log"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/modtemplate"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/styling"
-	"github.com/jwalton/kitsch-prompt/internal/perf"
+	"github.com/jwalton/kitsch/internal/kitsch/log"
+	"github.com/jwalton/kitsch/internal/kitsch/modtemplate"
+	"github.com/jwalton/kitsch/internal/kitsch/styling"
+	"github.com/jwalton/kitsch/internal/perf"
 	"gopkg.in/yaml.v3"
 )
 

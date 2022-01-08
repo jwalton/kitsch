@@ -13,9 +13,9 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/Masterminds/sprig/v3"
-	"github.com/jwalton/kitsch-prompt/internal/cache"
-	"github.com/jwalton/kitsch-prompt/internal/fileutils"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/modtemplate"
+	"github.com/jwalton/kitsch/internal/cache"
+	"github.com/jwalton/kitsch/internal/fileutils"
+	"github.com/jwalton/kitsch/internal/kitsch/modtemplate"
 	"github.com/mattn/go-shellwords"
 	"gopkg.in/yaml.v3"
 )

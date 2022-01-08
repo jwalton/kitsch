@@ -15,7 +15,7 @@ const config = {
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
   organizationName: 'jwalton',
-  projectName: 'kitsch-prompt',
+  projectName: 'kitsch',
 
   presets: [
     [
@@ -25,13 +25,13 @@ const config = {
         docs: {
           remarkPlugins: [remarkKitschPromptPreview],
           sidebarPath: require.resolve('./sidebars.js'),
-          editUrl: 'https://github.com/jwalton/kitsch-prompt/edit/master/docs/',
+          editUrl: 'https://github.com/jwalton/kitsch/edit/master/docs/',
         },
         // blog: {
         //   showReadingTime: true,
         //   // Please change this to your repo.
         //   editUrl:
-        //     'https://github.com/jwalton/kitsch-prompt/edit/master/blog/',
+        //     'https://github.com/jwalton/kitsch/edit/master/blog/',
         // },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -58,7 +58,7 @@ const config = {
           },
           // {to: '/blog', label: 'Blog', position: 'left'},
           {
-            href: 'https://github.com/jwalton/kitsch-prompt',
+            href: 'https://github.com/jwalton/kitsch',
             label: 'GitHub',
             position: 'right',
           },
@@ -102,7 +102,7 @@ const config = {
               // },
               {
                 label: 'GitHub',
-                href: 'https://github.com/jwalton/kitsch-prompt',
+                href: 'https://github.com/jwalton/kitsch',
               },
             ],
           },

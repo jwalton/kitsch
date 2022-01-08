@@ -3,8 +3,8 @@
 package projects
 
 import (
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/condition"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/getters"
+	"github.com/jwalton/kitsch/internal/kitsch/condition"
+	"github.com/jwalton/kitsch/internal/kitsch/getters"
 )
 
 // ProjectType represents configuration for checking if a folder is of a specific

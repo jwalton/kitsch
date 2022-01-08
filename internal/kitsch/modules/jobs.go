@@ -3,7 +3,7 @@ package modules
 import (
 	"fmt"
 
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/modules/schemas"
+	"github.com/jwalton/kitsch/internal/kitsch/modules/schemas"
 	"gopkg.in/yaml.v3"
 )
 

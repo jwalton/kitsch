@@ -1,9 +1,9 @@
 package cmd
 
-// programName is the name of the kitsch-prompt executable.
-const programName = "kitsch-prompt"
+// programName is the name of the kitsch executable.
+const programName = "kitsch"
 
 const website = "https://kitschprompt.com"
-const githubRepo = "https://github.com/jwalton/kitsch-prompt"
+const githubRepo = "https://github.com/jwalton/kitsch"
 
 var supportedShells = []string{"bash", "zsh"}

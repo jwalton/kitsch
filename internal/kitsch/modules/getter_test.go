@@ -5,7 +5,7 @@ import (
 	"testing/fstest"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/jwalton/kitsch-prompt/internal/fileutils"
+	"github.com/jwalton/kitsch/internal/fileutils"
 	"github.com/stretchr/testify/assert"
 )
 

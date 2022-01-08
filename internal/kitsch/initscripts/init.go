@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
-	"os"
 	"text/template"
 )
 
@@ -12,19 +11,15 @@ import (
 var initTemplates embed.FS
 
 func getKitschCommand() string {
-	kitschCommand, err := os.Executable()
-	if err != nil {
-		kitschCommand = "kitsch-prompt"
-	}
-	return kitschCommand
+	return "kitsch"
 }
 
-// ShortInitScript returns the kitsch-prompt initialization script for the given shell type.
+// ShortInitScript returns the kitsch initialization script for the given shell type.
 func ShortInitScript(shell string, configFile string) (string, error) {
 	return getInitScript("templates/init-short.", shell, configFile)
 }
 
-// InitScript returns the full kitsch-prompt initialization script for the given shell type.
+// InitScript returns the full kitsch initialization script for the given shell type.
 func InitScript(shell string, configFile string) (string, error) {
 	return getInitScript("templates/init.", shell, configFile)
 }

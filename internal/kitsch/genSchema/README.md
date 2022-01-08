@@ -1,6 +1,6 @@
 # genSchema
 
-gneSchema is a JSON schema generator for go structs.  This is not a complete implementation - it only does the things we need for kitsch-prompt.
+gneSchema is a JSON schema generator for go structs.  This is not a complete implementation - it only does the things we need for kitsch prompt.
 
 There are other libraries out there that generate JSON schema for structs using reflection.  The biggest advantage of the approach used here is that it happens instead at compile time - there's no need to have an instance of the object around and no need for any runtime reflection.
 

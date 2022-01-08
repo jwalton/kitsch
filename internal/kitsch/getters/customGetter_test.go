@@ -4,8 +4,8 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/jwalton/kitsch-prompt/internal/cache"
-	"github.com/jwalton/kitsch-prompt/internal/fileutils"
+	"github.com/jwalton/kitsch/internal/cache"
+	"github.com/jwalton/kitsch/internal/fileutils"
 	"github.com/stretchr/testify/assert"
 )
 

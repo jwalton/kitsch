@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/jwalton/gchalk"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/log"
+	"github.com/jwalton/kitsch/internal/kitsch/log"
 )
 
 // Registry is used to store and retrieve styles.

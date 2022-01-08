@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/config"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/log"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/projects"
+	"github.com/jwalton/kitsch/internal/kitsch/config"
+	"github.com/jwalton/kitsch/internal/kitsch/log"
+	"github.com/jwalton/kitsch/internal/kitsch/projects"
 	"github.com/spf13/cobra"
 )
 
@@ -103,8 +103,8 @@ func readConfig() (*config.Config, error) {
 }
 
 // getConfigFolder returns the folder that contains configuration
-// information (e.g. "~/.config/kitsch-prompt" on Mac or Linux,
-// "C:\Users\<User>\AppData\Roaming\kitsch-prompt\kitsch-prompt" on PC).
+// information (e.g. "~/.config/kitsch" on Mac or Linux,
+// "C:\Users\<User>\AppData\Roaming\kitsch\kitsch" on PC).
 func getConfigFolder() (string, error) {
 	configDir := config.GetConfigFolder(programName, programName)
 

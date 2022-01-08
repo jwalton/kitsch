@@ -3,8 +3,8 @@ package projects
 import (
 	"testing"
 
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/condition"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/getters"
+	"github.com/jwalton/kitsch/internal/kitsch/condition"
+	"github.com/jwalton/kitsch/internal/kitsch/getters"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v3"
 )

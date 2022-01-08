@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/genSchema/gen"
+	"github.com/jwalton/kitsch/internal/kitsch/genSchema/gen"
 )
 
 // Generates JSON schema for one or more structures in a file.
@@ -16,7 +16,7 @@ import (
 // comment to the file where the struct is defined.  You can pass multiple
 // structs.
 //
-// This is specialized for kitsch-prompt - in cases where a given struct is not
+// This is specialized for kitsch prompt - in cases where a given struct is not
 // supported, the schema can just be written by hand.
 //
 // See the README.md for more details.

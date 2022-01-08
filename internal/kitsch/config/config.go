@@ -9,9 +9,9 @@ import (
 	// embed required for sample configs below.
 	_ "embed"
 
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/modules"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/projects"
-	"github.com/jwalton/kitsch-prompt/sampleconfig"
+	"github.com/jwalton/kitsch/internal/kitsch/modules"
+	"github.com/jwalton/kitsch/internal/kitsch/projects"
+	"github.com/jwalton/kitsch/sampleconfig"
 	"gopkg.in/yaml.v3"
 )
 

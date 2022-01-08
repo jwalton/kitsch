@@ -5,7 +5,7 @@ package condition
 import (
 	"runtime"
 
-	"github.com/jwalton/kitsch-prompt/internal/fileutils"
+	"github.com/jwalton/kitsch/internal/fileutils"
 )
 
 // Conditions represents a condition which can be used in configuration files to

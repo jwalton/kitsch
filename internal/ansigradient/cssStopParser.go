@@ -5,7 +5,7 @@ import (
 	"image/color"
 	"strconv"
 
-	"github.com/jwalton/kitsch-prompt/internal/colortools"
+	"github.com/jwalton/kitsch/internal/colortools"
 )
 
 type cssStopParser struct {

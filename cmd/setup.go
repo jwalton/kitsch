@@ -46,7 +46,7 @@ var setupCmd = &cobra.Command{
 		if !shellSupported {
 			if len(args) == 1 {
 				fmt.Print(text("Sorry, but it looks like your shell is unsupported.\n"))
-				fmt.Print(text("At the moment, kitsch-prompt supports the following shells:\n\n"))
+				fmt.Print(text("At the moment, kitsch prompt supports the following shells:\n\n"))
 				for _, supportedShell := range supportedShells {
 					fmt.Print(code("  " + supportedShell + "\n"))
 				}

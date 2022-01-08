@@ -12,8 +12,8 @@
 
 zmodload zsh/parameter  # Needed to access jobstates variable for KITSCH_JOBS_COUNT
 
-# If you try to install kitsch-prompt overtop of starship, they clash.  Remove
-# any starship config if it's there.
+# If you try to install kitsch prompt overtop older versions of starship, they
+# clash.  Remove any starship config if it's there.
 precmd_functions[$precmd_functions[(i)starship_precmd]]=()
 preexec_functions[$preexec_functions[(i)preexec_functions]]=()
 starship_zle-keymap-select() {}

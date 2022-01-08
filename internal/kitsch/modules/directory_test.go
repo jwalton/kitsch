@@ -5,8 +5,8 @@ import (
 	"testing/fstest"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/jwalton/kitsch-prompt/internal/fileutils"
-	"github.com/jwalton/kitsch-prompt/internal/gitutils"
+	"github.com/jwalton/kitsch/internal/fileutils"
+	"github.com/jwalton/kitsch/internal/gitutils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,7 +24,7 @@ func makeTestDirectoryModule(
 	context.gitInitialized = true
 	if gitRoot != "" {
 		context.git = gitutils.DemoGit{
-			RepoRootDirectory:     "/Users/jwalton/dev/kitsch-prompt",
+			RepoRootDirectory:     "/Users/jwalton/dev/kitsch",
 			Head:                  "master",
 			IsDetached:            false,
 			CurrentBranchUpstream: "master",
@@ -140,34 +140,34 @@ func TestDirectoryTruncateWindows(t *testing.T) {
 }
 
 func TestDirectoryTruncateToGitRepo(t *testing.T) {
-	context, mod := makeTestDirectoryModule("/", "/Users/jwalton/dev/kitsch-prompt", "/Users/jwalton/dev/kitsch-prompt",
+	context, mod := makeTestDirectoryModule("/", "/Users/jwalton/dev/kitsch", "/Users/jwalton/dev/kitsch",
 		heredoc.Doc(`
 			type: directory
 			truncationLength: 3
 		`),
 	)
-	assert.Equal(t, "kitsch-prompt", mod.Execute(context).Text)
+	assert.Equal(t, "kitsch", mod.Execute(context).Text)
 
-	context.Globals.CWD = "/Users/jwalton/dev/kitsch-prompt/src"
-	assert.Equal(t, "kitsch-prompt/src", mod.Execute(context).Text)
+	context.Globals.CWD = "/Users/jwalton/dev/kitsch/src"
+	assert.Equal(t, "kitsch/src", mod.Execute(context).Text)
 
-	context.Globals.CWD = "/Users/jwalton/dev/kitsch-prompt/src/foo/bar/baz/qux"
-	assert.Equal(t, "kitsch-prompt/…/bar/baz/qux", mod.Execute(context).Text)
+	context.Globals.CWD = "/Users/jwalton/dev/kitsch/src/foo/bar/baz/qux"
+	assert.Equal(t, "kitsch/…/bar/baz/qux", mod.Execute(context).Text)
 
 	mod.RepoSymbol = "?"
-	assert.Equal(t, "?kitsch-prompt/…/bar/baz/qux", mod.Execute(context).Text)
+	assert.Equal(t, "?kitsch/…/bar/baz/qux", mod.Execute(context).Text)
 
-	context, mod = makeTestDirectoryModule("/", "/Users/jwalton/dev/kitsch-prompt", "/Users/jwalton/dev/kitsch-prompt",
+	context, mod = makeTestDirectoryModule("/", "/Users/jwalton/dev/kitsch", "/Users/jwalton/dev/kitsch",
 		heredoc.Doc(`
 			type: directory
 			truncationLength: 3
 			truncateToRepo: false
 		`),
 	)
-	context.Globals.CWD = "/Users/jwalton/dev/kitsch-prompt/src"
-	assert.Equal(t, "~/dev/kitsch-prompt/src", mod.Execute(context).Text)
+	context.Globals.CWD = "/Users/jwalton/dev/kitsch/src"
+	assert.Equal(t, "~/dev/kitsch/src", mod.Execute(context).Text)
 
-	context.Globals.CWD = "/Users/jwalton/work/dev/kitsch-prompt/src"
-	assert.Equal(t, "…/dev/kitsch-prompt/src", mod.Execute(context).Text)
+	context.Globals.CWD = "/Users/jwalton/work/dev/kitsch/src"
+	assert.Equal(t, "…/dev/kitsch/src", mod.Execute(context).Text)
 
 }

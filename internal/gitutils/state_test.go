@@ -20,7 +20,7 @@ func TestStateOnBranch(t *testing.T) {
 	git := &gitUtils{
 		pathToGit: "git",
 		fsys:      files,
-		repoRoot:  "/Users/oriana/dev/kitsch-prompt",
+		repoRoot:  "/Users/oriana/dev/kitsch",
 	}
 
 	state := git.State()
@@ -49,7 +49,7 @@ func TestStateDetached(t *testing.T) {
 	git := &gitUtils{
 		pathToGit: "git",
 		fsys:      files,
-		repoRoot:  "/Users/oriana/dev/kitsch-prompt",
+		repoRoot:  "/Users/oriana/dev/kitsch",
 	}
 
 	state := git.State()
@@ -81,7 +81,7 @@ func TestStateOnTag(t *testing.T) {
 	git := &gitUtils{
 		pathToGit: "git",
 		fsys:      files,
-		repoRoot:  "/Users/oriana/dev/kitsch-prompt",
+		repoRoot:  "/Users/oriana/dev/kitsch",
 	}
 
 	state := git.State()

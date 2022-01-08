@@ -6,13 +6,13 @@ import (
 	"sync"
 	"testing/fstest"
 
-	"github.com/jwalton/kitsch-prompt/internal/cache"
-	"github.com/jwalton/kitsch-prompt/internal/fileutils"
-	"github.com/jwalton/kitsch-prompt/internal/gitutils"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/env"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/getters"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/projects"
-	"github.com/jwalton/kitsch-prompt/internal/kitsch/styling"
+	"github.com/jwalton/kitsch/internal/cache"
+	"github.com/jwalton/kitsch/internal/fileutils"
+	"github.com/jwalton/kitsch/internal/gitutils"
+	"github.com/jwalton/kitsch/internal/kitsch/env"
+	"github.com/jwalton/kitsch/internal/kitsch/getters"
+	"github.com/jwalton/kitsch/internal/kitsch/projects"
+	"github.com/jwalton/kitsch/internal/kitsch/styling"
 	"golang.org/x/term"
 	"gopkg.in/yaml.v3"
 )
@@ -161,7 +161,7 @@ func NewContext(
 }
 
 // DemoConfig is a structure used to create a "demo context".  This is used for
-// unit testing, and for running kitsch-prompt in "demo mode" where kitsch-prompt
+// unit testing, and for running kitsch prompt in "demo mode" where kitsch prompt
 // will not attempt to access the filesystem or environment.
 type DemoConfig struct {
 	// Globals are global values that are passed to all modules.

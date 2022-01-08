@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 GITHUB_USER='jwalton'
-GITHUB_PROJECT='kitsch-prompt'
+GITHUB_PROJECT='kitsch'
 ARCHIVE_PREFIX=$GITHUB_PROJECT
 EXECUTABLE=$GITHUB_PROJECT
 
