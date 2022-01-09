@@ -137,6 +137,12 @@ func TestDirectoryTruncateWindows(t *testing.T) {
 	)
 
 	assert.Equal(t, "C:\\…\\bar\\baz\\qux", mod.Execute(context).Text)
+
+	context.Globals.CWD = "C:\\tmp\\foo\\bar\\baz"
+	assert.Equal(t, "C:\\…\\foo\\bar\\baz", mod.Execute(context).Text)
+
+	context.Globals.CWD = "C:\\tmp\\foo\\bar"
+	assert.Equal(t, "C:\\tmp\\foo\\bar", mod.Execute(context).Text)
 }
 
 func TestDirectoryTruncateToGitRepo(t *testing.T) {
@@ -170,4 +176,13 @@ func TestDirectoryTruncateToGitRepo(t *testing.T) {
 	context.Globals.CWD = "/Users/jwalton/work/dev/kitsch/src"
 	assert.Equal(t, "…/dev/kitsch/src", mod.Execute(context).Text)
 
+}
+
+func TestWindowLogicalCWD(t *testing.T) {
+	context, mod := makeTestDirectoryModule("\\", "C:\\Users\\jwalton", "", "{type: directory}")
+	context.Globals.Home = "C:\\Users\\jwalton"
+
+	context.Globals.logicalCWD = "Env:\\"
+
+	assert.Equal(t, "Env:\\", mod.Execute(context).Text)
 }

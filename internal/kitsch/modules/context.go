@@ -20,8 +20,10 @@ import (
 // Globals is a collection of "global" values that are passed to all modules.
 // These values are available to templates via the ".Globals" property.
 type Globals struct {
-	// CWD is the current wordking directory.
+	// CWD is the current working directory.
 	CWD string `yaml:"cwd"`
+	// logicalCWD is the current working directory to display.
+	logicalCWD string `yaml:"logicalCwd"`
 	// Home is the user's home directory.
 	Home string `yaml:"home"`
 	// IsRoot is true if this is a non-windows system, and the user is UID 0.
@@ -48,15 +50,21 @@ type Globals struct {
 // NewGlobals creates a new Globals object.
 func NewGlobals(
 	shell string,
+	cwd string,
+	logicalCWD string,
 	terminalWidth int,
 	status int,
 	jobs int,
 	previousCommandDuration int64,
 	keymap string,
 ) Globals {
-	cwd, err := os.Getwd()
-	if err != nil {
-		cwd = "."
+	var err error
+
+	if cwd == "" {
+		cwd, err = os.Getwd()
+		if err != nil {
+			cwd = "."
+		}
 	}
 
 	home, err := os.UserHomeDir()
@@ -78,6 +86,7 @@ func NewGlobals(
 
 	return Globals{
 		CWD:                     cwd,
+		logicalCWD:              logicalCWD,
 		Home:                    home,
 		IsRoot:                  os.Geteuid() == 0,
 		Hostname:                hostname,
@@ -89,6 +98,14 @@ func NewGlobals(
 		TerminalWidth:           terminalWidth,
 		PathSeparator:           string(os.PathSeparator),
 	}
+}
+
+// LogicalCWD returns the CWD to display in the directory module.
+func (globals Globals) LogicalCWD() string {
+	if globals.logicalCWD == "" {
+		return globals.CWD
+	}
+	return globals.logicalCWD
 }
 
 // Context is a set of common parameters passed to Module.Execute.
@@ -197,7 +214,9 @@ func (demoConfig *DemoConfig) Load(filename string) error {
 
 	// FIXME: Should do strict validation of the yaml content.
 
-	return yaml.Unmarshal(yamlData, demoConfig)
+	err = yaml.Unmarshal(yamlData, demoConfig)
+
+	return err
 }
 
 // NewDemoContext creates a demo context object.

@@ -1,0 +1,1 @@
+Invoke-Expression (@(&{{ .kitschCommand }} init powershell --print-full-init) -join "`n")

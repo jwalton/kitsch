@@ -80,7 +80,7 @@ func (mod DirectoryModule) Execute(context *Context) ModuleResult {
 	truncationSymbol := defaultString(mod.TruncationSymbol, defaultTruncationSymbol)
 
 	pathSeparator := context.Globals.PathSeparator
-	path := context.Globals.CWD
+	path := context.Globals.LogicalCWD()
 	volumeName := mod.getVolumeName(path)
 	isHome := strings.HasPrefix(path, context.Globals.Home)
 
@@ -107,6 +107,8 @@ func (mod DirectoryModule) Execute(context *Context) ModuleResult {
 
 			// Add one to the truncation length, as there's no sense in replaceing
 			// "~" with "..."
+			truncationLength++
+		} else if volumeName != "" {
 			truncationLength++
 		}
 

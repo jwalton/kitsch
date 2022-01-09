@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 
 	"github.com/jwalton/gchalk"
@@ -31,6 +32,8 @@ var promptCmd = &cobra.Command{
 		shell, _ := cmd.Flags().GetString("shell")
 		perf, _ := cmd.Flags().GetBool("perf")
 		demo, _ := cmd.Flags().GetString("demo")
+		cwd, _ := cmd.Flags().GetString("path")
+		logicalCWD, _ := cmd.Flags().GetString("logical-path")
 
 		verbose, _ := cmd.Flags().GetBool("verbose")
 		if verbose {
@@ -43,12 +46,23 @@ var promptCmd = &cobra.Command{
 			cmdDuration, _ = strconv.ParseInt(cmdDurationStr, 10, 64)
 		}
 
-		// Because the prompt is shown from the shell, when it is run, it
-		// will not be in a TTY.  Disable TTY detection in gchalk.
-		stdoutFd := os.Stdout.Fd()
-		level := supportscolor.SupportsColor(stdoutFd, supportscolor.IsTTYOption(true))
-		gchalk.SetLevel(level.Level)
-		gchalk.Stderr.SetLevel(level.Level)
+		if runtime.GOOS == "windows" {
+			// Ugly hack - always enable colors on Windows.  The problem here is that
+			// on Windows, we're not running in the shell directly, so stdout isn't
+			// the TTY, and we can't enable colors in the OS if they aren't supported.
+			// In Windows Terminal, this isn't an issue. We should try to enable color
+			// in the top level of the setup script to get around this...
+			gchalk.SetLevel(gchalk.LevelAnsi16m)
+			gchalk.Stderr.SetLevel(gchalk.LevelAnsi16m)
+		} else {
+			// Because the prompt is shown from the shell, when it is run, it
+			// will not be in a TTY.  Disable TTY detection in gchalk.
+			stdoutFd := os.Stdout.Fd()
+			level := supportscolor.SupportsColor(stdoutFd, supportscolor.IsTTYOption(true))
+			gchalk.SetLevel(level.Level)
+			gchalk.Stderr.SetLevel(level.Level)
+		}
+
 		performance.End("Option parsing")
 
 		// Read configuration
@@ -75,7 +89,7 @@ var promptCmd = &cobra.Command{
 			}
 			context = modules.NewDemoContext(*demoConfig, styles)
 		} else {
-			globals := modules.NewGlobals(shell, terminalWidth, status, jobs, cmdDuration, keymap)
+			globals := modules.NewGlobals(shell, cwd, logicalCWD, terminalWidth, status, jobs, cmdDuration, keymap)
 			context = modules.NewContext(globals, configuration.ProjectsTypes, cacheDir, styles)
 		}
 		performance.End("Context setup")
@@ -97,6 +111,8 @@ var promptCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(promptCmd)
 	promptCmd.Flags().String("shell", "", "The type of shell")
+	promptCmd.Flags().String("path", "", "The current working directory")
+	promptCmd.Flags().String("logical-path", "", "The display name for the current working directory")
 	promptCmd.Flags().StringP("cmd-duration", "d", "", "The execution duration of the last command, in milliseconds")
 	promptCmd.Flags().StringP("keymap", "k", "", "The keymap of fish/zsh")
 	promptCmd.Flags().IntP("jobs", "j", 0, "The number of currently running jobs")

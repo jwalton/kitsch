@@ -9,10 +9,9 @@ import (
 )
 
 var initCmd = &cobra.Command{
-	Use:       "init",
-	Short:     "Returns a script which can be used to initialize " + programName + ".",
-	ValidArgs: supportedShells,
-	Args:      cobra.ExactValidArgs(1),
+	Use:   "init",
+	Short: "Returns a script which can be used to initialize " + programName + ".",
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		shell := args[0]
 

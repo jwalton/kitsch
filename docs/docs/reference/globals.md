@@ -10,6 +10,10 @@ Template globals are available via the `.Globals` object in module templates and
 
 `{{ .Globals.CWD }}` is the current working directory.
 
+## LogicalCWD
+
+`{{ .Globals.LogicalCWD }}` is the directory to show on the prompt.  This is used in Windows when you do something like `cd env:`.  In this case your LogicalCWD will be "Env:\", but your CWD will be your home directory.
+
 ## Home
 
 `{{ .Globals.Home }}` is the user's home directory.
