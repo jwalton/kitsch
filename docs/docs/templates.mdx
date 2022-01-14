@@ -1,0 +1,11 @@
+---
+sidebar_position: 5
+---
+
+# Templates
+
+Every module in Kitsch Prompt provides some default output, however every module can also have it's output customized using a "template".  Templates are written using the [go template language](https://pkg.go.dev/text/template), which should be familiar if you've done any work in Kubernetes, especially if you've written a Helm chart.
+
+Each template is passed a `{ Data, Globals, Text }` object.  `Globals` are [global variables](./reference/globals.mdx) available to all templates.  `Text` is the default text that would have been rendered by the module.  `Data` is an object, the contents of which depend on the module type; each module produces a number of output variables, which can be accessed via `Data`.  You'll have to consult the [module reference](./reference/modules.mdx) to see what variables are available for a given module type.
+
+TODO: Add examples.

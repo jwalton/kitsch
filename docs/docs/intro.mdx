@@ -29,11 +29,7 @@ git:
 
 ## Installation
 
-### Via Script
-
-Kitsch prompt installs just a single executable, so it's easy to try out. It supports Linux, Windows, and MacOS, and supports a number of different shells.
-
-On Linux or Mac, you can install kitsch by running:
+Kitsch prompt installs just a single executable, so it's easy to try out. It supports Linux, Windows, and MacOS, and supports a number of different shells. On Linux or Mac, you can install kitsch by running:
 
 ```sh
 $ curl https://kitschprompt.com/install.sh | sh
@@ -41,9 +37,7 @@ $ curl https://kitschprompt.com/install.sh | sh
 
 Running the script will install kitsch on your system in /usr/local/bin, and display instructions on how to try it out, and how to setup your shell configuration files.
 
-### Manually
-
-You can download the executable for the [most recent release](https://github.com/jwalton/kitsch/releases) for your platform, and copy the executable to /usr/local/bin, or anywhere else on your PATH.  Then run `kitsch setup` for instructions on how to configure your shell to use kitsch prompt.
+If you want to install on Windows, or want more detailed instructions, check out [the advanced installation instructions](./advancedInstallation.mdx).
 
 ## Changing Your Prompt
 
@@ -54,6 +48,6 @@ After following the setup instructions, kitsch prompt is ready to go, and will d
 
 You can figure out where configuration is stored by running `kitsch configdir`.
 
-Grab any configuration file and copy it to "kitsch.yaml" in your configuration directory. The sample configurations are a great place to build from, but be sure to check out the [configuration tutorial][./configuration.mdx].
+Grab any configuration file and copy it to "kitsch.yaml" in your configuration directory. The sample configurations are a great place to build from, but be sure to check out the [configuration tutorial](./configuration.mdx).
 
 After you make changes to your configuration file, run `kitsch check [config-file]` to verify your configuration file.

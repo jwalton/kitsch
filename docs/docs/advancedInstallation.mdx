@@ -1,0 +1,58 @@
+---
+title: Advanced Installation
+sidebar_position: 2
+---
+
+# Advanced Installation
+
+## Installation Methods
+
+### Via Script
+
+On Linux or Mac, you can install kitsch by running:
+
+```sh
+$ curl https://kitschprompt.com/install.sh | sh
+```
+
+Running the script will install kitsch on your system in /usr/local/bin, and display instructions on how to try it out, and how to setup your shell configuration files.
+
+### Manually
+
+You can download the executable for the [most recent release](https://github.com/jwalton/kitsch/releases) for your platform, and copy the executable to /usr/local/bin, or anywhere else on your PATH. Then run `kitsch setup` for instructions on how to configure your shell to use kitsch prompt.
+
+## Configuring your shell
+
+You can get the configuration you need to configure kitsch by running `kitsch setup`. This will try to auto-detect your shell. If this fails, or if you want instructions for a specific shell, you can run `kitsch setup [shellname]`. (Or you can read below...)
+
+### bash
+
+Add the following to the end of your ~/.bashrc:
+
+```sh
+if command -v kitsch > /dev/null; then
+    eval "$(kitsch init bash)"
+fi
+```
+
+This won't affect the current shell (unless you `source ~/.bashrc`) but will affect all future shells you open.
+
+### zsh
+
+Add the following to the end of your ~/.zshrc:
+
+```sh
+if command -v kitsch > /dev/null; then
+    eval "$(kitsch init zsh)"
+fi
+```
+
+This won't affect the current shell (unless you `source ~/.bashrc`) but will affect all future shells you open.
+
+### Power Shell (Windows)
+
+To use Kitsch on Power Shell, first you need open a Power Shell window and run `echo $PROFILE` to find the location of your `Microsoft.PowerShell_profile.ps1` file. Add the following to the end of that file:
+
+```powershell
+Invoke-Expression (&kitsch init powershell)
+```
