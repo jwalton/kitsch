@@ -223,7 +223,7 @@ func getContent(from []byte) ([]byte, error) {
 	}
 
 	content := from[sizeLen+1:]
-	if len(content) != int(size) {
+	if int64(len(content)) != size {
 		return nil, fmt.Errorf("expected %d bytes but only got %d", size, len(content))
 	}
 
