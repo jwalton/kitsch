@@ -74,6 +74,10 @@ const config = {
                 label: 'Tutorial',
                 to: '/docs/intro',
               },
+              {
+                label: 'Module Reference',
+                to: '/docs/reference/modules',
+              },
             ],
           },
           // {

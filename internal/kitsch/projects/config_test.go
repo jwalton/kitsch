@@ -69,8 +69,7 @@ var from = []ProjectType{
 
 func TestMergeEmptyProjectTypes(t *testing.T) {
 	to := []ProjectType{}
-	to, err := MergeProjectTypes(to, from, true)
-	assert.Nil(t, err)
+	to = MergeProjectTypes(to, from, true)
 	assert.Equal(t, from, to)
 }
 
@@ -89,8 +88,7 @@ func TestMergeReorderedProjectTypes(t *testing.T) {
   - name: java
 `)
 
-	to, err := MergeProjectTypes(to, from, true)
-	assert.Nil(t, err)
+	to = MergeProjectTypes(to, from, true)
 	assert.Equal(t,
 		[]ProjectType{from[1], from[0]},
 		to,
@@ -101,8 +99,7 @@ func TestMergeAlteredProjectTypes(t *testing.T) {
 	to := []ProjectType{
 		{Name: "node", ToolSymbol: "JS"},
 	}
-	to, err := MergeProjectTypes(to, from, false)
-	assert.Nil(t, err)
+	to = MergeProjectTypes(to, from, false)
 	assert.Equal(t,
 		[]ProjectType{
 			{

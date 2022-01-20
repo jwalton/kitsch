@@ -27,6 +27,24 @@ git:
 ---
 ```
 
+```kitsch
+globals:
+  cwd: /users/jwalton/dev/myProject
+git:
+  repoDir: /users/jwalton/dev/myProject
+  head: main
+  currentBranchUpstream: main
+  stats:
+    unstaged:
+      added: 13
+      modified: 6
+      deleted: 2
+    index:
+      added: 1
+---
+extends: ${CWD}/../sampleconfig/powerline2.yaml
+```
+
 ## Installation
 
 Kitsch prompt installs just a single executable, so it's easy to try out. It supports Linux, Windows, and MacOS, and supports a number of different shells. On Linux or Mac, you can install kitsch by running:

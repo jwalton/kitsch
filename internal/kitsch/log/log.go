@@ -44,6 +44,6 @@ func Warn(message ...interface{}) {
 
 // Error prints an error message to stderr.
 func Error(message ...interface{}) {
-	print(gchalk.Stderr.BrightRed("Err : "))
+	print(gchalk.Stderr.BrightRed("Error: "))
 	println(fmt.Sprint(message...))
 }

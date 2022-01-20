@@ -37,6 +37,8 @@ func registerModule(name string, mod registeredModule) {
 	registeredModules[name] = mod
 }
 
+// TOOD: Store filename in ModuleSpec?
+
 // ModuleSpec represents an item within a list of modules.
 type ModuleSpec struct {
 	// ID is a unique ID for this module (within a list of modules), if provided.

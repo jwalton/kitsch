@@ -5,6 +5,7 @@ import (
 
 	"github.com/jwalton/kitsch/internal/kitsch/condition"
 	"github.com/jwalton/kitsch/internal/kitsch/getters"
+	"github.com/jwalton/kitsch/internal/kitsch/log"
 	"gopkg.in/yaml.v3"
 )
 
@@ -61,7 +62,7 @@ func (item *ProjectType) UnmarshalYAML(node *yaml.Node) error {
 // "to" set will be merged with the ProjectType with the same name in the
 // "from" set, and if "addMissing" is true then any projects in the "from" set
 // that aren't in the "to" set will be added to the end of the "to" set.
-func MergeProjectTypes(to []ProjectType, from []ProjectType, addMissing bool) ([]ProjectType, error) {
+func MergeProjectTypes(to []ProjectType, from []ProjectType, addMissing bool) []ProjectType {
 	usedMap := map[string]interface{}{}
 
 	fromMap := map[string]*ProjectType{}
@@ -74,7 +75,8 @@ func MergeProjectTypes(to []ProjectType, from []ProjectType, addMissing bool) ([
 	// Copy over items from the "to", merging in the appropriate item from "from" if there is one.
 	for _, toItem := range to {
 		if _, ok := usedMap[toItem.Name]; ok {
-			return nil, fmt.Errorf("duplicate project type: %s", toItem.Name)
+			log.Warn(fmt.Sprintf("duplicate project type: %s", toItem.Name))
+			continue
 		}
 		usedMap[toItem.Name] = nil
 
@@ -93,7 +95,7 @@ func MergeProjectTypes(to []ProjectType, from []ProjectType, addMissing bool) ([
 		}
 	}
 
-	return result, nil
+	return result
 }
 
 func mergeProjectType(to ProjectType, from ProjectType) ProjectType {

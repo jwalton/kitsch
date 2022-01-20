@@ -6,6 +6,7 @@ import tmp from "tmp";
 import { Transformer } from "unified";
 import visit from "unist-util-visit";
 import escapeHtml from "escape-html";
+import path from "path";
 
 const KITSCH = process.env.KITSCH || "kitsch";
 
@@ -48,6 +49,9 @@ function runKitschPrompt(exmaple: string): string {
     demo = "";
     config = configParts[0];
   }
+
+  // Fix the CWD to be the root of the docs folder.
+  config = config.replace(/\${CWD}/g, path.join(__dirname, "..", ".."));
 
   // Copy the example to a temporary file
   const demoFile = tmp.fileSync({ postfix: ".yaml" });

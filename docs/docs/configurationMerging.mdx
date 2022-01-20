@@ -1,0 +1,39 @@
+---
+title: Configuration Merging
+sidebar_position: 8
+---
+
+$ Configuration Merging
+
+You can have one configuration file "extend" another.  The parent configuration will be loaded and merged with the child:
+
+- If the child has no  "prompt", the prompt will be copied from the parent.
+- Custom colors will be merged with colors from the child overriding colors from the parent.
+- Projects will be merged with any projects in the child overriding projects from the parent.
+
+For example, suppose we have this parent.kitsch.yaml file:
+
+```yaml
+# parent.kitsch.yaml
+
+colors:
+  $foreground: cyan
+prompt:
+  type: block
+  modules:
+    - type: directory
+      style: $foreground
+    - type: prompt
+```
+
+We could extend this file in child.kitsch.yaml:
+
+```yaml
+# child.kitsch.yaml
+
+extends: ./parent.kitsch.yaml
+colors:
+  $foreground: green
+```
+
+This would render a green directory instead of a cyan directory.

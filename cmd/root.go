@@ -85,15 +85,11 @@ func readConfig() (*config.Config, error) {
 	}
 
 	// Merge in default project types.
-	configuration.ProjectsTypes, err = projects.MergeProjectTypes(
+	configuration.ProjectsTypes = projects.MergeProjectTypes(
 		configuration.ProjectsTypes,
 		projects.DefaultProjectTypes,
 		true,
 	)
-	if err != nil {
-		log.Warn("Error in projectTypes:", err)
-		configuration.ProjectsTypes = projects.DefaultProjectTypes
-	}
 
 	return configuration, err
 }

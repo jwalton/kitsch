@@ -8,6 +8,10 @@
       {{ .Definitions }}
     },
     "properties": {
+        "extends": {
+            "type": "string",
+            "description": "The name of a configuration file to extend."
+        },
         "colors": {
             "type": "object",
             "patternProperties": {
