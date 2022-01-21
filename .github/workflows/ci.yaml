@@ -43,3 +43,8 @@ jobs:
         args: release --rm-dist
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Deploy docs
+      if: startsWith(github.ref, 'refs/tags/')
+      run: curl -X POST "${KITSCH_CLOUDFLARE_PAGES_DEPLOY_HOOK}"
+      env:
+        KITSCH_CLOUDFLARE_PAGES_DEPLOY_HOOK: ${{ secrets.KITSCH_CLOUDFLARE_PAGES_DEPLOY_HOOK }}
