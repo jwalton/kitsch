@@ -175,41 +175,36 @@ func (g *gitUtils) GetTagNameForHash(hash string) (string, error) {
 		return "", errNotFound
 	}
 
-	tagFiles, err := fs.ReadDir(g.fsys, ".git/refs/tags")
-	if err != nil {
-		return "", err
-	}
-
-	objectHash := []byte("object " + hash)
-	objectHashNewline := []byte("\nobject" + hash)
-
 	result := ""
-	for _, tagFile := range tagFiles {
-		tagName := tagFile.Name()
-		tagHash, err := fs.ReadFile(g.fsys, ".git/refs/tags/"+tagName)
-		if err != nil {
-			continue
-		}
 
-		// If the tag is a lightweight tag, the hash should match.
-		if len(tagHash) >= len(hash) && string(tagHash[0:len(hash)]) == hash {
-			result = tagName
-			break
-		}
-
-		// If the tag is an annotated tag, we need to read the tag object.
-		obj, err := g.ReadObjectOfType("tag", strings.TrimSpace(string(tagHash)))
-		if err == nil {
-			endOfHeader := bytes.Index(obj, []byte("\n\n"))
-			if endOfHeader == -1 {
-				endOfHeader = len(obj)
+	// Read each tag in .git/refs/tags
+	tagFiles, err := fs.ReadDir(g.fsys, ".git/refs/tags")
+	if err == nil {
+		for _, tagFile := range tagFiles {
+			tagName := tagFile.Name()
+			tagHash, err := fs.ReadFile(g.fsys, ".git/refs/tags/"+tagName)
+			if err != nil {
+				continue
 			}
 
-			header := obj[0:endOfHeader]
-			if bytes.HasPrefix(header, objectHash) || bytes.Contains(header, objectHashNewline) {
+			if g.hashMatchesTag(hash, string(tagHash)) {
 				result = tagName
 				break
 			}
+		}
+	}
+
+	// If that didn't work, read each tag in .git/packed-refs
+	if result == "" {
+		packedRefsData, err := fs.ReadFile(g.fsys, ".git/packed-refs")
+		if err == nil {
+			forEachPackedRef(packedRefsData, func(taghash string, ref string) bool {
+				if strings.HasPrefix(ref, "refs/tags/") && g.hashMatchesTag(hash, taghash) {
+					result = ref[10:]
+					return false
+				}
+				return true
+			})
 		}
 	}
 
@@ -217,6 +212,36 @@ func (g *gitUtils) GetTagNameForHash(hash string) (string, error) {
 		return result, nil
 	}
 	return "", errNotFound
+}
+
+// hashMatchesTag returns true if the `hash` represents the same commit as
+// the given tag.  `hash` can be a "short hash".  This will return true
+// if hash is a prefix of tagHash (the "lightweight" tag case) or if
+// the tagHash is an annotated hash and hash is the hash of the tag.
+func (g *gitUtils) hashMatchesTag(hash string, tagHash string) bool {
+	// If the tag is a lightweight tag, the hash should match.
+	if strings.HasPrefix(tagHash, hash) {
+		return true
+	}
+
+	// If the tag is an annotated tag, we need to read the tag object.
+	obj, err := g.ReadObjectOfType("tag", strings.TrimSpace(string(tagHash)))
+	if err == nil {
+		objectHash := []byte("object " + hash)
+		objectHashNewline := []byte("\nobject" + hash)
+
+		endOfHeader := bytes.Index(obj, []byte("\n\n"))
+		if endOfHeader == -1 {
+			endOfHeader = len(obj)
+		}
+
+		header := obj[0:endOfHeader]
+		if bytes.HasPrefix(header, objectHash) || bytes.Contains(header, objectHashNewline) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // resolveSymbolicRef returns the hash for a given symbolic ref.
@@ -227,11 +252,31 @@ func (g *gitUtils) resolveSymbolicRef(ref string) (string, error) {
 	}
 
 	// Resolve the symbolic ref to a hash.
-	hashBytes, err := fs.ReadFile(g.fsys, ".git/"+ref[5:])
-	if err != nil {
-		return "", err
+	hashBytes, err := fs.ReadFile(g.fsys, ".git/"+ref)
+	if err == nil {
+		return strings.TrimSpace(string(hashBytes)), nil
 	}
-	return strings.TrimSpace(string(hashBytes)), nil
+
+	// If that didn't work, try to resolve via packed-refs.
+	packedRefsData, err := fs.ReadFile(g.fsys, ".git/packed-refs")
+	if err != nil {
+		return "", errNotFound
+	}
+
+	result := ""
+	forEachPackedRef(packedRefsData, func(hash string, packedRef string) bool {
+		if packedRef == ref {
+			result = hash
+			return false
+		}
+		return true
+	})
+
+	if result != "" {
+		return result, nil
+	}
+
+	return "", errNotFound
 }
 
 // extractBranchName returns the branch name from a symbolic ref, or returns

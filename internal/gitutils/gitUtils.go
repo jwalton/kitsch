@@ -106,7 +106,6 @@ func (g *gitUtils) RepoRoot() string {
 }
 
 func (g *gitUtils) GetStashCount() (int, error) {
-	// TODO: Read .git/logs/refs/stash, and count the number of `\n`s.`
 	file, err := g.fsys.Open(".git/logs/refs/stash")
 	if err != nil {
 		if os.IsNotExist(err) {

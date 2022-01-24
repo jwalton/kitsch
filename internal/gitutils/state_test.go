@@ -97,6 +97,35 @@ func TestStateOnTag(t *testing.T) {
 	)
 }
 
+func TestStateOnPackedRefs(t *testing.T) {
+	files := fstest.MapFS{
+		".git/HEAD": &fstest.MapFile{
+			Data: []byte("0123456789abcdef0123456789abcdef01234567\n"),
+		},
+		".git/packed-refs": &fstest.MapFile{
+			Data: []byte("7c088a39dcd2dcda89f4dee1fd3eb41c1d34ea2f refs/heads/master\n0123456789abcdef0123456789abcdef01234567 refs/tags/v1.0.0\n"),
+		},
+	}
+
+	git := &gitUtils{
+		pathToGit: "git",
+		fsys:      files,
+		repoRoot:  "/Users/oriana/dev/kitsch",
+	}
+
+	state := git.State()
+	assert.Equal(t,
+		RepositoryState{
+			State:           StateNone,
+			Step:            "",
+			Total:           "",
+			HeadDescription: "(v1.0.0)",
+			IsDetached:      true,
+		},
+		state,
+	)
+}
+
 func TestStateInNonGitRepo(t *testing.T) {
 	git := &gitUtils{
 		pathToGit: "git",
