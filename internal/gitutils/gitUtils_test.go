@@ -25,11 +25,7 @@ b0592fb675bd471541928aa8c9900ba76f748ac8 9f139fbbde7200508adecc1b9adad67e99204ae
 		},
 	}
 
-	git := &gitUtils{
-		pathToGit: "git",
-		fsys:      files,
-		repoRoot:  "/Users/oriana/dev/kitsch",
-	}
+	git := testGitUtils("/Users/oriana/dev/kitsch", files)
 
 	result, err := git.GetStashCount()
 	assert.Nil(t, err)
@@ -43,11 +39,7 @@ func TestGetStashCountNoStashes(t *testing.T) {
 		},
 	}
 
-	git := &gitUtils{
-		pathToGit: "git",
-		fsys:      files,
-		repoRoot:  "/Users/oriana/dev/kitsch",
-	}
+	git := testGitUtils("/Users/oriana/dev/kitsch", files)
 
 	result, err := git.GetStashCount()
 	assert.Nil(t, err)
@@ -69,30 +61,4 @@ func generateGitObject(objectType string, content string) []byte {
 	w.Close()
 
 	return compressedContent.Bytes()
-}
-
-func TestReadObject(t *testing.T) {
-	files := fstest.MapFS{
-		".git/objects/b0/592fb675bd471541928aa8c9900ba76f748ac8": &fstest.MapFile{
-			Data: generateGitObject("blob", "hello world"),
-		},
-	}
-
-	git := &gitUtils{
-		pathToGit: "git",
-		fsys:      files,
-		repoRoot:  "/Users/oriana/dev/kitsch",
-	}
-
-	objectType, content, err := git.ReadObject("b0592fb675bd471541928aa8c9900ba76f748ac8")
-	assert.Nil(t, err)
-	assert.Equal(t, "blob", objectType)
-	assert.Equal(t, "hello world", string(content))
-
-	content, err = git.ReadObjectOfType("blob", "b0592fb675bd471541928aa8c9900ba76f748ac8")
-	assert.Nil(t, err)
-	assert.Equal(t, "hello world", string(content))
-
-	_, err = git.ReadObjectOfType("tag", "b0592fb675bd471541928aa8c9900ba76f748ac8")
-	assert.Equal(t, ErrIncorrectType, err)
 }

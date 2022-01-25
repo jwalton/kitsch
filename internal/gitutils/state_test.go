@@ -17,11 +17,7 @@ func TestStateOnBranch(t *testing.T) {
 		},
 	}
 
-	git := &gitUtils{
-		pathToGit: "git",
-		fsys:      files,
-		repoRoot:  "/Users/oriana/dev/kitsch",
-	}
+	git := testGitUtils("/Users/oriana/dev/kitsch", files)
 
 	state := git.State()
 	assert.Equal(t,
@@ -46,11 +42,7 @@ func TestStateDetached(t *testing.T) {
 		},
 	}
 
-	git := &gitUtils{
-		pathToGit: "git",
-		fsys:      files,
-		repoRoot:  "/Users/oriana/dev/kitsch",
-	}
+	git := testGitUtils("/Users/oriana/dev/kitsch", files)
 
 	state := git.State()
 	assert.Equal(t,
@@ -78,11 +70,7 @@ func TestStateOnTag(t *testing.T) {
 		},
 	}
 
-	git := &gitUtils{
-		pathToGit: "git",
-		fsys:      files,
-		repoRoot:  "/Users/oriana/dev/kitsch",
-	}
+	git := testGitUtils("/Users/oriana/dev/kitsch", files)
 
 	state := git.State()
 	assert.Equal(t,
@@ -91,6 +79,40 @@ func TestStateOnTag(t *testing.T) {
 			Step:            "",
 			Total:           "",
 			HeadDescription: "(v1.0.0)",
+			IsDetached:      true,
+		},
+		state,
+	)
+}
+
+func TestStateOnAnnotatedTag(t *testing.T) {
+	files := fstest.MapFS{
+		// Head points at commit aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+		".git/HEAD": &fstest.MapFile{
+			Data: []byte("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"),
+		},
+		".git/refs/heads/master": &fstest.MapFile{
+			Data: []byte("7c088a39dcd2dcda89f4dee1fd3eb41c1d34ea2f\n"),
+		},
+		// Annotated tag points to object at bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+		".git/refs/tags/v1.1.0": &fstest.MapFile{
+			Data: []byte("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n"),
+		},
+		// The tag object points to the commit.
+		".git/objects/bb/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb": &fstest.MapFile{
+			Data: generateGitObject("tag", "object aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\ntype commit\ntag v1.1.0\ntagger Jason Walton <dev@lucid.thedreaming.org> 1642726592 -0500\n\nv1.1.0\n"),
+		},
+	}
+
+	git := testGitUtils("/Users/oriana/dev/kitsch", files)
+
+	state := git.State()
+	assert.Equal(t,
+		RepositoryState{
+			State:           StateNone,
+			Step:            "",
+			Total:           "",
+			HeadDescription: "(v1.1.0)",
 			IsDetached:      true,
 		},
 		state,
@@ -107,11 +129,7 @@ func TestStateOnPackedRefs(t *testing.T) {
 		},
 	}
 
-	git := &gitUtils{
-		pathToGit: "git",
-		fsys:      files,
-		repoRoot:  "/Users/oriana/dev/kitsch",
-	}
+	git := testGitUtils("/Users/oriana/dev/kitsch", files)
 
 	state := git.State()
 	assert.Equal(t,
@@ -127,11 +145,7 @@ func TestStateOnPackedRefs(t *testing.T) {
 }
 
 func TestStateInNonGitRepo(t *testing.T) {
-	git := &gitUtils{
-		pathToGit: "git",
-		fsys:      nil,
-		repoRoot:  "",
-	}
+	git := testGitUtils("", nil)
 
 	state := git.State()
 	assert.Equal(t,

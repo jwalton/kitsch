@@ -1,11 +1,11 @@
 package gitutils
 
 import (
-	"bytes"
 	"errors"
 	"io/fs"
 	"strings"
 
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/jwalton/kitsch/internal/fileutils"
 )
 
@@ -171,46 +171,18 @@ var errNotFound = errors.New("Not found")
 // GetTagNameForHash returns the tag name for the hash, or an error if no such
 // tag exists.  "hash" can be a short hash.
 func (g *gitUtils) GetTagNameForHash(hash string) (string, error) {
-	if g.fsys == nil {
-		return "", errNotFound
-	}
-
-	result := ""
-
-	// Read each tag in .git/refs/tags
-	tagFiles, err := fs.ReadDir(g.fsys, ".git/refs/tags")
+	// Check lightweight tags
+	tags, err := g.repo.Tags()
 	if err == nil {
-		for _, tagFile := range tagFiles {
-			tagName := tagFile.Name()
-			tagHash, err := fs.ReadFile(g.fsys, ".git/refs/tags/"+tagName)
-			if err != nil {
-				continue
+		for ref, err := tags.Next(); err == nil && ref != nil; ref, err = tags.Next() {
+			if g.hashMatchesTag(hash, ref.Hash()) {
+				result := strings.TrimPrefix(string(ref.Name()), "refs/tags/")
+				return result, nil
 			}
 
-			if g.hashMatchesTag(hash, string(tagHash)) {
-				result = tagName
-				break
-			}
 		}
 	}
 
-	// If that didn't work, read each tag in .git/packed-refs
-	if result == "" {
-		packedRefsData, err := fs.ReadFile(g.fsys, ".git/packed-refs")
-		if err == nil {
-			forEachPackedRef(packedRefsData, func(taghash string, ref string) bool {
-				if strings.HasPrefix(ref, "refs/tags/") && g.hashMatchesTag(hash, taghash) {
-					result = ref[10:]
-					return false
-				}
-				return true
-			})
-		}
-	}
-
-	if result != "" {
-		return result, nil
-	}
 	return "", errNotFound
 }
 
@@ -218,25 +190,16 @@ func (g *gitUtils) GetTagNameForHash(hash string) (string, error) {
 // the given tag.  `hash` can be a "short hash".  This will return true
 // if hash is a prefix of tagHash (the "lightweight" tag case) or if
 // the tagHash is an annotated hash and hash is the hash of the tag.
-func (g *gitUtils) hashMatchesTag(hash string, tagHash string) bool {
+func (g *gitUtils) hashMatchesTag(hash string, tagHash plumbing.Hash) bool {
 	// If the tag is a lightweight tag, the hash should match.
-	if strings.HasPrefix(tagHash, hash) {
+	if strings.HasPrefix(tagHash.String(), hash) {
 		return true
 	}
 
-	// If the tag is an annotated tag, we need to read the tag object.
-	obj, err := g.ReadObjectOfType("tag", strings.TrimSpace(string(tagHash)))
+	// Check to see if this is an annotated tag
+	tagObj, err := g.repo.TagObject(tagHash)
 	if err == nil {
-		objectHash := []byte("object " + hash)
-		objectHashNewline := []byte("\nobject" + hash)
-
-		endOfHeader := bytes.Index(obj, []byte("\n\n"))
-		if endOfHeader == -1 {
-			endOfHeader = len(obj)
-		}
-
-		header := obj[0:endOfHeader]
-		if bytes.HasPrefix(header, objectHash) || bytes.Contains(header, objectHashNewline) {
+		if strings.HasPrefix(tagObj.Target.String(), hash) {
 			return true
 		}
 	}
@@ -247,36 +210,8 @@ func (g *gitUtils) hashMatchesTag(hash string, tagHash string) bool {
 // resolveSymbolicRef returns the hash for a given symbolic ref.
 // e.g. this turns "refs/heads/master" into a hash.
 func (g *gitUtils) resolveSymbolicRef(ref string) (string, error) {
-	if g.fsys == nil {
-		return "", errNotFound
-	}
-
-	// Resolve the symbolic ref to a hash.
-	hashBytes, err := fs.ReadFile(g.fsys, ".git/"+ref)
-	if err == nil {
-		return strings.TrimSpace(string(hashBytes)), nil
-	}
-
-	// If that didn't work, try to resolve via packed-refs.
-	packedRefsData, err := fs.ReadFile(g.fsys, ".git/packed-refs")
-	if err != nil {
-		return "", errNotFound
-	}
-
-	result := ""
-	forEachPackedRef(packedRefsData, func(hash string, packedRef string) bool {
-		if packedRef == ref {
-			result = hash
-			return false
-		}
-		return true
-	})
-
-	if result != "" {
-		return result, nil
-	}
-
-	return "", errNotFound
+	hash, err := g.repo.ResolveRevision(plumbing.Revision(ref))
+	return hash.String(), err
 }
 
 // extractBranchName returns the branch name from a symbolic ref, or returns

@@ -1,17 +1,15 @@
 package gitutils
 
 import (
-	"compress/zlib"
 	"errors"
 	"fmt"
-	"io"
 	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strconv"
 	"strings"
 
+	"github.com/go-git/go-git/v5"
 	"github.com/jwalton/kitsch/internal/fileutils"
 )
 
@@ -23,6 +21,8 @@ var ErrNoGit = errors.New("Git is not installed")
 type gitUtils struct {
 	// pathToGit is the path to the git executable.
 	pathToGit string
+	// The git repository.
+	repo *git.Repository
 	// fsys is an fs.FS instance bound to the root of the git repository.
 	fsys fs.FS
 	// RepoRoot is the root folder of the git repository.
@@ -68,8 +68,14 @@ func New(pathToGit string, folder string) Git {
 		return nil
 	}
 
+	repo, err := git.PlainOpen(gitRoot)
+	if err != nil {
+		return nil
+	}
+
 	return &gitUtils{
 		pathToGit: pathToGit,
+		repo:      repo,
 		fsys:      fsys,
 		repoRoot:  gitRoot,
 	}
@@ -146,95 +152,4 @@ func (g *gitUtils) GetAheadBehind(branch string, compareToBranch string) (ahead 
 
 	fmt.Sscanf(aheadBehind, "%d %d", &ahead, &behind)
 	return ahead, behind, nil
-}
-
-// ReadObject reads a git object from the repo.
-func (g *gitUtils) ReadObject(hash string) (objectType string, data []byte, err error) {
-	filename := ".git/objects/" + hash[0:2] + "/" + hash[2:]
-	file, err := g.fsys.Open(filename)
-	if err != nil {
-		return "", nil, err
-	}
-	defer file.Close()
-
-	zlibReader, err := zlib.NewReader(file)
-	if err != nil {
-		return "", nil, err
-	}
-	defer zlibReader.Close()
-
-	content, err := io.ReadAll(zlibReader)
-	if err != nil {
-		return "", nil, err
-	}
-
-	// Read the object type.
-	objectType, objectTypeLen := readUntil(content, ' ')
-
-	// Read the size of the contents.
-	data, err = getContent(content[objectTypeLen+1:])
-	if err != nil {
-		return "", nil, err
-	}
-
-	return objectType, data, nil
-}
-
-// ErrIncorrectType is returned when an object is not of the requested type.
-var ErrIncorrectType = errors.New("incorrect object type")
-
-// ReadObjectOfType reads a git object from repo, but only if it is of the
-// provided type.  If the object is not the correct type, returns ErrIncorrectType.
-func (g *gitUtils) ReadObjectOfType(objectType string, hash string) (data []byte, err error) {
-	filename := ".git/objects/" + hash[0:2] + "/" + hash[2:]
-	file, err := g.fsys.Open(filename)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	zlibReader, err := zlib.NewReader(file)
-	if err != nil {
-		return nil, err
-	}
-	defer zlibReader.Close()
-
-	// Read the file type.
-	fileType := make([]byte, len(objectType)+1)
-	n, err := zlibReader.Read(fileType)
-	if n != len(objectType)+1 || string(fileType[0:len(objectType)]) != objectType {
-		return nil, ErrIncorrectType
-	}
-
-	content, err := io.ReadAll(zlibReader)
-
-	// Read the size of the contents.
-	return getContent(content)
-}
-
-// getContent reads a "length-of-content", then a null byte, then the content.
-func getContent(from []byte) ([]byte, error) {
-	// Read the size of the contents.
-	sizeStr, sizeLen := readUntil(from, '\x00')
-	size, err := strconv.ParseInt(sizeStr, 10, 64)
-	if err != nil {
-		return nil, fmt.Errorf("invalid size in git object: %s, %w", sizeStr, err)
-	}
-
-	content := from[sizeLen+1:]
-	if int64(len(content)) != size {
-		return nil, fmt.Errorf("expected %d bytes but only got %d", size, len(content))
-	}
-
-	return content, nil
-}
-
-// Read bytes from "bytes" until we find the specified byte.  Returns the read data
-// as a string up until but not including the `until` byte.
-func readUntil(bytes []byte, until byte) (string, int) {
-	index := 0
-	for index < len(bytes) && bytes[index] != until {
-		index++
-	}
-	return string(bytes[:index]), index
 }

@@ -1,11 +1,44 @@
 package gitutils
 
 import (
+	"io/fs"
 	"testing"
 	"testing/fstest"
 
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/cache"
+	"github.com/go-git/go-git/v5/storage/filesystem"
+	"github.com/jwalton/kitsch/internal/billyutils"
 	"github.com/stretchr/testify/assert"
 )
+
+// testGitUtils creates a new gitUtils for unit testing.
+func testGitUtils(repoRoot string, fsys fs.FS) *gitUtils {
+	var repo *git.Repository = nil
+	if fsys != nil {
+		repositoryFs, err := billyutils.FsToBilly(fsys)
+		if err != nil {
+			panic(err)
+		}
+		dotGitFs, err := repositoryFs.Chroot(".git")
+		if err != nil {
+			panic(err)
+		}
+
+		storer := filesystem.NewStorage(dotGitFs, cache.NewObjectLRUDefault())
+		repo, err = git.Open(storer, repositoryFs)
+		if err != nil {
+			repo = nil
+		}
+	}
+
+	return &gitUtils{
+		pathToGit: "git",
+		fsys:      fsys,
+		repoRoot:  repoRoot,
+		repo:      repo,
+	}
+}
 
 func TestGetUpstream(t *testing.T) {
 	config := `
@@ -26,11 +59,7 @@ func TestGetUpstream(t *testing.T) {
 		},
 	}
 
-	git := &gitUtils{
-		pathToGit: "git",
-		fsys:      files,
-		repoRoot:  "/Users/oriana/dev/kitsch",
-	}
+	git := testGitUtils("/Users/oriana/dev/kitsch", files)
 
 	assert.Equal(t,
 		"origin/master",
@@ -55,11 +84,7 @@ func TestGetUpstreamNoConfig(t *testing.T) {
 		},
 	}
 
-	git := &gitUtils{
-		pathToGit: "git",
-		fsys:      files,
-		repoRoot:  "/Users/oriana/dev/kitsch",
-	}
+	git := testGitUtils("/Users/oriana/dev/kitsch", files)
 
 	assert.Equal(t,
 		"",
