@@ -5,6 +5,7 @@ import (
 	"testing"
 	"testing/fstest"
 
+	"github.com/MakeNowJust/heredoc"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/cache"
 	"github.com/go-git/go-git/v5/storage/filesystem"
@@ -41,14 +42,14 @@ func testGitUtils(repoRoot string, fsys fs.FS) *gitUtils {
 }
 
 func TestGetUpstream(t *testing.T) {
-	config := `
-[branch "master"]
-	remote = origin
-	merge = refs/heads/master
-[branch "feature/projects"]
-	remote = spooky
-	merge = refs/heads/feature/oldprojects
-`
+	config := heredoc.Doc(`
+		[branch "master"]
+			remote = origin
+			merge = refs/heads/master
+		[branch "feature/projects"]
+			remote = spooky
+			merge = refs/heads/feature/oldprojects
+	`)
 
 	files := fstest.MapFS{
 		".git/HEAD": &fstest.MapFile{

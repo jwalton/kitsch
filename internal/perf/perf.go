@@ -78,10 +78,10 @@ func (p *Performance) Print() {
 func renderPerf(durations []Record, indent int) {
 	for _, duration := range durations {
 		printDuration := duration.Duration.String()
-		if duration.Duration > 1000000 {
-			printDuration = gchalk.Yellow(printDuration)
-		} else if duration.Duration > 250000000 {
+		if duration.Duration > 250000000 {
 			printDuration = gchalk.Red(printDuration)
+		} else if duration.Duration > 1000000 {
+			printDuration = gchalk.Yellow(printDuration)
 		} else {
 			printDuration = gchalk.Green(printDuration)
 		}

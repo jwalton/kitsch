@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/jwalton/kitsch/internal/fileutils"
@@ -125,22 +124,21 @@ func (g *gitUtils) GetStashCount() (int, error) {
 }
 
 func (g *gitUtils) GetUpstream(branch string) string {
-	config, err := g.localConfig()
+	config, err := g.repo.Config()
 	if err != nil {
 		return ""
 	}
 
-	// TODO: If `branch` is HEAD, resolve it.
 	branchConfig := config.Branches[branch]
 	if branchConfig == nil {
 		return ""
 	}
 
-	if !strings.HasPrefix(branchConfig.Merge, "refs/heads/") {
+	if !branchConfig.Merge.IsBranch() {
 		return ""
 	}
 
-	return branchConfig.Remote + "/" + branchConfig.Merge[11:]
+	return branchConfig.Remote + "/" + branchConfig.Merge.String()[11:]
 }
 
 func (g *gitUtils) GetAheadBehind(branch string, compareToBranch string) (ahead int, behind int, err error) {

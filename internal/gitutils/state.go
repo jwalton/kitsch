@@ -139,10 +139,11 @@ func (g *gitUtils) getHeadDescription() (description string, isDetached bool) {
 			// If the HEAD is a symbolic reference to a non-branch (can this
 			// even happen??), resolve it to a hash.
 			var err error
-			head, err = g.resolveSymbolicRef(head)
+			hashRef, err := g.repo.ResolveRevision(plumbing.Revision(head))
 			if err != nil {
 				return "???", true
 			}
+			head = hashRef.String()
 		}
 	}
 
@@ -205,13 +206,6 @@ func (g *gitUtils) hashMatchesTag(hash string, tagHash plumbing.Hash) bool {
 	}
 
 	return false
-}
-
-// resolveSymbolicRef returns the hash for a given symbolic ref.
-// e.g. this turns "refs/heads/master" into a hash.
-func (g *gitUtils) resolveSymbolicRef(ref string) (string, error) {
-	hash, err := g.repo.ResolveRevision(plumbing.Revision(ref))
-	return hash.String(), err
 }
 
 // extractBranchName returns the branch name from a symbolic ref, or returns
