@@ -154,7 +154,7 @@ func (context *Context) Git() gitutils.Git {
 	defer context.mutex.Unlock()
 
 	if !context.gitInitialized {
-		context.git = gitutils.New("git", context.Globals.CWD)
+		context.git = gitutils.NewCaching("git", context.Globals.CWD)
 		context.gitInitialized = true
 	}
 	return context.git
