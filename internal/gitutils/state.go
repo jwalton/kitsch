@@ -84,8 +84,6 @@ func (g *gitUtils) State() RepositoryState {
 			result.State = StateRebaseMerging
 		}
 
-		result.HeadDescription = extractBranchName(g.readFileIfExist(".git/rebase-merge/head-name"))
-		result.IsDetached = true
 		result.Step = g.readFileIfExist(".git/rebase-merge/msgnum")
 		result.Total = g.readFileIfExist(".git/rebase-merge/end")
 	} else {
@@ -111,9 +109,9 @@ func (g *gitUtils) State() RepositoryState {
 		} else {
 			result.State = StateNone
 		}
-
-		result.HeadDescription, result.IsDetached = g.getHeadDescription()
 	}
+
+	result.HeadDescription, result.IsDetached = g.getHeadDescription()
 
 	return result
 }
@@ -124,26 +122,30 @@ func (g *gitUtils) State() RepositoryState {
 func (g *gitUtils) getHeadDescription() (description string, isDetached bool) {
 	isDetached = true
 
-	head := g.readFileIfExist(".git/HEAD")
-	if head == "" {
-		return "???", true
-	}
+	description = extractBranchName(g.readFileIfExist(".git/rebase-merge/head-name"))
 
-	if strings.HasPrefix(head, "ref: ") {
-		// The HEAD is a symbolic reference.
-		if strings.HasPrefix(head[5:], "refs/heads/") {
-			// If the HEAD file is a symbolic reference to a branch, extract the branch name.
-			description = head[16:]
-			isDetached = false
-		} else {
-			// If the HEAD is a symbolic reference to a non-branch (can this
-			// even happen??), resolve it to a hash.
-			var err error
-			hashRef, err := g.repo.ResolveRevision(plumbing.Revision(head))
-			if err != nil {
-				return "???", true
+	var head string
+	if description == "" {
+		head = g.readFileIfExist(".git/HEAD")
+
+		if head == "" {
+			description = "???"
+		} else if strings.HasPrefix(head, "ref: ") {
+			// The HEAD is a symbolic reference.
+			if strings.HasPrefix(head[5:], "refs/heads/") {
+				// If the HEAD file is a symbolic reference to a branch, extract the branch name.
+				description = head[16:]
+				isDetached = false
+			} else {
+				// If the HEAD is a symbolic reference to a non-branch (can this
+				// even happen??), resolve it to a hash.
+				var err error
+				hashRef, err := g.repo.ResolveRevision(plumbing.Revision(head))
+				if err != nil {
+					return "???", true
+				}
+				head = hashRef.String()
 			}
-			head = hashRef.String()
 		}
 	}
 
