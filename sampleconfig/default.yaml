@@ -34,6 +34,8 @@ prompt:
             {{- style (get $gitStyles .Data.AheadBehind) .Text -}}
         - type: git_status
       template: "{{ with .Text }}[{{ . }}]{{end}}"
+    - type: kubernetes
+      style: $fg
     - type: command_duration
       style: brightYellow
     - type: jobs
