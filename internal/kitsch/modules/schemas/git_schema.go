@@ -8,10 +8,7 @@ var GitModuleJSONSchema = `{
   "properties": {
     "style": {"type": "string", "description": ""},
     "template": {"type": "string", "description": ""},
-    "type": {"type": "string", "description": "Type is the type of this module.", "enum": ["git"]},
-    "aheadStyle": {"type": "string", "description": ""},
-    "behindStyle": {"type": "string", "description": ""},
-    "aheadBehindStyle": {"type": "string", "description": ""}
+    "type": {"type": "string", "description": "Type is the type of this module.", "enum": ["git"]}
   },
   "additionalProperties": false
 }`

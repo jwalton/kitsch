@@ -16,29 +16,27 @@ import (
 // The default implementation of the git module is loosely based  on
 // https://github.com/lyze/posh-git-sh and https://github.com/dahlbyk/posh-git.
 //
-// Provides the following template variables:
-//
-// • State - A `{ State, Step, Total, Base, Branch }` object.  All of these
-//   values are strings.  State is the current state of the repo (e.g. "MERGING"
-//   if in the middle of a merge).  Step and Total represent the number of steps
-//   left to complete the current operation (e.g. the number of commits left
-//   to apply in an interactive rebase), or empty string if no such operation is
-//   in progress.  Base is the name of the base branch we are merging from or
-//   rebasing from.  Branch is the name of the current branch or hash.
-//
-// • Ahead - The number of commits ahead of the upstream branch.
-//
-// • Behind - The number of commits behind the upstream branch.
-//
-// • Symbol - The symbol to use to indicate the current state of the repo.
-//
 type GitModule struct {
 	CommonConfig `yaml:",inline"`
 	// Type is the type of this module.
-	Type             string `yaml:"type" jsonschema:",enum=git"`
-	AheadStyle       string `yaml:"aheadStyle"`
-	BehindStyle      string `yaml:"behindStyle"`
-	AheadBehindStyle string `yaml:"aheadBehindStyle"`
+	Type string `yaml:"type" jsonschema:",enum=git"`
+}
+
+type gitResult struct {
+	// State is the current state of the repo.
+	State gitutils.RepositoryState `json:"state"`
+	// Upstream is the name of the upstream branch (e.g. "origin/master"), or ""
+	// if there is no upstream or we are currently detached.
+	Upstream string `json:"upstream"`
+	// Ahead is the number of commits we are ahead of the upstream branch, or 0 if there is no upstream branch.
+	Ahead int `json:"ahead"`
+	// Behind is the number of commits we are behind of the upstream branch, or 0 if there is no upstream branch.
+	Behind int `json:"behind"`
+	// Symbol is the symbol to use to indicate the current state of the repo.
+	Symbol string `json:"symbol"`
+	// AheadBehind is "ahead" if we are ahead of the upstream branch, "behind"
+	// if we are behind, "diverged" if we are both, and "" otherwise.
+	AheadBehind string `json:"aheadBehind"`
 }
 
 // Execute runs a git module.
@@ -61,39 +59,34 @@ func (mod GitModule) Execute(context *Context) ModuleResult {
 	}
 
 	symbol := "?"
+	aheadBehind := ""
 	if upstream != "" {
 		if ahead > 0 && behind > 0 {
 			symbol = "↕"
+			aheadBehind = "diverged"
 		} else if ahead > 0 {
 			symbol = "↑"
+			aheadBehind = "ahead"
 		} else if behind > 0 {
 			symbol = "↓"
+			aheadBehind = "behind"
 		} else {
 			symbol = "≡"
 		}
 	}
 
-	style := defaultString(mod.Style, "brightCyan")
-	if upstream != "" {
-		if ahead > 0 && behind > 0 {
-			style = defaultString(mod.AheadBehindStyle, "brightYellow")
-		} else if ahead > 0 {
-			style = defaultString(mod.AheadStyle, "brightGreen")
-		} else if behind > 0 {
-			style = defaultString(mod.BehindStyle, "brightRed")
-		}
-	}
-
-	data := map[string]interface{}{
-		"State":  state,
-		"Ahead":  ahead,
-		"Behind": behind,
-		"Symbol": symbol,
+	data := gitResult{
+		State:       state,
+		Upstream:    upstream,
+		Ahead:       ahead,
+		Behind:      behind,
+		Symbol:      symbol,
+		AheadBehind: aheadBehind,
 	}
 
 	defaultOutput := mod.renderDefault(context, symbol, state, upstream, ahead, behind)
 
-	return executeModule(context, mod.CommonConfig, data, style, defaultOutput)
+	return executeModule(context, mod.CommonConfig, data, mod.Style, defaultOutput)
 }
 
 func (mod GitModule) renderDefault(

@@ -1,6 +1,10 @@
 colors:
   $fg: "#08f"
   $directory: "linear-gradient(#0ff, $fg)"
+  $git: brightCyan
+  $gitAhead: brightGreen
+  $gitBehind: brightRed
+  $gitDiverged: brightYellow
 prompt:
   type: block
   modules:
@@ -25,6 +29,9 @@ prompt:
       style: brightYellow
       modules:
         - type: git
+          template: |
+            {{- $gitStyles := dict "" "$git" "ahead" "$gitAhead" "behind" "$gitBehind" "diverged" "$gitDiverged" -}}
+            {{- style (get $gitStyles .Data.AheadBehind) .Text -}}
         - type: git_status
       template: "{{ with .Text }}[{{ . }}]{{end}}"
     - type: command_duration

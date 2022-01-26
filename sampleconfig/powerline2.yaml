@@ -37,7 +37,8 @@ prompt:
       {{- printf " %s" .time.Text | style "$timeFg" | $pl.Segment "$timeBg" -}}
       {{- .directory.Text | style "$directoryFg" | $pl.Segment "$directoryBg" -}}
       {{- if .git -}}
-        {{- $gitBg := or (and (gt .git.Data.Behind 0) "$gitBgBehind") (and (gt .git.Data.Ahead 0) "$gitBgAhead") "$gitBg" -}}
+        {{- $gitStyles := dict "" "$gitBg" "ahead" "$gitBgAhead" "behind" "$gitBgBehind" "diverged" "^gitBgBehind" -}}
+        {{- $gitBg := (get $gitStyles .git.Data.AheadBehind) -}}
         {{- list "\ue0a0" .git.Text | join " " | style "$gitFg" | $pl.Segment $gitBg -}}
       {{- end -}}
 
