@@ -1,0 +1,168 @@
+---
+sidebar_position: 1
+---
+
+# Adding a Module
+
+The steps involved in adding a module are:
+
+- Create a new .go file for your module in ./internal/kitsch/modules.
+- Add a struct that implements the Module interface.
+- Register your module.
+
+## An example
+
+Let's say we're writing a new module that shows the current Kubernetes context.
+
+If you're not familiar with Kubernetes, it essentially manages a cluster of nodes running Docker containers for us. At any given point we're connected to a given cluster, which is specified by the "current context". To figure out what the current context is, all we need to do is read the YAML file in `~/.kube/config`, and find the "current-context" key. The current context may have some unwieldly name like "my-company-prod", which we'd maybe like to shorten to just "prod". And maybe some contexts we don't even want to show.
+
+In our configuration, we're going to want to have a "context alias" map which maps context names to what we'll actually show. We'll also want to let the user specify a different path to the config file, in case it's at a different location on their system. In terms of template variables, we'll want to return the current context name, and the unaliased name. We could also get the current Kubernetes namespace.
+
+## Define the module structs
+
+First of all, we need to defined some structs; one for our module itself, and one for the template variables we want to return. The module struct needs to have appropriate tags so it can be unmarshalled from YAML.
+
+```go
+// KubernetesModule lets us know what Kubernetes context we are currently in.
+type KubernetesModule struct {
+	CommonConfig `yaml:",inline"`
+	// Type is the type of this module.
+	Type string `yaml:"type" jsonschema:",enum=kubernetes"`
+	// Symbol is a symbol to show if a Kubernetes context is detected.  Defaults to "☸ "
+	Symbol string `yaml:"symbol"`
+	// ContextAliases is a map where keys are context names and values are the
+	// value we want to show.  If the value is an empty string, we will not
+	// show anything.
+	ContextAliases map[string]string `yaml:"contextAliases"`
+	// ConfigFile is the path to the kubectl config file.  Defaults to "~/.kube/config".
+	ConfigFile string `yaml:"configFile"`
+	// configFileContents is the contents of the kubectl config file. If this value
+	// is not empty, we'll use this as the contents of the kubectl config file instead
+	// of reading them from ConfigFile.  This is used for unit testing.
+	configFileContents string
+}
+
+// kubernetesModuleData is the template variables returned by the KubernetesModule.
+type kubernetesModuleData struct {
+	// OriginalContext is the raw "current-context" from the config file.
+	OriginalContext string
+	// Context is the context to display.  If "OriginalContext" maps to a ContextAlias,
+	// this will be the alias, otherwise this will be the same as "OriginalContext".
+	Context string
+	// Namespace is the current namespace.  If not namespace is set or is
+	// "default", this will be an empty string.
+	Namespace string
+}
+```
+
+Note the inlined `CommonConfig` in the module - this provides common configuration options for all modules like `Style` and `Template`.  Note also that we add a `Type` field to our module, although this is mainly here for the benefit of the generated JSON schema.
+
+We'll also define a `kubectlConfig` struct to make it easy to parse the config file - we won't go over that here, but you can go have a look at it [in the actual Kubernetes module](https://github.com/jwalton/kitsch/blob/master/internal/kitsch/modules/context.go) if you're curious.
+
+## Implement the Module interface
+
+Now that we have the basic data structures in place, we need to make `KubernetesModule` implement the `Module` interface.  To do this, we write an `Execute()` function with the `KubernetesModule` as the receiver.  This glosses over the `loadConfigFile()` function, but shows a typical Execute() function - Execute() takes in a `context` which is used to find out information about the current git repo or environment variables, and returns a `ModuleResult`.
+
+```go
+// Execute the module.
+func (mod KubernetesModule) Execute(context *Context) ModuleResult {
+	text := ""
+	data := kubernetesModuleData{}
+
+	config := mod.loadConfigFile(context.Globals.Home)
+	if config != nil && config.CurrentContext != "" {
+		data.OriginalContext = config.CurrentContext
+
+		if alias, ok := mod.ContextAliases[config.CurrentContext]; ok {
+			data.Context = alias
+		} else {
+			data.Context = config.CurrentContext
+		}
+
+		// Find the context.
+		for _, context := range config.Contexts {
+			if context.Name == config.CurrentContext {
+				if context.Context.Namespace != "default" {
+					data.Namespace = context.Context.Namespace
+				}
+				break
+			}
+		}
+
+		if data.Context != "" {
+			text = mod.Symbol + data.Context
+		}
+	}
+
+	return executeModule(context, mod.CommonConfig, data, mod.Style, text)
+}
+```
+
+Most Execute() functions will call `executeModule()` - this is a helper function which executes the template for the module and applies the default styling.  Note that you should call `executeModule` even if you don't return any data (such as here when we can't read the kubectl config file), since it's possible the user will supply a Template for the module that generates text in this case.
+
+## Registering the module
+
+Now that we have our module defined, we need to write an `init()` function that will register a factory for our module and a JSON schema.  Generally we can generate the JSON schema automatically with the [`genSchema`](https://github.com/jwalton/kitsch/tree/master/internal/kitsch/genSchema) generator:
+
+```go
+//go:generate go run ../genSchema/main.go --pkg schemas KubernetesModule
+```
+
+This will generate a schema for us in the modules/schemas package called `KubernetesModuleJSONSchema`.  genSchema will work for most modules, but if you have something complicated, you may want to hand-craft your schema.  You can also customize the output of genSchema via [struct tags](https://github.com/jwalton/kitsch/tree/master/internal/kitsch/genSchema#struct-tags).
+
+Now that we have our schema, we need to create a factory.  The factory will be passed a YAML node, and needs to return a new instance of our module.  This is a great place to set default values for your module.  We register the schema and factory along with the name that will be used as the "type" of the module in a Kitsch config file:
+
+```go
+func init() {
+	registerModule(
+		"kubernetes",
+		registeredModule{
+			jsonSchema: schemas.KubernetesModuleJSONSchema,
+			factory: func(node *yaml.Node) (Module, error) {
+				module := KubernetesModule{
+					Type:       "kubernetes",
+					Symbol:     "☸ ",
+					ConfigFile: "~/.kube/config",
+				}
+				err := node.Decode(&module)
+				return &module, err
+			},
+		},
+	)
+}
+```
+
+## Testing
+
+There are several helper functions available to unit test your module.  `moduleFromYAMLMust()` can be used to create an instance of your module from a YAML config block.  `newTestContext(username)` can be used to generate a demo context with sensible default values and environment variables.  A simple test for KubernetesModule might look something like:
+
+```go
+func TestKubernetes(t *testing.T) {
+	mod := moduleFromYAMLMust(heredoc.Doc(`
+		type: kubernetes
+	`)).(KubernetesModule)
+
+	mod.configFileContents = []byte(heredoc.Doc(`
+		apiVersion: v1
+		kind: Config
+		contexts:
+		  - name: prod
+		    context:
+		      cluster: arn:aws:eks:us-east-1:00000000:cluster/my-prod-cluster
+		      user: arn:aws:eks:us-east-1:00000000:cluster/my-prod-cluster
+		current-context: prod
+	`))
+
+	context := newTestContext("jwalton")
+	result := mod.Execute(context)
+
+	expectedData := kubernetesModuleData{
+		OriginalContext: "prod",
+		Context:         "prod",
+		Namespace:       "",
+	}
+
+	assert.Equal(t, expectedData, result.Data)
+	assert.Equal(t, "☸ prod", result.Text)
+}
+```
