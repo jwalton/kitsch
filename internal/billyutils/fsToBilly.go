@@ -3,7 +3,7 @@ package billyutils
 import (
 	"io"
 	"io/fs"
-	"path/filepath"
+	"path"
 
 	"github.com/go-git/go-billy/v5"
 	"github.com/go-git/go-billy/v5/memfs"
@@ -19,20 +19,20 @@ func FsToBilly(in fs.FS) (billy.Filesystem, error) {
 	return memory, err
 }
 
-func copyToBilly(in fs.FS, out billy.Filesystem, path string) error {
-	billyPath := path
-	if billyPath == "." {
-		billyPath = "/"
+func copyToBilly(in fs.FS, out billy.Filesystem, dir string) error {
+	billyDir := dir
+	if billyDir == "." {
+		billyDir = "/"
 	}
 
-	files, err := fs.ReadDir(in, path)
+	files, err := fs.ReadDir(in, dir)
 	if err != nil {
 		return err
 	}
 
 	for _, file := range files {
-		fileName := filepath.Join(path, file.Name())
-		billyFileName := filepath.Join(billyPath, file.Name())
+		fileName := path.Join(dir, file.Name())
+		billyFileName := path.Join(billyDir, file.Name())
 
 		if file.IsDir() {
 			info, err := file.Info()
