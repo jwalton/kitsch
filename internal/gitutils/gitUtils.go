@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/jwalton/kitsch/internal/fileutils"
 )
 
@@ -38,8 +39,8 @@ type Git interface {
 	// an empty string otherwise.
 	GetUpstream(branch string) string
 	// GetAheadBehind returns how many commits ahead and behind the given
-	// branch is compared to compareToBranch.  You can use `HEAD` for the branch name.
-	GetAheadBehind(branch string, compareToBranch string) (ahead int, behind int, err error)
+	// localRef is compared to remoteRef.
+	GetAheadBehind(localRef string, remoteRef string) (ahead int, behind int, err error)
 	// State returns the current state of the repository.
 	State() RepositoryState
 	// Stats returns status counters for the given git repo.
@@ -141,9 +142,25 @@ func (g *gitUtils) GetUpstream(branch string) string {
 	return branchConfig.Remote + "/" + branchConfig.Merge.String()[11:]
 }
 
-func (g *gitUtils) GetAheadBehind(branch string, compareToBranch string) (ahead int, behind int, err error) {
-	aheadBehind, err := g.git("rev-list", "--left-right", "--count", branch+"..."+compareToBranch)
+// GetAheadBehind returns how many commits ahead and behind the given
+// localRef is compared to remoteRef.
+func (g *gitUtils) GetAheadBehind(localRef string, remoteRef string) (ahead int, behind int, err error) {
+	s := g.repo.Storer
 
+	// If branch and compareToBranch are the same hash, we're done.
+	branchRef, err := s.Reference(plumbing.ReferenceName(localRef))
+	if err == nil {
+		compareBranchRef, err := s.Reference(plumbing.ReferenceName(remoteRef))
+		if err == nil {
+			if branchRef.Hash() == compareBranchRef.Hash() {
+				return 0, 0, nil
+			}
+		}
+	}
+
+	// If not, we need to shell-out to git to find the answer.
+	// TODO: Rewrite this as native, as there is quite a bit of overhead going to the shell.
+	aheadBehind, err := g.git("rev-list", "--left-right", "--count", localRef+"..."+remoteRef)
 	if err != nil {
 		return 0, 0, err
 	}

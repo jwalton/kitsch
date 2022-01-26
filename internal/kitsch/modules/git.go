@@ -56,7 +56,7 @@ func (mod GitModule) Execute(context *Context) ModuleResult {
 	if !state.IsDetached {
 		upstream = git.GetUpstream(state.HeadDescription)
 		if upstream != "" {
-			ahead, behind, _ = git.GetAheadBehind("HEAD", upstream)
+			ahead, behind, _ = git.GetAheadBehind("refs/heads/"+state.HeadDescription, "refs/remotes/"+upstream)
 		}
 	}
 

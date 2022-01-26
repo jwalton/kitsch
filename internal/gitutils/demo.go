@@ -57,9 +57,12 @@ func (git DemoGit) GetUpstream(branch string) string {
 }
 
 // GetAheadBehind returns how many commits ahead and behind the given
-// branch is compared to compareToBranch.  You can use `HEAD` for the branch name.
-func (git DemoGit) GetAheadBehind(branch string, compareToBranch string) (ahead int, behind int, err error) {
-	if !git.IsDetached && (branch == git.Head || branch == "HEAD") && compareToBranch == git.CurrentBranchUpstream {
+// localRef is compared to remoteRef.
+func (git DemoGit) GetAheadBehind(localRef string, remoteRef string) (ahead int, behind int, err error) {
+	if git.IsDetached || git.CurrentBranchUpstream == "" {
+		return 0, 0, nil
+	}
+	if !git.IsDetached && (localRef == "refs/heads/"+git.Head) && remoteRef == "refs/remotes/"+git.CurrentBranchUpstream {
 		return git.Ahead, git.Behind, nil
 	}
 	return 0, 0, fmt.Errorf("Unknown")
