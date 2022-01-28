@@ -10,9 +10,9 @@ import (
 type DemoGit struct {
 	// RepoRootDirectory is the path to the root directory of the git repo.
 	RepoRootDirectory string `yaml:"repoDir"`
-	// Head is the name of the current branch if HEAD is not detached, or else
+	// HeadDescription is the name of the current branch if HEAD is not detached, or else
 	// a hash or the the name of a tag.
-	Head string `yaml:"head"`
+	HeadDescription string `yaml:"headDescription"`
 	// IsDetached is true if HEAD is detached.
 	IsDetached bool `yaml:"isDetached"`
 	// CurrentBranchUpstream is the current upstream branch, or "" if none.
@@ -62,29 +62,36 @@ func (git DemoGit) GetAheadBehind(localRef string, remoteRef string) (ahead int,
 	if git.IsDetached || git.CurrentBranchUpstream == "" {
 		return 0, 0, nil
 	}
-	if !git.IsDetached && (localRef == "refs/heads/"+git.Head) && remoteRef == "refs/remotes/"+git.CurrentBranchUpstream {
+	if !git.IsDetached && (localRef == "refs/heads/"+git.HeadDescription) && remoteRef == "refs/remotes/"+git.CurrentBranchUpstream {
 		return git.Ahead, git.Behind, nil
 	}
 	return 0, 0, fmt.Errorf("Unknown")
 }
 
-// State returns the current state of the repository.
-func (git DemoGit) State() RepositoryState {
+// Head returns information about the current head.
+func (git DemoGit) Head(maxTagsToSearch int) (head HeadInfo, err error) {
 	var headDescription string
 	if !git.IsDetached {
-		headDescription = git.Head
-	} else if len(git.Head) == 40 && regexp.MustCompile("^[0-9a-f]+$").MatchString(git.Head) {
-		headDescription = "(" + git.Head[0:shortSHALength] + ")"
+		headDescription = git.HeadDescription
+	} else if len(git.HeadDescription) == 40 && regexp.MustCompile("^[0-9a-f]+$").MatchString(git.HeadDescription) {
+		headDescription = "(" + git.HeadDescription[0:shortSHALength] + ")"
 	} else {
-		headDescription = "(" + git.Head + ")"
+		headDescription = "(" + git.HeadDescription + ")"
 	}
 
+	return HeadInfo{
+		Description: headDescription,
+		Detached:    git.IsDetached,
+		Hash:        git.HeadDescription,
+	}, nil
+}
+
+// State returns the current state of the repository.
+func (git DemoGit) State() RepositoryState {
 	return RepositoryState{
-		HeadDescription: headDescription,
-		IsDetached:      git.IsDetached,
-		State:           git.CurrentState,
-		Step:            git.Step,
-		Total:           git.Total,
+		State: git.CurrentState,
+		Step:  git.Step,
+		Total: git.Total,
 	}
 }
 

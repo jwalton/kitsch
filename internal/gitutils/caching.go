@@ -17,8 +17,9 @@ type caching struct {
 	ahead                int
 	behind               int
 
-	state *RepositoryState
-	stats *GitStats
+	headInfo *HeadInfo
+	state    *RepositoryState
+	stats    *GitStats
 }
 
 // NewCaching returns a new caching instance of Git.  The returned instance
@@ -74,6 +75,18 @@ func (c *caching) GetAheadBehind(localRef string, remoteRef string) (ahead int, 
 		c.behind = behind
 	}
 	return c.ahead, c.behind, nil
+}
+
+// Head returns information about the current head.
+func (c *caching) Head(maxTagsToSearch int) (head HeadInfo, err error) {
+	if c.headInfo == nil {
+		headInfo, err := c.underlying.Head(maxTagsToSearch)
+		if err != nil {
+			return HeadInfo{}, err
+		}
+		c.headInfo = &headInfo
+	}
+	return *c.headInfo, nil
 }
 
 // State returns the current state of the repository.

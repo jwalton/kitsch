@@ -20,11 +20,21 @@ type GitModule struct {
 	CommonConfig `yaml:",inline"`
 	// Type is the type of this module.
 	Type string `yaml:"type" jsonschema:",enum=git"`
+	// MaxTagsToSearch is the maximum number of tags to search when checking to
+	// see if HEAD is a tagged release.  Defaults to 200.
+	MaxTagsToSearch int `yaml:"maxTagsToSearch"`
 }
 
 type gitResult struct {
-	// State is the current state of the repo.
-	State gitutils.RepositoryState `json:"state"`
+	// State is the current state of this repo.
+	State gitutils.RepositoryStateType `yaml:"state"`
+	// Step is the current step number if we are rebasing, 0 otherwise.
+	Step string `yaml:"step"`
+	// Total is the total number of steps to complete to finish the rebase, or 0
+	// if not rebasing.
+	Total string `yaml:"total"`
+	// Head is information about the current HEAD.
+	Head gitutils.HeadInfo `json:"head"`
 	// Upstream is the name of the upstream branch (e.g. "origin/master"), or ""
 	// if there is no upstream or we are currently detached.
 	Upstream string `json:"upstream"`
@@ -35,7 +45,7 @@ type gitResult struct {
 	// Symbol is the symbol to use to indicate the current state of the repo.
 	Symbol string `json:"symbol"`
 	// AheadBehind is "ahead" if we are ahead of the upstream branch, "behind"
-	// if we are behind, "diverged" if we are both, and "" otherwise.
+	// if we are behind, "diverged" if we are both, and "upToDate" otherwise.
 	AheadBehind string `json:"aheadBehind"`
 }
 
@@ -47,19 +57,26 @@ func (mod GitModule) Execute(context *Context) ModuleResult {
 		return ModuleResult{}
 	}
 
+	head, err := git.Head(mod.MaxTagsToSearch)
+	if err != nil {
+		head.Description = "???"
+		head.Detached = true
+		head.Hash = "???"
+	}
+
 	state := git.State()
 	var ahead, behind int
 	var upstream string
 
-	if !state.IsDetached {
-		upstream = git.GetUpstream(state.HeadDescription)
+	if !head.Detached {
+		upstream = git.GetUpstream(head.Description)
 		if upstream != "" {
-			ahead, behind, _ = git.GetAheadBehind("refs/heads/"+state.HeadDescription, "refs/remotes/"+upstream)
+			ahead, behind, _ = git.GetAheadBehind("refs/heads/"+head.Description, "refs/remotes/"+upstream)
 		}
 	}
 
 	symbol := "?"
-	aheadBehind := ""
+	aheadBehind := "upToDate"
 	if upstream != "" {
 		if ahead > 0 && behind > 0 {
 			symbol = "↕"
@@ -72,11 +89,15 @@ func (mod GitModule) Execute(context *Context) ModuleResult {
 			aheadBehind = "behind"
 		} else {
 			symbol = "≡"
+			aheadBehind = "upToDate"
 		}
 	}
 
 	data := gitResult{
-		State:       state,
+		State:       state.State,
+		Step:        state.Step,
+		Total:       state.Total,
+		Head:        head,
 		Upstream:    upstream,
 		Ahead:       ahead,
 		Behind:      behind,
@@ -84,7 +105,7 @@ func (mod GitModule) Execute(context *Context) ModuleResult {
 		AheadBehind: aheadBehind,
 	}
 
-	defaultOutput := mod.renderDefault(context, symbol, state, upstream, ahead, behind)
+	defaultOutput := mod.renderDefault(context, symbol, data)
 
 	return executeModule(context, mod.CommonConfig, data, mod.Style, defaultOutput)
 }
@@ -92,29 +113,26 @@ func (mod GitModule) Execute(context *Context) ModuleResult {
 func (mod GitModule) renderDefault(
 	context *Context,
 	symbol string,
-	state gitutils.RepositoryState,
-	upstream string,
-	ahead int,
-	behind int,
+	data gitResult,
 ) string {
 	out := strings.Builder{}
 
-	out.WriteString(state.HeadDescription)
+	out.WriteString(data.Head.Description)
 
-	if behind > 0 {
-		out.WriteString(fmt.Sprintf(" ↓%d", behind))
+	if data.Behind > 0 {
+		out.WriteString(fmt.Sprintf(" ↓%d", data.Behind))
 	}
-	if ahead > 0 {
-		out.WriteString(fmt.Sprintf(" ↑%d", ahead))
+	if data.Ahead > 0 {
+		out.WriteString(fmt.Sprintf(" ↑%d", data.Ahead))
 	}
-	if behind == 0 && ahead == 0 {
+	if data.Behind == 0 && data.Ahead == 0 {
 		out.WriteString(" " + symbol)
 	}
 
-	if state.State != gitutils.StateNone {
-		out.WriteString("|" + string(state.State))
-		if state.Total != "" {
-			out.WriteString(fmt.Sprintf(" %s/%s", state.Step, state.Total))
+	if data.State != gitutils.StateNone {
+		out.WriteString("|" + string(data.State))
+		if data.Total != "" {
+			out.WriteString(fmt.Sprintf(" %s/%s", data.Step, data.Total))
 		}
 	}
 
@@ -127,7 +145,10 @@ func init() {
 		registeredModule{
 			jsonSchema: schemas.GitModuleJSONSchema,
 			factory: func(node *yaml.Node) (Module, error) {
-				module := GitModule{Type: "git"}
+				module := GitModule{
+					Type:            "git",
+					MaxTagsToSearch: 200,
+				}
 				err := node.Decode(&module)
 				return &module, err
 			},

@@ -25,7 +25,7 @@ func makeTestDirectoryModule(
 	if gitRoot != "" {
 		context.git = gitutils.DemoGit{
 			RepoRootDirectory:     "/Users/jwalton/dev/kitsch",
-			Head:                  "master",
+			HeadDescription:       "master",
 			IsDetached:            false,
 			CurrentBranchUpstream: "master",
 			CurrentState:          gitutils.StateNone,

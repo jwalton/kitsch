@@ -29,6 +29,19 @@ type gitUtils struct {
 	repoRoot string
 }
 
+// HeadInfo contains information about the current head.
+type HeadInfo struct {
+	// HeadDescription is the name of the branch we are currently on if the head
+	// is not detached.  If the head is detached, this will be the branch name
+	// if we are in the middle of a rebase or merge, the tag name if the head is
+	// at a tag, or the short hash otherwise.
+	Description string
+	// Detached is true if the head is detached.
+	Detached bool
+	// Hash is the current hash of the head.
+	Hash string
+}
+
 // Git is an interface for interacting with a git repository.
 type Git interface {
 	// RepoRoot returns the root of the git repository.
@@ -41,6 +54,8 @@ type Git interface {
 	// GetAheadBehind returns how many commits ahead and behind the given
 	// localRef is compared to remoteRef.
 	GetAheadBehind(localRef string, remoteRef string) (ahead int, behind int, err error)
+	// Head returns information about the current head.
+	Head(maxTagsToSearch int) (head HeadInfo, err error)
 	// State returns the current state of the repository.
 	State() RepositoryState
 	// Stats returns status counters for the given git repo.

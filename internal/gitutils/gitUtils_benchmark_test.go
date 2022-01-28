@@ -59,6 +59,6 @@ func BenchmarkGetTagNameForHashAnnotatedTag(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _ = git.GetTagNameForHash("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+		_, _ = git.GetTagNameForHash("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", 100)
 	}
 }

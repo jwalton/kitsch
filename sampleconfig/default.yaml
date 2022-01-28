@@ -30,7 +30,7 @@ prompt:
       modules:
         - type: git
           template: |
-            {{- $gitStyles := dict "" "$git" "ahead" "$gitAhead" "behind" "$gitBehind" "diverged" "$gitDiverged" -}}
+            {{- $gitStyles := dict "upToDate" "$git" "ahead" "$gitAhead" "behind" "$gitBehind" "diverged" "$gitDiverged" -}}
             {{- style (get $gitStyles .Data.AheadBehind) .Text -}}
         - type: git_status
       template: "{{ with .Text }}[{{ . }}]{{end}}"
