@@ -6,7 +6,6 @@ import (
 	"testing/fstest"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/cache"
 	"github.com/go-git/go-git/v5/storage/filesystem"
 	"github.com/jwalton/kitsch/internal/billyutils"
@@ -15,7 +14,7 @@ import (
 
 // testGitUtils creates a new gitUtils for unit testing.
 func testGitUtils(repoRoot string, fsys fs.FS) *gitUtils {
-	var repo *git.Repository = nil
+	var storer *filesystem.Storage
 	if fsys != nil {
 		repositoryFs, err := billyutils.FsToBilly(fsys)
 		if err != nil {
@@ -26,18 +25,14 @@ func testGitUtils(repoRoot string, fsys fs.FS) *gitUtils {
 			panic(err)
 		}
 
-		storer := filesystem.NewStorage(dotGitFs, cache.NewObjectLRUDefault())
-		repo, err = git.Open(storer, repositoryFs)
-		if err != nil {
-			repo = nil
-		}
+		storer = filesystem.NewStorage(dotGitFs, cache.NewObjectLRUDefault())
 	}
 
 	return &gitUtils{
 		pathToGit: "git",
 		fsys:      fsys,
 		repoRoot:  repoRoot,
-		repo:      repo,
+		storer:    storer,
 	}
 }
 

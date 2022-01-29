@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/go-git/go-git/v5/plumbing/storer"
 )
 
 // Head returns information about the current head.
@@ -14,7 +16,7 @@ func (g *gitUtils) Head(maxTagsToSearch int) (HeadInfo, error) {
 		return HeadInfo{}, fmt.Errorf("no git repo found")
 	}
 
-	head, err := g.repo.Head()
+	head, err := storer.ResolveReference(g.storer, plumbing.HEAD)
 	if err != nil {
 		return HeadInfo{}, err
 	}
@@ -61,7 +63,7 @@ func (g *gitUtils) Head(maxTagsToSearch int) (HeadInfo, error) {
 // the current hash.  If this is negative, we will search all refs.
 func (g *gitUtils) GetTagNameForHash(hash string, maxTagsToSearch int) (string, error) {
 	// Check lightweight tags
-	tags, err := g.repo.Tags()
+	tags, err := g.tags()
 	if err == nil {
 		count := 0
 		for ref, err := tags.Next(); err == nil && ref != nil; ref, err = tags.Next() {
@@ -91,7 +93,7 @@ func (g *gitUtils) hashMatchesTag(hash string, tagHash plumbing.Hash) bool {
 	}
 
 	// Check to see if this is an annotated tag
-	tagObj, err := g.repo.TagObject(tagHash)
+	tagObj, err := object.GetTag(g.storer, tagHash)
 	if err == nil {
 		if strings.HasPrefix(tagObj.Target.String(), hash) {
 			return true

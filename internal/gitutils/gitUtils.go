@@ -8,8 +8,10 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-billy/v5/osfs"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/cache"
+	"github.com/go-git/go-git/v5/storage/filesystem"
 	"github.com/jwalton/kitsch/internal/fileutils"
 )
 
@@ -21,8 +23,8 @@ var ErrNoGit = errors.New("Git is not installed")
 type gitUtils struct {
 	// pathToGit is the path to the git executable.
 	pathToGit string
-	// The git repository.
-	repo *git.Repository
+	// The go-git/v5 storer.
+	storer *filesystem.Storage
 	// fsys is an fs.FS instance bound to the root of the git repository.
 	fsys fs.FS
 	// RepoRoot is the root folder of the git repository.
@@ -83,14 +85,13 @@ func New(pathToGit string, folder string) Git {
 		return nil
 	}
 
-	repo, err := git.PlainOpen(gitRoot)
-	if err != nil {
-		return nil
-	}
+	dotGitPath := filepath.Join(gitRoot, ".git")
+	dotGitFs := osfs.New(dotGitPath)
+	storer := filesystem.NewStorage(dotGitFs, cache.NewObjectLRUDefault())
 
 	return &gitUtils{
 		pathToGit: pathToGit,
-		repo:      repo,
+		storer:    storer,
 		fsys:      fsys,
 		repoRoot:  gitRoot,
 	}
@@ -140,7 +141,7 @@ func (g *gitUtils) GetStashCount() (int, error) {
 }
 
 func (g *gitUtils) GetUpstream(branch string) string {
-	config, err := g.repo.Config()
+	config, err := g.storer.Config()
 	if err != nil {
 		return ""
 	}
@@ -160,12 +161,10 @@ func (g *gitUtils) GetUpstream(branch string) string {
 // GetAheadBehind returns how many commits ahead and behind the given
 // localRef is compared to remoteRef.
 func (g *gitUtils) GetAheadBehind(localRef string, remoteRef string) (ahead int, behind int, err error) {
-	s := g.repo.Storer
-
 	// If branch and compareToBranch are the same hash, we're done.
-	branchRef, err := s.Reference(plumbing.ReferenceName(localRef))
+	branchRef, err := g.storer.Reference(plumbing.ReferenceName(localRef))
 	if err == nil {
-		compareBranchRef, err := s.Reference(plumbing.ReferenceName(remoteRef))
+		compareBranchRef, err := g.storer.Reference(plumbing.ReferenceName(remoteRef))
 		if err == nil {
 			if branchRef.Hash() == compareBranchRef.Hash() {
 				return 0, 0, nil
