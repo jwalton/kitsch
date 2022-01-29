@@ -5,14 +5,12 @@ package schemas
 // GitStatusModuleJSONSchema is the JSON schema for the GitStatusModule struct.
 var GitStatusModuleJSONSchema = `{
   "type": "object",
-  "properties": {
+"properties": {
     "style": {"type": "string", "description": ""},
     "template": {"type": "string", "description": ""},
     "type": {"type": "string", "description": "Type is the type of this module.", "enum": ["git_status"]},
     "indexStyle": {"type": "string", "description": "IndexStyle is the style to use for the index status."},
     "unstagedStyle": {"type": "string", "description": "UnstagedStyle is the style to use for the unstaged file status."},
     "stashStyle": {"type": "string", "description": "StashStyle is the style to use for the stash count."}
-  },
-  "additionalProperties": false
-}`
+  }}`
 

@@ -32,13 +32,14 @@ var basicTypes = map[string]string{
 }
 
 type schemaBuilder struct {
-	pkg        *packages.Package
-	properties []string
-	required   []string
-	indent     string
+	pkg                  *packages.Package
+	properties           []string
+	required             []string
+	indent               string
+	additionalProperties bool
 }
 
-func newSchemaBuilder(filename string) (*schemaBuilder, error) {
+func newSchemaBuilder(filename string, additionalProperties bool) (*schemaBuilder, error) {
 	cfg := &packages.Config{Mode: packages.NeedName |
 		packages.NeedFiles |
 		packages.NeedSyntax |
@@ -53,12 +54,16 @@ func newSchemaBuilder(filename string) (*schemaBuilder, error) {
 		return nil, fmt.Errorf("Could not read package for %s", filename)
 	}
 
-	return &schemaBuilder{pkg: pkgs[0], indent: ""}, nil
+	return &schemaBuilder{
+		pkg:                  pkgs[0],
+		indent:               "",
+		additionalProperties: additionalProperties,
+	}, nil
 }
 
 // GenerateSchemaForStruct generates the JSON schema for a structure in a file.
-func GenerateSchemaForStruct(filename string, structName string) (string, error) {
-	builder, err := newSchemaBuilder(filename)
+func GenerateSchemaForStruct(filename string, structName string, additionalProperties bool) (string, error) {
+	builder, err := newSchemaBuilder(filename, additionalProperties)
 	if err != nil {
 		return "", err
 	}
@@ -81,15 +86,21 @@ func (builder *schemaBuilder) String() string {
 	indent := builder.indent
 
 	lf := "\n" + indent
-	result := indent + "{" + lf
-	result += `  "type": "object",` + lf
-	result += `  "properties": {` + lf
-	result += `    ` + strings.Join(builder.properties, ","+lf+`    `)
-	result += lf + "  }," + lf
-	if len(builder.required) > 0 {
-		result += `  "required": [` + quotedStrings(builder.required) + `],` + lf
+
+	parts := []string{
+		`  "type": "object"`,
+		`"properties": {` + lf + `    ` + strings.Join(builder.properties, ","+lf+`    `) + lf + `  }`,
 	}
-	result += `  "additionalProperties": false` + lf + `}`
+	if len(builder.required) > 0 {
+		parts = append(parts, `  "required": [`+quotedStrings(builder.required)+`]`)
+	}
+	if !builder.additionalProperties {
+		parts = append(parts, `  "additionalProperties": false`)
+	}
+
+	result := indent + "{" + lf
+	result += strings.Join(parts, `,`+lf)
+	result += `}`
 
 	return result
 }

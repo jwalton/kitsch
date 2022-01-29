@@ -5,7 +5,7 @@ package schemas
 // GetterModuleJSONSchema is the JSON schema for the GetterModule struct.
 var GetterModuleJSONSchema = `{
   "type": "object",
-  "properties": {
+"properties": {
     "style": {"type": "string", "description": ""},
     "template": {"type": "string", "description": ""},
     "type": {"type": "string", "description": "", "enum": ["file", "custom"]},
@@ -14,7 +14,5 @@ var GetterModuleJSONSchema = `{
     "regex": {"type": "string", "description": "Regex is a regular expression used to parse values out of the result of the getter.  If specified, then \"As\" will be ignored."},
     "cache": {"$ref": "#/definitions/CacheSettings"}
   },
-  "required": ["type"],
-  "additionalProperties": false
-}`
+  "required": ["type"]}`
 

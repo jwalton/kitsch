@@ -49,7 +49,7 @@ func main() {
 	for _, structName := range structs {
 		fmt.Println("Generating schema for " + structName)
 		// TODO: perf: If there are multiple structs in the file, we'll parse the package multiple times.
-		schema, err := gen.GenerateSchemaForStruct(sourcefile, structName)
+		schema, err := gen.GenerateSchemaForStruct(sourcefile, structName, true)
 		if err != nil {
 			panic(err)
 		}

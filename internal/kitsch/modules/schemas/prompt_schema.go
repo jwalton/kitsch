@@ -5,7 +5,7 @@ package schemas
 // PromptModuleJSONSchema is the JSON schema for the PromptModule struct.
 var PromptModuleJSONSchema = `{
   "type": "object",
-  "properties": {
+"properties": {
     "style": {"type": "string", "description": ""},
     "template": {"type": "string", "description": ""},
     "type": {"type": "string", "description": "Type is the type of this module.", "enum": ["prompt"]},
@@ -15,7 +15,5 @@ var PromptModuleJSONSchema = `{
     "vicmdPrompt": {"type": "string", "description": "ViCmdPrompt is what to display as the prompt if the shell is in vicmd mode. Defaults to \": \"."},
     "vicmdStyle": {"type": "string", "description": "VicmdStyle will be used when the shell is in vicmd mode."},
     "errorStyle": {"type": "string", "description": "ErrorStyle will be used when the previous command failed."}
-  },
-  "additionalProperties": false
-}`
+  }}`
 

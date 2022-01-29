@@ -5,20 +5,17 @@ package schemas
 // ProjectModuleJSONSchema is the JSON schema for the ProjectModule struct.
 var ProjectModuleJSONSchema = `{
   "type": "object",
-  "properties": {
+"properties": {
     "style": {"type": "string", "description": ""},
     "template": {"type": "string", "description": ""},
     "type": {"type": "string", "description": "Type is the type of this module.", "enum": ["project"]},
     "projects": {"type": "object", "description": "Projects is project-specific configuration.", "additionalProperties":     {
       "type": "object",
-      "properties": {
+    "properties": {
         "style": {"type": "string", "description": "Style is the style to apply to this project."},
         "toolSymbol": {"type": "string", "description": "ToolSymbol is the symbol to show for this project's build tool."},
         "packageManagerSymbol": {"type": "string", "description": "PackageManagerSymbol is the symbol to show for this project's package manager."}
       },
-      "additionalProperties": false
-    }}
-  },
-  "additionalProperties": false
-}`
+      "additionalProperties": false}}
+  }}`
 

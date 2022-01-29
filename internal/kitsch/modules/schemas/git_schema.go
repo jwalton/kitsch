@@ -5,12 +5,10 @@ package schemas
 // GitModuleJSONSchema is the JSON schema for the GitModule struct.
 var GitModuleJSONSchema = `{
   "type": "object",
-  "properties": {
+"properties": {
     "style": {"type": "string", "description": ""},
     "template": {"type": "string", "description": ""},
     "type": {"type": "string", "description": "Type is the type of this module.", "enum": ["git"]},
     "maxTagsToSearch": {"type": "integer", "description": "MaxTagsToSearch is the maximum number of tags to search when checking to see if HEAD is a tagged release.  Defaults to 200."}
-  },
-  "additionalProperties": false
-}`
+  }}`
 

@@ -5,10 +5,8 @@ package schemas
 // CommonConfigJSONSchema is the JSON schema for the CommonConfig struct.
 var CommonConfigJSONSchema = `{
   "type": "object",
-  "properties": {
+"properties": {
     "style": {"type": "string", "description": "Style is the style to apply to this module."},
     "template": {"type": "string", "description": "Template is a golang template to use to render the output of this module."}
-  },
-  "additionalProperties": false
-}`
+  }}`
 

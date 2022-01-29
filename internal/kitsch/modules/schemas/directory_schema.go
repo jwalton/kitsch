@@ -5,7 +5,7 @@ package schemas
 // DirectoryModuleJSONSchema is the JSON schema for the DirectoryModule struct.
 var DirectoryModuleJSONSchema = `{
   "type": "object",
-  "properties": {
+"properties": {
     "style": {"type": "string", "description": ""},
     "template": {"type": "string", "description": ""},
     "type": {"type": "string", "description": "Type is the type of this module.", "enum": ["directory"]},
@@ -15,7 +15,5 @@ var DirectoryModuleJSONSchema = `{
     "repoSymbol": {"type": "string", "description": "RepoSymbol is a string that will be added as a prefix when we truncate to a repo."},
     "truncationLength": {"type": "integer", "description": "TruncationLength is the maximum number of directories to show. If 0, truncation will be disabled."},
     "truncationSymbol": {"type": "string", "description": "TruncationSymbol will be added to the start of the string in place of any paths that were removed.  Defaults to \"…\"."}
-  },
-  "additionalProperties": false
-}`
+  }}`
 
