@@ -2,7 +2,10 @@ package modules
 
 import (
 	"testing"
+	"testing/fstest"
 
+	"github.com/MakeNowJust/heredoc"
+	"github.com/jwalton/kitsch/internal/fileutils"
 	"github.com/jwalton/kitsch/internal/kitsch/styling"
 	"github.com/stretchr/testify/assert"
 )
@@ -54,4 +57,27 @@ func TestExecuteModuleWithTemplate(t *testing.T) {
 		},
 		result,
 	)
+}
+
+func TestExecuteModuleWithConditions(t *testing.T) {
+	mod := moduleSpecFromYAML(heredoc.Doc(`
+		type: text
+		conditions:
+		  ifFiles:  ['helm']
+		text: Hello World
+	`))
+
+	context := newTestContext("jwalton")
+
+	context.Directory = fileutils.NewDirectoryTestFS("/foo/bar", fstest.MapFS{
+		"helm": &fstest.MapFile{
+			Data: []byte("blahblahblah"),
+		},
+	})
+	result := mod.Execute(context)
+	assert.Equal(t, "Hello World", result.Text)
+
+	context.Directory = fileutils.NewDirectoryTestFS("/foo/bar", fstest.MapFS{})
+	result2 := mod.Execute(context)
+	assert.Equal(t, "", result2.Text)
 }

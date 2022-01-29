@@ -29,7 +29,8 @@ var blockSchema = `{
 			    "allOf": [
 					{
 						"properties": {
-							"id": {"type": "string"}
+							"id": {"type": "string"},
+							"conditions": {"$ref": "#/definitions/Conditions"}
 						}
 					},
 					{
@@ -89,7 +90,7 @@ func (mod BlockModule) Execute(context *Context) ModuleResult {
 		)
 
 		childDurations.Start(moduleDescription)
-		result := item.Module.Execute(context)
+		result := item.Execute(context)
 		childDurations.EndWithChildren(moduleDescription, result.ChildDurations)
 
 		if len(result.Text) != 0 {
@@ -108,6 +109,7 @@ func (mod BlockModule) Execute(context *Context) ModuleResult {
 	}
 
 	result := executeModule(context, mod.CommonConfig, data, mod.Style, defaultText)
+	result.ChildDurations = childDurations
 
 	if len(resultsArray) > 0 {
 		lastChild := len(resultsArray) - 1
@@ -120,8 +122,6 @@ func (mod BlockModule) Execute(context *Context) ModuleResult {
 			BG: defaultString(result.EndStyle.BG, resultsArray[lastChild].EndStyle.BG),
 		}
 	}
-
-	result.ChildDurations = childDurations
 
 	return result
 }

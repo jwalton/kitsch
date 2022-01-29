@@ -15,7 +15,7 @@ func TestGitStatusClean(t *testing.T) {
 		styling.Registry{},
 	)
 
-	mod := moduleFromYAMLMust(heredoc.Doc(`
+	mod := moduleFromYAML(heredoc.Doc(`
 		type: git_status
 	`))
 
@@ -46,7 +46,7 @@ func TestGitStatusChanges(t *testing.T) {
 		styling.Registry{},
 	)
 
-	mod := moduleFromYAMLMust(heredoc.Doc(`
+	mod := moduleFromYAML(heredoc.Doc(`
 		type: git_status
 	`))
 
@@ -66,7 +66,7 @@ func TestGitStatusUnmerged(t *testing.T) {
 		styling.Registry{},
 	)
 
-	mod := moduleFromYAMLMust(heredoc.Doc(`
+	mod := moduleFromYAML(heredoc.Doc(`
 		type: git_status
 	`))
 

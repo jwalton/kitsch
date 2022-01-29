@@ -16,7 +16,7 @@ func TestFileModule(t *testing.T) {
 	}
 	context.Directory = fileutils.NewDirectoryTestFS(context.Globals.CWD, fsys)
 
-	mod := moduleFromYAMLMust(heredoc.Doc(`
+	mod := moduleFromYAML(heredoc.Doc(`
 		type: file
 		from: foo.json
 		as: json
@@ -35,7 +35,7 @@ func TestFileModuleRegex(t *testing.T) {
 	}
 	context.Directory = fileutils.NewDirectoryTestFS(context.Globals.CWD, fsys)
 
-	mod := moduleFromYAMLMust(heredoc.Doc(`
+	mod := moduleFromYAML(heredoc.Doc(`
 		type: file
 		from: docker.txt
 		regex: "^Docker version (.*), build .*$"
@@ -51,7 +51,7 @@ func TestFileModuleMissingFile(t *testing.T) {
 	fsys := fstest.MapFS{}
 	context.Directory = fileutils.NewDirectoryTestFS(context.Globals.CWD, fsys)
 
-	mod := moduleFromYAMLMust(heredoc.Doc(`
+	mod := moduleFromYAML(heredoc.Doc(`
 		type: file
 		from: foo.json
 		as: json

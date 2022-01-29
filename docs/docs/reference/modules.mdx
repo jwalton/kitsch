@@ -11,13 +11,18 @@ There are certain configuration items that are available on all modules:
 - `style` a the [style string](/docs/styles) to apply to the entire module output.
 - `template` is a golang template used to render the result of the module.
 
+If a module is a child of a "block" module, it can also have the following items:
+
+- `id` is an ID that uniquely identifies the module within the block. This can be used to reference a child module from within a template.
+- [`conditions`](./conditions.mdx) is a set of conditions a module must meet in order to be shown.
+
 TODO: Add documentation about templates here.
 
 ## block
 
-The "block" module is used to group a collection of modules together, and concatenate their results. By default, the block module will execute all child modules, then join together their output with " "s inbetween. Any child module that produces no output will be ignored.
+The "block" module is used to group a collection of modules together, and concatenate their results. By default, the block module will execute all child modules, then join together their output with " "s in between. Any child module that produces no output will be ignored.
 
-The "join" can be specified using a template, so you can control how child modules are joined together. The block module also allows you to combine output from multiple modules using a single template; the `.Data.Modules` object is a map where keys are the `id`s (or `type` for modules that don't specify an `id`) of child modules, and the values are the output from those modules. For example:
+`join` can be specified using a template, so you can control how child modules are joined together. The block module also allows you to combine output from multiple modules using a single template; the `.Data.Modules` object is a map where keys are the `id`s (or `type` for modules that don't specify an `id`) of child modules, and the values are the output from those modules. For example:
 
 ```yaml
 type: block
@@ -31,9 +36,11 @@ type: block
 
 would print the hostname and username, joined by a "@".
 
+Every module within a block can also specify [a `conditions` section](./conditions.mdx).  The block will ignore any modules if their conditions are not met.
+
 Configuration:
 
-- `modules` is an array of other modules to instantiate. Each module in `modules` may have an `id`, which is a string that will uniquely identify the module.
+- `modules` is an array of modules to show inside the block. Each module in `modules` may have an `id`, which is a string that will uniquely identify the module, and a [`conditions`](./conditions.mdx).
 - `join=""` is a template to use to join together modules. Note that if `template` is specified, the `join` parameter will be ignored. The join template will be passed the following parameters:
   - `Globals` are the global variables available in any template.
   - `PrevColors` is an `{FG, BG}` object containing color strings for the previous module's end style.

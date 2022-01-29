@@ -9,7 +9,7 @@ import (
 )
 
 func TestPrompt(t *testing.T) {
-	mod := moduleFromYAMLMust("{type: prompt}")
+	mod := moduleFromYAML("{type: prompt}")
 
 	context := newTestContext("jwalton")
 
@@ -28,7 +28,7 @@ func TestPrompt(t *testing.T) {
 }
 
 func TestRootPrompt(t *testing.T) {
-	mod := moduleFromYAMLMust("{type: prompt}")
+	mod := moduleFromYAML("{type: prompt}")
 
 	context := newTestContext("jwalton")
 	context.Globals.IsRoot = true
@@ -48,7 +48,7 @@ func TestRootPrompt(t *testing.T) {
 }
 
 func TestStyle(t *testing.T) {
-	mod := moduleFromYAMLMust(heredoc.Doc(`
+	mod := moduleFromYAML(heredoc.Doc(`
 		type: prompt
 		style: blue
 		rootStyle: red

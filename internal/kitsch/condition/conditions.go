@@ -3,7 +3,9 @@
 package condition
 
 import (
+	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/jwalton/kitsch/internal/fileutils"
 )
@@ -13,18 +15,20 @@ import (
 // Conditions represents a condition which can be used in configuration files to
 // specify when a module or project should be used.
 type Conditions struct {
-	// IfAncestorFiles is a list of files to search for in the project folder,
+	// IfAncestorFiles is a list of files to search for in the current folder,
 	// or another folder higher up in the directory structure.
 	IfAncestorFiles []string `yaml:"ifAncestorFiles"`
-	// IfFiles is a list of files to search for in the project folder.
+	// IfFiles is a list of files to search for in the current folder.
 	IfFiles []string `yaml:"ifFiles"`
-	// IfExtensions is a list of extensions to search for in the project folder.
+	// IfExtensions is a list of extensions to search for in the current folder.
 	IfExtensions []string `yaml:"ifExtensions"`
 	// IfOS is a list of operating systems.  If the current GOOS is not in
-	// the list, then this project type is not matched.
+	// the list, then the Conditions are not met, even if other conditions would
+	// be satisfied.
 	IfOS []string `yaml:"ifOS"`
 	// IfNotOS is a list of operating systems.  If the current GOOS is in
-	// the list, then this project type is not matched.
+	// the list, then the Conditions are not met, even if other conditions would
+	// be satisfied.
 	IfNotOS []string `yaml:"ifNotOS"`
 }
 
@@ -51,8 +55,16 @@ func (conditions Conditions) Matches(directory fileutils.Directory) bool {
 	}
 
 	for _, file := range conditions.IfFiles {
-		if directory.HasFile(file) {
-			return true
+		if filepath.IsAbs(file) || strings.HasPrefix(file, "..") {
+			// If the file is an absolute path or a parent directory,
+			// we need to go directly to the OS to see if it exists.
+			if fileutils.FileExists(filepath.Join(directory.Path(), file)) {
+				return true
+			}
+		} else {
+			if directory.HasFile(file) {
+				return true
+			}
 		}
 	}
 

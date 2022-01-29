@@ -32,7 +32,7 @@ func makeTestDirectoryModule(
 		}
 	}
 
-	mod := moduleFromYAMLMust(yaml).(*DirectoryModule)
+	mod := moduleFromYAML(yaml).(*DirectoryModule)
 	mod.getVolumeName = func(path string) string {
 		if pathSeparator != "/" && len(path) >= 3 && path[1] == ':' && string(path[2]) == pathSeparator {
 			return path[:2]

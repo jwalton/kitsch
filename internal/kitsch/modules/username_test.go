@@ -9,7 +9,7 @@ import (
 )
 
 func TestUsernameNoSSH(t *testing.T) {
-	mod := moduleFromYAMLMust(heredoc.Doc(`
+	mod := moduleFromYAML(heredoc.Doc(`
 		type: username
 	`))
 	context := newTestContext("jwalton")
@@ -19,7 +19,7 @@ func TestUsernameNoSSH(t *testing.T) {
 }
 
 func TestUsernameNoSSHWithTemplate(t *testing.T) {
-	mod := moduleFromYAMLMust(heredoc.Doc(`
+	mod := moduleFromYAML(heredoc.Doc(`
 		type: username
 		template: '{{ .Data.Username }}'
 	`))
@@ -30,7 +30,7 @@ func TestUsernameNoSSHWithTemplate(t *testing.T) {
 }
 
 func TestUsername(t *testing.T) {
-	mod := moduleFromYAMLMust(heredoc.Doc(`
+	mod := moduleFromYAML(heredoc.Doc(`
 		type: username
 	`))
 

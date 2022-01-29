@@ -36,6 +36,8 @@ prompt:
       template: "{{ with .Text }}[{{ . }}]{{end}}"
     - type: kubernetes
       style: $fg
+      conditions:
+        ifFiles: ['helm', 'charts']
     - type: command_duration
       style: brightYellow
     - type: jobs

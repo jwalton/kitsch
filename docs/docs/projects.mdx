@@ -32,7 +32,7 @@ projectTypes:
 Here we can see that each item in the the "projectTypes" list contains:
 
 - `name` - the name of this project type.
-- `conditions` - conditions for when to activate this project.
+- `conditions` - [conditions](./reference/conditions.mdx) for when to activate this project.
 - `toolSymbol` - the default symbol to show for this project type in the "project" module.
 - `toolVersion` - the "getter" to use to get the version of the tool.
 - `pacakgeManagerSymbol` (optional) - the name of the package manager used (e.g. "npm").
@@ -50,15 +50,13 @@ projectTypes:
 
 ## Conditions
 
-The following conditions may be specified on a project type:
+Each project has a `conditions` section which specifies under what conditions the project is selected.  See the [conditions reference](./reference/conditions.mdx) for a full list of conditions, but the ones most commonly used in a project are:
 
 - `ifFiles: ["file1", "file2", "file3"]` - The project type will be selected if one or more of the files is present in the current folder.
 - `ifAncestorFiles: ["file1", "file2", "file3"]` - The project type will be selected if one or more of the files is present in the current folder, or any folder higher up the directory hierarchy.
 - `ifExtensions: ["js", "jsx", "ts", "tsx"]` - The project type will be selected if one or more of the extensions is present in the current folder.
-- `ifOS: ["darwin", "linux"] - The project will only be shown if the OS is one of the OSs listed.
-- `ifNotOS: ["windows"]` - The project will only be shown if the OS is not one of the listed OSs.
 
-Note that "ifFile", "ifAncestorFile", and "ifExtension" are "or"ed together - if any one of these conditions is met, the project type will be selected. The "OS" conditions are "and" conditions - if they are not met, the project will not be selected, even if files or extensions match. Also, note that most of the built-in project types do not use "ifAncestorFile" - this means if you're in a subdirectory of a node project, then the "project" module won't show that you're in a node project. This is considered an "acceptable performance tradeoff" - most of the time developers spend time in the root of a project anyways, since that's where you'd run `make`, or `npm test`, or `go build`, or whatever command you'd use to build your project. You can also easily override this, for example adding this to "config.yaml" will fix this for node projects:
+Note that "ifFile", "ifAncestorFile", and "ifExtension" are "or"ed together - if any one of these conditions is met, the project type will be selected. The built-in project types do not use "ifAncestorFile". Take for example a node.js project - we detect this kind of project by looking for a "package.json" file in the current folder, but not in ancestor folders.  This means that if you're in a subdirectory of a node project, then the "project" module won't show that you're in a node project. This is considered an "acceptable performance tradeoff" - most of the time developers spend time in the root of a project anyways, since that's where you'd run `make`, `npm test`, `go build`, or whatever command you'd use to build or run your project. If you prefer to look in parent folders, you can easily override this behavior.  For example adding this to "config.yaml" will fix this for node projects:
 
 ```yaml
 projectTypes:

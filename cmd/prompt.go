@@ -94,7 +94,9 @@ var promptCmd = &cobra.Command{
 		}
 		performance.End("Context setup")
 
-		// Execute the prompt
+		// Execute the prompt.
+		// Note that we call directly into the module here instead of into the ModuleSpec.
+		// We want to ignore any conditions on the prompt object.
 		result := configuration.Prompt.Module.Execute(&context)
 
 		performance.EndWithChildren("Prompt", result.ChildDurations)

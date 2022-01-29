@@ -5,14 +5,10 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/jwalton/kitsch/internal/kitsch/condition"
 	"github.com/jwalton/kitsch/internal/kitsch/modules/schemas"
 	"gopkg.in/yaml.v3"
 )
-
-type typedYamlNode struct {
-	Type string `yaml:"type"`
-	ID   string `yaml:"id"`
-}
 
 type registeredModule struct {
 	factory    func(node *yaml.Node) (Module, error)
@@ -43,6 +39,8 @@ func registerModule(name string, mod registeredModule) {
 type ModuleSpec struct {
 	// ID is a unique ID for this module (within a list of modules), if provided.
 	ID string
+	// Conditions is a set of conditions that must be met for this module to be executed.
+	Conditions condition.Conditions
 	// Type is the type of this module.
 	Type string
 	// Module is the actual module.
@@ -58,6 +56,13 @@ type ModuleSpec struct {
 	YamlNode *yaml.Node
 }
 
+// moduleSpecData is a subset of ModuleSpec that we read from the yanl.Node.
+type moduleSpecData struct {
+	Conditions condition.Conditions `yaml:"conditions"`
+	ID         string               `yaml:"id"`
+	Type       string               `yaml:"type"`
+}
+
 // UnmarshalYAML unmarshals a YAML node into a module.
 func (item *ModuleSpec) UnmarshalYAML(node *yaml.Node) error {
 	if node == nil {
@@ -70,14 +75,14 @@ func (item *ModuleSpec) UnmarshalYAML(node *yaml.Node) error {
 	}
 
 	// Figure out the type of this node.
-	moduleType, id, err := getTypeAndID(node)
+	data, err := getModuleSpecCommon(node)
 	if err != nil {
 		return err
 	}
 
-	mod, ok := registeredModules[moduleType]
+	mod, ok := registeredModules[data.Type]
 	if !ok {
-		return fmt.Errorf("unknown type %s (%d:%d)", moduleType, node.Line, node.Column)
+		return fmt.Errorf("unknown type %s (%d:%d)", data.Type, node.Line, node.Column)
 	}
 
 	module, err := mod.factory(node)
@@ -85,13 +90,15 @@ func (item *ModuleSpec) UnmarshalYAML(node *yaml.Node) error {
 		return err
 	}
 
+	id := data.ID
 	if id != "" {
 		item.ID = id
 	} else {
-		item.ID = moduleType
+		item.ID = data.Type
 	}
 
-	item.Type = moduleType
+	item.Type = data.Type
+	item.Conditions = data.Conditions
 	item.Line = node.Line
 	item.Column = node.Column
 	item.Module = module
@@ -104,20 +111,32 @@ func (item *ModuleSpec) UnmarshalYAML(node *yaml.Node) error {
 	return nil
 }
 
-// getTypeAndID retrieves the "type" and "id" key of a YAML mapping node.
-func getTypeAndID(node *yaml.Node) (string, string, error) {
+// Execute executes this module.
+func (item ModuleSpec) Execute(context *Context) ModuleResult {
+	if !item.Conditions.IsEmpty() && !item.Conditions.Matches(context.Directory) {
+		// If the item has conditions, and they don't match, return an empty result.
+		return ModuleResult{}
+	}
+	return item.Module.Execute(context)
+}
+
+// getModuleSpecCommon retrieves the "type" and "id" key of a YAML mapping node.
+func getModuleSpecCommon(node *yaml.Node) (moduleSpecData, error) {
+	var t moduleSpecData
 	if node == nil {
-		return "", "", fmt.Errorf("cannot get type of empty node")
+		return t, fmt.Errorf("cannot get type of empty node")
 	}
 
-	var t typedYamlNode
 	err := node.Decode(&t)
+	if err != nil {
+		return t, err
+	}
 
 	if t.Type == "" {
-		return "", "", fmt.Errorf("object is missing type (%d:%d)", node.Line, node.Column)
+		return t, fmt.Errorf("object is missing type (%d:%d)", node.Line, node.Column)
 	}
 
-	return t.Type, t.ID, err
+	return t, nil
 }
 
 // JSONSchemaForModule returns the JSON schema for a module.

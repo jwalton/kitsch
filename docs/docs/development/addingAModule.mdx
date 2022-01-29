@@ -134,11 +134,11 @@ func init() {
 
 ## Testing
 
-There are several helper functions available to unit test your module.  `moduleFromYAMLMust()` can be used to create an instance of your module from a YAML config block.  `newTestContext(username)` can be used to generate a demo context with sensible default values and environment variables.  A simple test for KubernetesModule might look something like:
+There are several helper functions available to unit test your module.  `moduleFromYAML()` can be used to create an instance of your module from a YAML config block.  `newTestContext(username)` can be used to generate a demo context with sensible default values and environment variables.  A simple test for KubernetesModule might look something like:
 
 ```go
 func TestKubernetes(t *testing.T) {
-	mod := moduleFromYAMLMust(heredoc.Doc(`
+	mod := moduleFromYAML(heredoc.Doc(`
 		type: kubernetes
 	`)).(KubernetesModule)
 

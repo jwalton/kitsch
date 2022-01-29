@@ -1,0 +1,17 @@
+---
+sidebar_position: 4
+---
+
+# Conditions
+
+Conditions can be set on any module or any project definition.  On project definitions they are used to decide if the current folder is of the specified project type.  On a module, they are used to prevent the module from running unless the conditions are met.
+
+The following is a list of valid conditions:
+
+- `ifFiles: ["file1", "file2", "file3"]` - The condition is met if one or more of the files is present in the current folder.
+- `ifAncestorFiles: ["file1", "file2", "file3"]` - The condition is met if one or more of the files is present in the current folder, or any folder higher up the directory hierarchy.
+- `ifExtensions: ["js", "jsx", "ts", "tsx"]` - The condition is met if one or more of the extensions is present in the current folder.
+- `ifOS: ["darwin", "linux"] - The condition is met only if the OS is one of the OSs listed.
+- `ifNotOS: ["windows"]` - The conditions is met only be shown if the OS is not one of the listed OSs.
+
+Note that "ifFile", "ifAncestorFile", and "ifExtension" are "or"ed together - if any one of these conditions is met, the "conditions" block is considered met.. The "OS" conditions are "and" conditions - if they are not met, the conditions will not be fulfilled, even if files or extensions match.

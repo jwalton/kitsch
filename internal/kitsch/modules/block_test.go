@@ -8,7 +8,7 @@ import (
 )
 
 func TestBlock(t *testing.T) {
-	blockMod := moduleFromYAMLMust(heredoc.Doc(`
+	blockMod := moduleFromYAML(heredoc.Doc(`
 		type: block
 		modules:
 		- type: text
@@ -22,7 +22,7 @@ func TestBlock(t *testing.T) {
 }
 
 func TestBlockStyles(t *testing.T) {
-	blockMod := moduleFromYAMLMust(heredoc.Doc(`
+	blockMod := moduleFromYAML(heredoc.Doc(`
 		type: block
 		join: " {{.PrevColors.FG}}{{.NextColors.FG}} "
 		modules:
@@ -40,8 +40,7 @@ func TestBlockStyles(t *testing.T) {
 
 // TestBlockSubIDs verifies that the results of child modules can be indexed by ID.
 func TestBlockSubIDs(t *testing.T) {
-
-	blockMod := moduleFromYAMLMust(heredoc.Doc(`
+	blockMod := moduleFromYAML(heredoc.Doc(`
 		type: block
 		template: "{{ with .Data.Modules.a }}{{ .Data.Username }}{{ end }}"
 		modules:

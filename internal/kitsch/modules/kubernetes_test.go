@@ -8,7 +8,7 @@ import (
 )
 
 func TestKubernetes(t *testing.T) {
-	mod := moduleFromYAMLMust(heredoc.Doc(`
+	mod := moduleFromYAML(heredoc.Doc(`
 		type: kubernetes
 	`)).(KubernetesModule)
 
@@ -37,7 +37,7 @@ func TestKubernetes(t *testing.T) {
 }
 
 func TestKubernetesWithAlias(t *testing.T) {
-	mod := moduleFromYAMLMust(heredoc.Doc(`
+	mod := moduleFromYAML(heredoc.Doc(`
 		type: kubernetes
 		contextAliases:
 		  prod: production
@@ -68,7 +68,7 @@ func TestKubernetesWithAlias(t *testing.T) {
 }
 
 func TestKubernetesWithNamespace(t *testing.T) {
-	mod := moduleFromYAMLMust(heredoc.Doc(`
+	mod := moduleFromYAML(heredoc.Doc(`
 		type: kubernetes
 	`)).(KubernetesModule)
 
@@ -98,7 +98,7 @@ func TestKubernetesWithNamespace(t *testing.T) {
 }
 
 func TestKubernetesWithDefaultNamespace(t *testing.T) {
-	mod := moduleFromYAMLMust(heredoc.Doc(`
+	mod := moduleFromYAML(heredoc.Doc(`
 		type: kubernetes
 	`)).(KubernetesModule)
 
@@ -128,7 +128,7 @@ func TestKubernetesWithDefaultNamespace(t *testing.T) {
 }
 
 func TestKubernetesWithMissingContext(t *testing.T) {
-	mod := moduleFromYAMLMust(heredoc.Doc(`
+	mod := moduleFromYAML(heredoc.Doc(`
 		type: kubernetes
 	`)).(KubernetesModule)
 
@@ -152,7 +152,7 @@ func TestKubernetesWithMissingContext(t *testing.T) {
 }
 
 func TestKubernetesWithCorruptConfigFile(t *testing.T) {
-	mod := moduleFromYAMLMust(heredoc.Doc(`
+	mod := moduleFromYAML(heredoc.Doc(`
 		type: kubernetes
 	`)).(KubernetesModule)
 
