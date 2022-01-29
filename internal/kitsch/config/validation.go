@@ -3,13 +3,16 @@ package config
 import (
 	"bytes"
 	"encoding/json"
+	"strings"
 
 	// For baseSchema.
 	_ "embed"
 	"text/template"
 
+	"github.com/jwalton/kitsch/internal/kitsch/condition"
 	"github.com/jwalton/kitsch/internal/kitsch/getters"
 	"github.com/jwalton/kitsch/internal/kitsch/modules"
+	"github.com/jwalton/kitsch/internal/kitsch/projects"
 	"github.com/jwalton/kitsch/internal/kitsch/schemautils"
 )
 
@@ -20,7 +23,12 @@ var schemaTemplate string
 func JSONSchema() string {
 	tmpl := template.Must(template.New("jsonSchema").Parse(schemaTemplate))
 
-	defs := getters.JSONSchemaDefinitions + ",\n" + modules.JSONSchemaDefinitions()
+	defs := strings.Join([]string{
+		getters.JSONSchemaDefinitions,
+		condition.JSONSchemaDefinitions,
+		projects.JSONSchemaDefinitions,
+		modules.JSONSchemaDefinitions(),
+	}, ",\n")
 
 	data := map[string]string{
 		"Definitions": defs,

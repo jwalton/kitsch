@@ -103,7 +103,7 @@ func (item *AsType) UnmarshalYAML(node *yaml.Node) error {
 	return nil
 }
 
-//go:generate go run ../genSchema/main.go --private CacheSettings
+//go:generate go run ../genSchema/main.go --private CacheSettings CustomGetter
 
 // CacheSettings are cache settings for a CustomGetter.
 type CacheSettings struct {
@@ -118,12 +118,12 @@ type CacheSettings struct {
 // CustomGetter is a getter that can be configured from a YAML file.
 type CustomGetter struct {
 	// Type is the type of getter.  One of "custom", "file", "ancestorFile", or "env".
-	Type GetterType `yaml:"type"`
+	Type GetterType `yaml:"type" jsonschema:",enum=custom:file:ancestorFile:env"`
 	// From is the source to get data from.  The meaning of "From" is based on
 	// the provided "Type".
 	From string `yaml:"from"`
 	// As will determine how to interpret the result of the getter.  One of "text", "json", "toml", or "yaml".
-	As AsType `yaml:"as"`
+	As AsType `yaml:"as" jsonschema:",enum=text:json:toml:yaml"`
 	// ValueTemplate is a golang template used to parse values out of the result of
 	// the getter.
 	ValueTemplate string `yaml:"valueTemplate"`
@@ -131,7 +131,7 @@ type CustomGetter struct {
 	// the getter.  If specified, then "As" and "Template" will be ignored.
 	Regex string `yaml:"regex"`
 	// Cache specified cache settings for this getter.
-	Cache CacheSettings `yaml:"cache"`
+	Cache CacheSettings `yaml:"cache" jsonschema:",ref"`
 }
 
 // GetValue gets the value for this getter.  The return value will be either a string,
@@ -351,4 +351,4 @@ func (getter CustomGetter) applyTemplate(as AsType, bytesValue []byte) (interfac
 }
 
 //JSONSchemaDefinitions is a string containing JSON schema definitions for objects in the getters package.
-var JSONSchemaDefinitions = "\"CacheSettings\": " + cacheSettingsJSONSchema
+var JSONSchemaDefinitions = "\"CacheSettings\": " + cacheSettingsJSONSchema + ",\n\"CustomGetter\": " + customGetterJSONSchema

@@ -120,7 +120,11 @@ func (builder *schemaBuilder) addStruct(structName string, s *types.Struct) erro
 
 		var fieldSchema string
 		if tags.ref {
-			fieldSchema = fmt.Sprintf(`{"$ref": "#/definitions/%s"}`, getBareTypeName(field.Type()))
+			refStruct := tags.refStruct
+			if refStruct == "" {
+				refStruct = getBareTypeName(field.Type())
+			}
+			fieldSchema = fmt.Sprintf(`{"$ref": "#/definitions/%s"}`, refStruct)
 		} else {
 			description := builder.getDescriptionForField(structName, field.Name())
 			description = strings.TrimSuffix(description, "\n")
@@ -178,6 +182,13 @@ func (builder *schemaBuilder) generateSchemaForType(
 			}
 			fieldSchema = fmt.Sprintf(`{"type": "object", "description": "%s", "additionalProperties": %s}`, description, valueSchema)
 		case *types.Array:
+			valueType := v.Elem()
+			valueSchema, err := builder.generateSchemaForType(valueType, schemaTags{}, "")
+			if err != nil {
+				return "", err
+			}
+			fieldSchema = fmt.Sprintf(`{"type": "array", "description": "%s", "items": %s}`, description, valueSchema)
+		case *types.Slice:
 			valueType := v.Elem()
 			valueSchema, err := builder.generateSchemaForType(valueType, schemaTags{}, "")
 			if err != nil {

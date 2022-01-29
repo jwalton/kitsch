@@ -22,15 +22,26 @@ Struct tags for each field are parsed out in `parseStructTags()`.
 
 ### ref
 
-This can be used on a child struct to use `{ "$ref": "#/definitions/[StructName]" }`instead of inlining the struct.  Note that it is up to you to make sure such a definition exists.
+This can be used on a child struct to use `{ "$ref": "#/definitions/[StructName]" }` instead of inlining the struct.  Note that it is up to you to make sure such a definition exists.
+
+Example:
+
+```go
+type MyModule struct {
+    Conditions condition.Conditions `yaml:"conditions" jsonschema:",ref"`
+    Other      other.Foo            `yaml:"conditions" jsonschema:",ref=FooType"`
+}
+```
 
 ### required
 
 Marks a field as required in the JSON Schema.
 
+```go
 type MyModule struct {
-    Content `yaml:"content" jsonschema:",required"`
+    Content string `yaml:"content" jsonschema:",required"`
 }
+```
 
 ### enum
 

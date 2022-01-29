@@ -23,7 +23,7 @@
         "projectTypes": {
             "type": "array",
             "items": {
-                "type": "object"
+                "$ref": "#/definitions/ProjectType"
             }
         },
         "prompt": {

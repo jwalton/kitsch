@@ -8,6 +8,8 @@ import (
 	"github.com/jwalton/kitsch/internal/fileutils"
 )
 
+//go:generate go run ../genSchema/main.go --private Conditions
+
 // Conditions represents a condition which can be used in configuration files to
 // specify when a module or project should be used.
 type Conditions struct {
@@ -87,3 +89,6 @@ func contains(list []string, value string) bool {
 	}
 	return false
 }
+
+//JSONSchemaDefinitions is a string containing JSON schema definitions for objects in the conditions package.
+var JSONSchemaDefinitions = "\"Conditions\": " + conditionsJSONSchema

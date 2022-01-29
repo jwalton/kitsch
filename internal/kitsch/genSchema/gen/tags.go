@@ -9,6 +9,7 @@ import (
 type schemaTags struct {
 	required  bool
 	ref       bool
+	refStruct string
 	enum      []string
 	fieldName string
 }
@@ -28,12 +29,15 @@ func parseStructTags(fieldName string, fieldTags string) schemaTags {
 			for _, option := range tag.Options {
 				if option == "required" {
 					result.required = true
-				} else if strings.HasPrefix(option, "ref") {
+				} else if option == "ref" {
 					result.ref = true
+				} else if strings.HasPrefix(option, "ref=") {
+					result.ref = true
+					result.refStruct = option[4:]
 				} else if strings.HasPrefix(option, "enum=") {
 					result.enum = strings.Split(option[5:], ":")
 				} else {
-					panic("Unknown option: " + option)
+					panic("Unknown jsonschema tag: " + option)
 				}
 			}
 		}

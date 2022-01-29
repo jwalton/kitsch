@@ -99,3 +99,6 @@ func ResolveProjectType(
 
 	return nil
 }
+
+//JSONSchemaDefinitions is a string containing JSON schema definitions for objects in the projects package.
+var JSONSchemaDefinitions = "\"ProjectType\": " + projectTypeJSONSchema
