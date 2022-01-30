@@ -66,7 +66,6 @@ function runKitschPrompt(exmaple: string): string {
 
   // Run kitsch
   try {
-    console.log(`Running ${KITSCH}...`);
     const output = execCombined(
       `${KITSCH} prompt ${options} --demo "${demoFile.name}"`,
       { env: { ...process.env, FORCE_COLOR: "3" } }

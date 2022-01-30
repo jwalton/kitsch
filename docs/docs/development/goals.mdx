@@ -1,0 +1,22 @@
+---
+sidebar_position: 1
+---
+
+# Goals
+
+Some overall development goals. Kitsch Prompt should be:
+
+- crazy fast - no one wants to wait around for a prompt to render
+- secure
+
+## Crazy Fast
+
+Kitsch Prompt should be fast. We compare very favorably to starship prompt in terms of speed.
+
+We do a lot of tricks to try to optimize performance. For example, when in a node.js project, we show the current version of node and npm. Running `node --version` takes about 23 milliseconds, which isn't too bad, but `npm --version` takes over 300ms, which is way too long. So first, we don't even fetch the npm version unless it's actually going to be shown. Second, we cache the result: we stat the `npm` command - if the command is in the same location, and is the same size, and the modified date of the file hasn't change, then `npm --version` is probably not going to return something different, so we store all these values in a file-based cache. Then the next time we need the npm version, we can just stat the file, make sure nothing has changed, and show the version from the cache.
+
+One place we are currently a bit slow is our handling of git repos.  We run the `git` executable in a child process for some operations, like getting counts of modified files, or getting the ahead/behind counts.  It would be nice to move these to a pure GO implementation, or see if we can cache these results.  (Although even so, we still compare very favorably to starship).
+
+## Secure
+
+A feature that might be nice to add is the ability to customize the prompt for a specific folder, perhaps by reading a ".kitsch.yaml" file from the current folder. When we do such a thing, we need to be very careful - it would be very easy to clone a git repo, cd into the folder, and run a custom prompt that does something malicious. Users should never be afraid to "cd" into a folder.
