@@ -10,20 +10,23 @@ import (
 // TextModule prints some text.
 //
 type TextModule struct {
-	CommonConfig `yaml:",inline"`
 	// Type is the type of this module.
-	Type string `yaml:"type" jsonschema:",enum=text"`
+	Type string `yaml:"type" jsonschema:",required,enum=text"`
 	// Text is the text to print.
 	Text string `yaml:"text" jsonschema:",required"`
 }
 
+type textModuleResult struct {
+	// Text is the text to print. This is a mirror of the Text field in the configuration.
+	Text string
+}
+
 // Execute the module.
 func (mod TextModule) Execute(context *Context) ModuleResult {
-	data := map[string]interface{}{
-		"Text": mod.Text,
+	return ModuleResult{
+		DefaultText: mod.Text,
+		Data:        textModuleResult{Text: mod.Text},
 	}
-
-	return executeModule(context, mod.CommonConfig, data, mod.Style, mod.Text)
 }
 
 func init() {

@@ -5,11 +5,10 @@ package schemas
 // CmdDurationModuleJSONSchema is the JSON schema for the CmdDurationModule struct.
 var CmdDurationModuleJSONSchema = `{
   "type": "object",
-"properties": {
-    "style": {"type": "string", "description": ""},
-    "template": {"type": "string", "description": ""},
+  "properties": {
     "type": {"type": "string", "description": "Type is the type of this module.", "enum": ["command_duration"]},
     "minTime": {"type": "integer", "description": "MinTime is the minimum duration to show, in milliseconds."},
     "showMilliseconds": {"type": "boolean", "description": "ShowMilliseconds - If true, show milliseconds."}
-  }}`
+  },
+  "required": ["type"]}`
 

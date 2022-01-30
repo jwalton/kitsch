@@ -26,9 +26,8 @@ func getVolumeName(path string) string {
 // • Path - The directory to show.
 //
 type DirectoryModule struct {
-	CommonConfig `yaml:",inline"`
 	// Type is the type of this module.
-	Type string `yaml:"type" jsonschema:",enum=directory"`
+	Type string `yaml:"type" jsonschema:",required,enum=directory"`
 	// HomeSymbol is the symbol to replace the home directory with in directory
 	// strings.  Defaults to "~".
 	HomeSymbol string `yaml:"homeSymbol"`
@@ -139,7 +138,7 @@ func (mod DirectoryModule) Execute(context *Context) ModuleResult {
 		text += data.ReadOnlySymbol
 	}
 
-	return executeModule(context, mod.CommonConfig, data, mod.Style, text)
+	return ModuleResult{DefaultText: text, Data: data}
 }
 
 func init() {

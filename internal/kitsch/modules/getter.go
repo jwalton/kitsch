@@ -21,8 +21,8 @@ import (
 // '{"foo": "bar"}', then `.Data.foo` would be "bar".
 //
 type GetterModule struct {
-	CommonConfig `yaml:",inline"`
-	Type         getters.GetterType `yaml:"type" jsonschema:",required,enum=file:custom"`
+	// Type is the type of this module.
+	Type getters.GetterType `yaml:"type" jsonschema:",required,enum=file:custom"`
 
 	// From is the source to get data from.  The meaning of "From" is based on
 	// the provided "Type".
@@ -66,7 +66,7 @@ func (mod GetterModule) Execute(context *Context) ModuleResult {
 		text = ""
 	}
 
-	return executeModule(context, mod.CommonConfig, value, mod.Style, text)
+	return ModuleResult{DefaultText: text, Data: value}
 }
 
 func init() {

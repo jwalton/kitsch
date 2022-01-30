@@ -5,14 +5,14 @@ import (
 )
 
 func moduleFromYAML(data string) Module {
-	return moduleSpecFromYAML(data).Module
+	return moduleWrapperFromYAML(data).Module
 }
 
-func moduleSpecFromYAML(data string) ModuleSpec {
-	var moduleSpec ModuleSpec
-	err := yaml.Unmarshal([]byte(data), &moduleSpec)
+func moduleWrapperFromYAML(data string) ModuleWrapper {
+	var moduleWrapper ModuleWrapper
+	err := yaml.Unmarshal([]byte(data), &moduleWrapper)
 	if err != nil {
 		panic(err)
 	}
-	return moduleSpec
+	return moduleWrapper
 }

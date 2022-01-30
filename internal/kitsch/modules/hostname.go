@@ -13,9 +13,8 @@ import (
 // by default, hidden unless the session is an SSH session.
 //
 type HostnameModule struct {
-	CommonConfig `yaml:",inline"`
 	// Type is the type of this module.
-	Type string `yaml:"type" jsonschema:",enum=hostname"`
+	Type string `yaml:"type" jsonschema:",required,enum=hostname"`
 	// ShowAlways will cause the hostname to always be shown.  If false (the default),
 	// then the hostname will only be shown if the current session is an SSH session.
 	ShowAlways bool `yaml:"showAlways"`
@@ -43,18 +42,19 @@ func (mod HostnameModule) Execute(context *Context) ModuleResult {
 		hostname = strings.Split(hostname, ".")[0]
 	}
 
-	data := hostnameResult{
-		Hostname: hostname,
-		IsSSH:    isSSH,
-		Show:     show,
-	}
-
 	defaultText := ""
 	if show {
 		defaultText = hostname
 	}
 
-	return executeModule(context, mod.CommonConfig, data, mod.Style, defaultText)
+	return ModuleResult{
+		DefaultText: defaultText,
+		Data: hostnameResult{
+			Hostname: hostname,
+			IsSSH:    isSSH,
+			Show:     show,
+		},
+	}
 }
 
 func init() {

@@ -5,10 +5,9 @@ package schemas
 // TimeModuleJSONSchema is the JSON schema for the TimeModule struct.
 var TimeModuleJSONSchema = `{
   "type": "object",
-"properties": {
-    "style": {"type": "string", "description": ""},
-    "template": {"type": "string", "description": ""},
+  "properties": {
     "type": {"type": "string", "description": "Type is the type of this module.", "enum": ["time"]},
     "layout": {"type": "string", "description": "Layout is the format to show the time in.  Layout defines the format by showing how the reference time, defined to be      Mon Jan 2 15:04:05 -0700 MST 2006  (See https://golang.org/pkg/time/#Time.Format for more details.)  Defaults to \"15:04:05\"."}
-  }}`
+  },
+  "required": ["type"]}`
 

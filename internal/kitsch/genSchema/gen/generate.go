@@ -89,7 +89,7 @@ func (builder *schemaBuilder) String() string {
 
 	parts := []string{
 		`  "type": "object"`,
-		`"properties": {` + lf + `    ` + strings.Join(builder.properties, ","+lf+`    `) + lf + `  }`,
+		`  "properties": {` + lf + `    ` + strings.Join(builder.properties, ","+lf+`    `) + lf + `  }`,
 	}
 	if len(builder.required) > 0 {
 		parts = append(parts, `  "required": [`+quotedStrings(builder.required)+`]`)

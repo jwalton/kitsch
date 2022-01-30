@@ -17,9 +17,8 @@ import (
 // https://github.com/lyze/posh-git-sh and https://github.com/dahlbyk/posh-git.
 //
 type GitModule struct {
-	CommonConfig `yaml:",inline"`
 	// Type is the type of this module.
-	Type string `yaml:"type" jsonschema:",enum=git"`
+	Type string `yaml:"type" jsonschema:",required,enum=git"`
 	// MaxTagsToSearch is the maximum number of tags to search when checking to
 	// see if HEAD is a tagged release.  Defaults to 200.
 	MaxTagsToSearch int `yaml:"maxTagsToSearch"`
@@ -54,7 +53,7 @@ func (mod GitModule) Execute(context *Context) ModuleResult {
 	git := context.Git()
 
 	if git == nil {
-		return ModuleResult{}
+		return ModuleResult{DefaultText: "", Data: gitResult{}}
 	}
 
 	head, err := git.Head(mod.MaxTagsToSearch)
@@ -105,9 +104,10 @@ func (mod GitModule) Execute(context *Context) ModuleResult {
 		AheadBehind: aheadBehind,
 	}
 
-	defaultOutput := mod.renderDefault(context, symbol, data)
-
-	return executeModule(context, mod.CommonConfig, data, mod.Style, defaultOutput)
+	return ModuleResult{
+		DefaultText: mod.renderDefault(context, symbol, data),
+		Data:        data,
+	}
 }
 
 func (mod GitModule) renderDefault(

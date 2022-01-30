@@ -5,6 +5,10 @@
     "description": "A kitsch prompt configuration file",
     "type": "object",
     "definitions": {
+      "ModulesList": {
+        "type": "array",
+         "items": { "$ref": "#/definitions/module" }
+      },
       {{ .Definitions }}
     },
     "properties": {

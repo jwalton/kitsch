@@ -48,9 +48,8 @@ func (p projectModuleData) PackageVersion() string {
 // ProjectModule prints information about the project in the current folder.
 //
 type ProjectModule struct {
-	CommonConfig `yaml:",inline"`
 	// Type is the type of this module.
-	Type string `yaml:"type" jsonschema:",enum=project"`
+	Type string `yaml:"type" jsonschema:",required,enum=project"`
 	// Projects is project-specific configuration.
 	Projects map[string]ProjectConfig `yaml:"projects"`
 }
@@ -88,7 +87,7 @@ func (mod ProjectModule) Execute(context *Context) ModuleResult {
 		text = "via " + projectStyle.Apply(data.ToolSymbol+"@"+data.ToolVersion)
 	}
 
-	return executeModule(context, mod.CommonConfig, data, mod.Style, text)
+	return ModuleResult{DefaultText: text, Data: data}
 }
 
 func init() {

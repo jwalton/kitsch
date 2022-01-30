@@ -13,9 +13,8 @@ const defaultTimeFormat = "15:04:05"
 
 // TimeModule shows the current time.
 type TimeModule struct {
-	CommonConfig `yaml:",inline"`
 	// Type is the type of this module.
-	Type string `yaml:"type" jsonschema:",enum=time"`
+	Type string `yaml:"type" jsonschema:",required,enum=time"`
 	// Layout is the format to show the time in.  Layout defines the format by
 	// showing how the reference time, defined to be
 	//
@@ -48,13 +47,14 @@ func (mod TimeModule) Execute(context *Context) ModuleResult {
 
 	formattedTime := now.Format(layout)
 
-	data := timeModuleData{
-		Time:    now,
-		Unix:    now.Unix(),
-		TimeStr: formattedTime,
+	return ModuleResult{
+		DefaultText: formattedTime,
+		Data: timeModuleData{
+			Time:    now,
+			Unix:    now.Unix(),
+			TimeStr: formattedTime,
+		},
 	}
-
-	return executeModule(context, mod.CommonConfig, data, mod.Style, formattedTime)
 }
 
 func init() {

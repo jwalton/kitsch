@@ -4,51 +4,46 @@ import (
 	"testing"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/jwalton/kitsch/internal/kitsch/styling"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestPrompt(t *testing.T) {
-	mod := moduleFromYAML("{type: prompt}")
+	mod := moduleWrapperFromYAML("{type: prompt}")
 
 	context := newTestContext("jwalton")
 
 	result := mod.Execute(context)
 
-	assert.Equal(t, ModuleResult{
+	assert.Equal(t, ModuleWrapperResult{
 		Text: "$ ",
 		Data: promptModuleData{
 			PromptString: "$ ",
 			PromptStyle:  "",
 			ViCmdMode:    false,
 		},
-		StartStyle: styling.CharacterColors{},
-		EndStyle:   styling.CharacterColors{},
 	}, result)
 }
 
 func TestRootPrompt(t *testing.T) {
-	mod := moduleFromYAML("{type: prompt}")
+	mod := moduleWrapperFromYAML("{type: prompt}")
 
 	context := newTestContext("jwalton")
 	context.Globals.IsRoot = true
 
 	result := mod.Execute(context)
 
-	assert.Equal(t, ModuleResult{
+	assert.Equal(t, ModuleWrapperResult{
 		Text: "# ",
 		Data: promptModuleData{
 			PromptString: "# ",
 			PromptStyle:  "",
 			ViCmdMode:    false,
 		},
-		StartStyle: styling.CharacterColors{},
-		EndStyle:   styling.CharacterColors{},
 	}, result)
 }
 
 func TestStyle(t *testing.T) {
-	mod := moduleFromYAML(heredoc.Doc(`
+	mod := moduleWrapperFromYAML(heredoc.Doc(`
 		type: prompt
 		style: blue
 		rootStyle: red

@@ -13,9 +13,8 @@ import (
 
 // KubernetesModule lets us know what Kubernetes context we are currently in.
 type KubernetesModule struct {
-	CommonConfig `yaml:",inline"`
 	// Type is the type of this module.
-	Type string `yaml:"type" jsonschema:",enum=kubernetes"`
+	Type string `yaml:"type" jsonschema:",required,enum=kubernetes"`
 	// Symbol is a symbol to show if a Kubernetes context is detected.  Defaults to "☸ "
 	Symbol string `yaml:"symbol"`
 	// ContextAliases is a map where keys are context names and values are the
@@ -119,7 +118,7 @@ func (mod KubernetesModule) Execute(context *Context) ModuleResult {
 		}
 	}
 
-	return executeModule(context, mod.CommonConfig, data, mod.Style, text)
+	return ModuleResult{DefaultText: text, Data: data}
 }
 
 func init() {

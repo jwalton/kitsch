@@ -12,9 +12,8 @@ import (
 // The prompt module displays a "$", or a "#" if the current user is root.
 //
 type PromptModule struct {
-	CommonConfig `yaml:",inline"`
 	// Type is the type of this module.
-	Type string `yaml:"type" jsonschema:",enum=prompt"`
+	Type string `yaml:"type" jsonschema:",required,enum=prompt"`
 	// Prompt is what to display as the prompt.  Defaults to "$ ".
 	Prompt string `yaml:"prompt"`
 	// RootPrompt is what to display as the prompt if the current user is root.  Defaults to "# ".
@@ -49,26 +48,27 @@ func (mod PromptModule) Execute(context *Context) ModuleResult {
 
 	if viCmdMode {
 		text = mod.VicmdPrompt
-		style = defaultString(mod.VicmdStyle, mod.Style)
+		style = mod.VicmdStyle
 	} else if !context.Globals.IsRoot {
 		text = mod.Prompt
-		style = mod.Style
 	} else {
 		text = mod.RootPrompt
-		style = defaultString(mod.RootStyle, mod.Style)
+		style = mod.RootStyle
 	}
 
 	if context.Globals.Status != 0 {
-		style = defaultString(mod.ErrorStyle, mod.Style)
+		style = mod.ErrorStyle
 	}
 
-	data := promptModuleData{
-		PromptString: text,
-		PromptStyle:  style,
-		ViCmdMode:    viCmdMode,
+	return ModuleResult{
+		DefaultText:   text,
+		StyleOverride: style,
+		Data: promptModuleData{
+			PromptString: text,
+			PromptStyle:  style,
+			ViCmdMode:    viCmdMode,
+		},
 	}
-
-	return executeModule(context, mod.CommonConfig, data, style, text)
 }
 
 func init() {

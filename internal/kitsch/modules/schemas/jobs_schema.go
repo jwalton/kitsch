@@ -5,12 +5,11 @@ package schemas
 // JobsModuleJSONSchema is the JSON schema for the JobsModule struct.
 var JobsModuleJSONSchema = `{
   "type": "object",
-"properties": {
-    "style": {"type": "string", "description": ""},
-    "template": {"type": "string", "description": ""},
+  "properties": {
     "type": {"type": "string", "description": "Type is the type of this module.", "enum": ["jobs"]},
     "symbol": {"type": "string", "description": "Symbol is the symbol to show when there are background jobs.  Defaults to \"+\"."},
     "symbolThreshold": {"type": "integer", "description": "SymbolThreshold is the threshold for showing the symbol.  Defaults to 1."},
     "countThreshold": {"type": "integer", "description": "CountThreshold is the threshold for showing the count of background jobs.  Defaults to 2."}
-  }}`
+  },
+  "required": ["type"]}`
 

@@ -5,7 +5,7 @@ package condition
 // conditionsJSONSchema is the JSON schema for the Conditions struct.
 var conditionsJSONSchema = `{
   "type": "object",
-"properties": {
+  "properties": {
     "ifAncestorFiles": {"type": "array", "description": "IfAncestorFiles is a list of files to search for in the current folder, or another folder higher up in the directory structure.", "items": {"type": "string", "description": ""}},
     "ifFiles": {"type": "array", "description": "IfFiles is a list of files to search for in the current folder.", "items": {"type": "string", "description": ""}},
     "ifExtensions": {"type": "array", "description": "IfExtensions is a list of extensions to search for in the current folder.", "items": {"type": "string", "description": ""}},

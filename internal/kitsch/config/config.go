@@ -28,7 +28,7 @@ type Config struct {
 	// ProjectTypes are used when detecting the project type of the current folder.
 	ProjectsTypes []projects.ProjectType `yaml:"projectTypes"`
 	// Prompt is the module to use to display the prompt.
-	Prompt modules.ModuleSpec
+	Prompt modules.ModuleWrapper
 }
 
 // LoadFromYaml loads the configuration file from a YAML file.

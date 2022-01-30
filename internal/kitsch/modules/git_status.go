@@ -18,9 +18,8 @@ import (
 // https://github.com/lyze/posh-git-sh and https://github.com/dahlbyk/posh-git.
 //
 type GitStatusModule struct {
-	CommonConfig `yaml:",inline"`
 	// Type is the type of this module.
-	Type string `yaml:"type" jsonschema:",enum=git_status"`
+	Type string `yaml:"type" jsonschema:",required,enum=git_status"`
 	// IndexStyle is the style to use for the index status.
 	IndexStyle string `yaml:"indexStyle"`
 	// UnstagedStyle is the style to use for the unstaged file status.
@@ -47,7 +46,7 @@ func (mod GitStatusModule) Execute(context *Context) ModuleResult {
 	git := context.Git()
 
 	if git == nil {
-		return executeModule(context, mod.CommonConfig, gitStatusModuleResult{}, mod.Style, "")
+		return ModuleResult{DefaultText: "", Data: gitStatusModuleResult{}}
 	}
 
 	stats, _ := git.Stats()
@@ -57,16 +56,15 @@ func (mod GitStatusModule) Execute(context *Context) ModuleResult {
 		log.Warn("Error getting stash count: ", err)
 	}
 
-	data := gitStatusModuleResult{
-		Index:      stats.Index,
-		Unstaged:   stats.Unstaged,
-		Unmerged:   stats.Unmerged,
-		StashCount: stashCount,
+	return ModuleResult{
+		DefaultText: mod.renderDefault(context, stats, stashCount),
+		Data: gitStatusModuleResult{
+			Index:      stats.Index,
+			Unstaged:   stats.Unstaged,
+			Unmerged:   stats.Unmerged,
+			StashCount: stashCount,
+		},
 	}
-
-	defaultOutput := mod.renderDefault(context, stats, stashCount)
-
-	return executeModule(context, mod.CommonConfig, data, mod.Style, defaultOutput)
 }
 
 func (mod GitStatusModule) renderDefault(

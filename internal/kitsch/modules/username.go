@@ -26,9 +26,8 @@ import (
 // • Show - True if we should show the username module, false otherwise.
 //
 type UsernameModule struct {
-	CommonConfig `yaml:",inline"`
 	// Type is the type of this module.
-	Type string `yaml:"type" jsonschema:",enum=username"`
+	Type string `yaml:"type" jsonschema:",required,enum=username"`
 	// ShowAlways will cause the username to always be shown.  If false (the default),
 	// then the username will only be shown if the user is root, or the current
 	// session is an SSH session.
@@ -78,7 +77,7 @@ func (mod UsernameModule) Execute(context *Context) ModuleResult {
 	}
 
 	defaultText := ""
-	style := mod.Style
+	style := ""
 
 	if show {
 		defaultText = data.Username()
@@ -87,7 +86,11 @@ func (mod UsernameModule) Execute(context *Context) ModuleResult {
 		}
 	}
 
-	return executeModule(context, mod.CommonConfig, data, style, defaultText)
+	return ModuleResult{
+		DefaultText:   defaultText,
+		StyleOverride: style,
+		Data:          data,
+	}
 }
 
 func init() {

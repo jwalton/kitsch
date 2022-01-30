@@ -54,7 +54,7 @@ func TestDirectory(t *testing.T) {
 			ReadOnly:       false,
 			ReadOnlySymbol: "🔒",
 		},
-		Text: "/tmp/test",
+		DefaultText: "/tmp/test",
 	}, result)
 }
 
@@ -73,48 +73,48 @@ func TestReadOnlyDirectory(t *testing.T) {
 			ReadOnly:       true,
 			ReadOnlySymbol: "🔒",
 		},
-		Text: "/tmp/test🔒",
+		DefaultText: "/tmp/test🔒",
 	}, result)
 }
 
 func TestRootDirectory(t *testing.T) {
 	context, mod := makeTestDirectoryModule("/", "/", "", "{type: directory}")
-	assert.Equal(t, "/", mod.Execute(context).Text)
+	assert.Equal(t, "/", mod.Execute(context).DefaultText)
 }
 
 func TestRootDirectoryWindows(t *testing.T) {
 	context, mod := makeTestDirectoryModule("\\", "D:\\", "", "{type: directory}")
-	assert.Equal(t, "D:\\", mod.Execute(context).Text)
+	assert.Equal(t, "D:\\", mod.Execute(context).DefaultText)
 }
 
 func TestHomeDirectory(t *testing.T) {
 	context, mod := makeTestDirectoryModule("/", "/Users/jwalton", "", "{type: directory}")
 	context.Globals.CWD = context.Globals.Home
-	assert.Equal(t, "~", mod.Execute(context).Text)
+	assert.Equal(t, "~", mod.Execute(context).DefaultText)
 
 	context.Globals.CWD = context.Globals.Home + "/foo"
-	assert.Equal(t, "~/foo", mod.Execute(context).Text)
+	assert.Equal(t, "~/foo", mod.Execute(context).DefaultText)
 
 	context.Globals.CWD = context.Globals.Home + "/foo/bar/baz"
-	assert.Equal(t, "~/foo/bar/baz", mod.Execute(context).Text)
+	assert.Equal(t, "~/foo/bar/baz", mod.Execute(context).DefaultText)
 
 	context.Globals.CWD = context.Globals.Home + "/foo/bar/baz/qux"
-	assert.Equal(t, "…/bar/baz/qux", mod.Execute(context).Text)
+	assert.Equal(t, "…/bar/baz/qux", mod.Execute(context).DefaultText)
 }
 
 func TestHomeDirectoryWindows(t *testing.T) {
 	context, mod := makeTestDirectoryModule("\\", "C:\\Users\\jwalton", "", "{type: directory}")
 	context.Globals.Home = "C:\\Users\\jwalton"
-	assert.Equal(t, "~", mod.Execute(context).Text)
+	assert.Equal(t, "~", mod.Execute(context).DefaultText)
 
 	context.Globals.CWD = context.Globals.Home + "\\foo"
-	assert.Equal(t, "~\\foo", mod.Execute(context).Text)
+	assert.Equal(t, "~\\foo", mod.Execute(context).DefaultText)
 
 	context.Globals.CWD = context.Globals.Home + "\\foo\\bar\\baz"
-	assert.Equal(t, "~\\foo\\bar\\baz", mod.Execute(context).Text)
+	assert.Equal(t, "~\\foo\\bar\\baz", mod.Execute(context).DefaultText)
 
 	context.Globals.CWD = context.Globals.Home + "\\foo\\bar\\baz\\qux"
-	assert.Equal(t, "…\\bar\\baz\\qux", mod.Execute(context).Text)
+	assert.Equal(t, "…\\bar\\baz\\qux", mod.Execute(context).DefaultText)
 }
 
 func TestDirectoryTruncate(t *testing.T) {
@@ -125,7 +125,7 @@ func TestDirectoryTruncate(t *testing.T) {
 		`),
 	)
 
-	assert.Equal(t, "…/bar/baz/qux", mod.Execute(context).Text)
+	assert.Equal(t, "…/bar/baz/qux", mod.Execute(context).DefaultText)
 }
 
 func TestDirectoryTruncateWindows(t *testing.T) {
@@ -136,13 +136,13 @@ func TestDirectoryTruncateWindows(t *testing.T) {
 		`),
 	)
 
-	assert.Equal(t, "C:\\…\\bar\\baz\\qux", mod.Execute(context).Text)
+	assert.Equal(t, "C:\\…\\bar\\baz\\qux", mod.Execute(context).DefaultText)
 
 	context.Globals.CWD = "C:\\tmp\\foo\\bar\\baz"
-	assert.Equal(t, "C:\\…\\foo\\bar\\baz", mod.Execute(context).Text)
+	assert.Equal(t, "C:\\…\\foo\\bar\\baz", mod.Execute(context).DefaultText)
 
 	context.Globals.CWD = "C:\\tmp\\foo\\bar"
-	assert.Equal(t, "C:\\tmp\\foo\\bar", mod.Execute(context).Text)
+	assert.Equal(t, "C:\\tmp\\foo\\bar", mod.Execute(context).DefaultText)
 }
 
 func TestDirectoryTruncateToGitRepo(t *testing.T) {
@@ -152,16 +152,16 @@ func TestDirectoryTruncateToGitRepo(t *testing.T) {
 			truncationLength: 3
 		`),
 	)
-	assert.Equal(t, "kitsch", mod.Execute(context).Text)
+	assert.Equal(t, "kitsch", mod.Execute(context).DefaultText)
 
 	context.Globals.CWD = "/Users/jwalton/dev/kitsch/src"
-	assert.Equal(t, "kitsch/src", mod.Execute(context).Text)
+	assert.Equal(t, "kitsch/src", mod.Execute(context).DefaultText)
 
 	context.Globals.CWD = "/Users/jwalton/dev/kitsch/src/foo/bar/baz/qux"
-	assert.Equal(t, "kitsch/…/bar/baz/qux", mod.Execute(context).Text)
+	assert.Equal(t, "kitsch/…/bar/baz/qux", mod.Execute(context).DefaultText)
 
 	mod.RepoSymbol = "?"
-	assert.Equal(t, "?kitsch/…/bar/baz/qux", mod.Execute(context).Text)
+	assert.Equal(t, "?kitsch/…/bar/baz/qux", mod.Execute(context).DefaultText)
 
 	context, mod = makeTestDirectoryModule("/", "/Users/jwalton/dev/kitsch", "/Users/jwalton/dev/kitsch",
 		heredoc.Doc(`
@@ -171,10 +171,10 @@ func TestDirectoryTruncateToGitRepo(t *testing.T) {
 		`),
 	)
 	context.Globals.CWD = "/Users/jwalton/dev/kitsch/src"
-	assert.Equal(t, "~/dev/kitsch/src", mod.Execute(context).Text)
+	assert.Equal(t, "~/dev/kitsch/src", mod.Execute(context).DefaultText)
 
 	context.Globals.CWD = "/Users/jwalton/work/dev/kitsch/src"
-	assert.Equal(t, "…/dev/kitsch/src", mod.Execute(context).Text)
+	assert.Equal(t, "…/dev/kitsch/src", mod.Execute(context).DefaultText)
 
 }
 
@@ -184,5 +184,5 @@ func TestWindowLogicalCWD(t *testing.T) {
 
 	context.Globals.logicalCWD = "Env:\\"
 
-	assert.Equal(t, "Env:\\", mod.Execute(context).Text)
+	assert.Equal(t, "Env:\\", mod.Execute(context).DefaultText)
 }

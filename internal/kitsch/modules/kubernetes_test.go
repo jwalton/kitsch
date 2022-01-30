@@ -33,7 +33,7 @@ func TestKubernetes(t *testing.T) {
 	}
 
 	assert.Equal(t, expectedData, result.Data)
-	assert.Equal(t, "☸ prod", result.Text)
+	assert.Equal(t, "☸ prod", result.DefaultText)
 }
 
 func TestKubernetesWithAlias(t *testing.T) {
@@ -64,7 +64,7 @@ func TestKubernetesWithAlias(t *testing.T) {
 	}
 
 	assert.Equal(t, expectedData, result.Data)
-	assert.Equal(t, "☸ production", result.Text)
+	assert.Equal(t, "☸ production", result.DefaultText)
 }
 
 func TestKubernetesWithNamespace(t *testing.T) {
@@ -94,7 +94,7 @@ func TestKubernetesWithNamespace(t *testing.T) {
 	}
 
 	assert.Equal(t, expectedData, result.Data)
-	assert.Equal(t, "☸ prod", result.Text)
+	assert.Equal(t, "☸ prod", result.DefaultText)
 }
 
 func TestKubernetesWithDefaultNamespace(t *testing.T) {
@@ -124,7 +124,7 @@ func TestKubernetesWithDefaultNamespace(t *testing.T) {
 	}
 
 	assert.Equal(t, expectedData, result.Data)
-	assert.Equal(t, "☸ prod", result.Text)
+	assert.Equal(t, "☸ prod", result.DefaultText)
 }
 
 func TestKubernetesWithMissingContext(t *testing.T) {
@@ -148,7 +148,7 @@ func TestKubernetesWithMissingContext(t *testing.T) {
 	}
 
 	assert.Equal(t, expectedData, result.Data)
-	assert.Equal(t, "☸ prod", result.Text)
+	assert.Equal(t, "☸ prod", result.DefaultText)
 }
 
 func TestKubernetesWithCorruptConfigFile(t *testing.T) {
@@ -168,5 +168,5 @@ func TestKubernetesWithCorruptConfigFile(t *testing.T) {
 	}
 
 	assert.Equal(t, expectedData, result.Data)
-	assert.Equal(t, "", result.Text)
+	assert.Equal(t, "", result.DefaultText)
 }

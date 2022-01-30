@@ -10,21 +10,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestExecuteModule(t *testing.T) {
-	data := map[string]interface{}{}
+func TestModuleWrapperExecute(t *testing.T) {
+	module := moduleWrapperFromYAML(heredoc.Doc(`
+		type: text
+		text: "test"
+	`))
 
-	result := executeModule(
-		newTestContext("jwalton"),
-		CommonConfig{},
-		data,
-		"",
-		"test",
-	)
+	result := module.Execute(newTestContext("jwalton"))
 
 	assert.Equal(t,
-		ModuleResult{
+		ModuleWrapperResult{
 			Text:       "test",
-			Data:       data,
+			Data:       textModuleResult{Text: "test"},
 			StartStyle: styling.CharacterColors{},
 			EndStyle:   styling.CharacterColors{},
 		},
@@ -32,26 +29,20 @@ func TestExecuteModule(t *testing.T) {
 	)
 }
 
-func TestExecuteModuleWithTemplate(t *testing.T) {
-	data := map[string]interface{}{
-		"Text": "Text Text",
-	}
-	moduleStyle := ""
+func TestExecuteModuleWrapperWithTemplate(t *testing.T) {
 
-	result := executeModule(
-		newTestContext("jwalton"),
-		CommonConfig{
-			Template: "--{{.Data.Text}}--",
-		},
-		data,
-		moduleStyle,
-		"test",
-	)
+	module := moduleWrapperFromYAML(heredoc.Doc(`
+		type: text
+		text: "Text Text"
+		template: "--{{.Data.Text}}--"
+	`))
+
+	result := module.Execute(newTestContext("jwalton"))
 
 	assert.Equal(t,
-		ModuleResult{
+		ModuleWrapperResult{
 			Text:       "--Text Text--",
-			Data:       data,
+			Data:       textModuleResult{Text: "Text Text"},
 			StartStyle: styling.CharacterColors{},
 			EndStyle:   styling.CharacterColors{},
 		},
@@ -60,7 +51,7 @@ func TestExecuteModuleWithTemplate(t *testing.T) {
 }
 
 func TestExecuteModuleWithConditions(t *testing.T) {
-	mod := moduleSpecFromYAML(heredoc.Doc(`
+	mod := moduleWrapperFromYAML(heredoc.Doc(`
 		type: text
 		conditions:
 		  ifFiles:  ['helm']

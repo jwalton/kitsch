@@ -5,7 +5,7 @@ package projects
 // projectTypeJSONSchema is the JSON schema for the ProjectType struct.
 var projectTypeJSONSchema = `{
   "type": "object",
-"properties": {
+  "properties": {
     "name": {"type": "string", "description": "Name is the name of this project type."},
     "conditions": {"$ref": "#/definitions/Conditions"},
     "toolSymbol": {"type": "string", "description": "ToolSymbol is the default symbol to use for this project type."},

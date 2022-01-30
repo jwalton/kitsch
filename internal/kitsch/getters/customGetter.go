@@ -118,7 +118,7 @@ type CacheSettings struct {
 // CustomGetter is a getter that can be configured from a YAML file.
 type CustomGetter struct {
 	// Type is the type of getter.  One of "custom", "file", "ancestorFile", or "env".
-	Type GetterType `yaml:"type" jsonschema:",enum=custom:file:ancestorFile:env"`
+	Type GetterType `yaml:"type" jsonschema:",required,enum=custom:file:ancestorFile:env"`
 	// From is the source to get data from.  The meaning of "From" is based on
 	// the provided "Type".
 	From string `yaml:"from"`

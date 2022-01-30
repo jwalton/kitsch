@@ -5,11 +5,10 @@ package schemas
 // UsernameModuleJSONSchema is the JSON schema for the UsernameModule struct.
 var UsernameModuleJSONSchema = `{
   "type": "object",
-"properties": {
-    "style": {"type": "string", "description": ""},
-    "template": {"type": "string", "description": ""},
+  "properties": {
     "type": {"type": "string", "description": "Type is the type of this module.", "enum": ["username"]},
     "showAlways": {"type": "boolean", "description": "ShowAlways will cause the username to always be shown.  If false (the default), then the username will only be shown if the user is root, or the current session is an SSH session."},
     "rootStyle": {"type": "string", "description": "RootStyle will be used in place of ` + "`" + `Style` + "`" + ` if the current user is root. If this style is empty, will fall back to ` + "`" + `Style` + "`" + `."}
-  }}`
+  },
+  "required": ["type"]}`
 

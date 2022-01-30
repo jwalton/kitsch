@@ -5,10 +5,9 @@ package schemas
 // HostnameModuleJSONSchema is the JSON schema for the HostnameModule struct.
 var HostnameModuleJSONSchema = `{
   "type": "object",
-"properties": {
-    "style": {"type": "string", "description": ""},
-    "template": {"type": "string", "description": ""},
+  "properties": {
     "type": {"type": "string", "description": "Type is the type of this module.", "enum": ["hostname"]},
     "showAlways": {"type": "boolean", "description": "ShowAlways will cause the hostname to always be shown.  If false (the default), then the hostname will only be shown if the current session is an SSH session."}
-  }}`
+  },
+  "required": ["type"]}`
 

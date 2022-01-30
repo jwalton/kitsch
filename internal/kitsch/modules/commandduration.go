@@ -19,9 +19,8 @@ import (
 //   Defaults to 2000ms.
 //
 type CmdDurationModule struct {
-	CommonConfig `yaml:",inline"`
 	// Type is the type of this module.
-	Type string `yaml:"type" jsonschema:",enum=command_duration"`
+	Type string `yaml:"type" jsonschema:",required,enum=command_duration"`
 	// MinTime is the minimum duration to show, in milliseconds.
 	MinTime int64 `yaml:"minTime"`
 	// ShowMilliseconds - If true, show milliseconds.
@@ -49,7 +48,7 @@ func (mod CmdDurationModule) Execute(context *Context) ModuleResult {
 		PrettyDuration: durationStr,
 	}
 
-	return executeModule(context, mod.CommonConfig, data, mod.Style, durationStr)
+	return ModuleResult{DefaultText: durationStr, Data: data}
 }
 
 func (mod CmdDurationModule) formatDuration(timeInMs int64) string {
@@ -65,15 +64,14 @@ func (mod CmdDurationModule) formatDuration(timeInMs int64) string {
 
 // Validate validates this module.
 func (mod CmdDurationModule) Validate(context *Context, prefix string) {
-	mod.CommonConfig.validate(context, prefix)
 	if mod.MinTime < 0 {
 		log.Warn(fmt.Sprintf("%s: Invalid minTime: %d", prefix, mod.MinTime))
 	}
 
-	testTemplate(context, prefix, mod.Template, map[string]interface{}{
-		"Zero duration": cmdDurationModuleResult{Duration: 0, PrettyDuration: ""},
-		"With duration": cmdDurationModuleResult{Duration: 20, PrettyDuration: "20s"},
-	})
+	// testTemplate(context, prefix, mod.Template, map[string]interface{}{
+	// 	"Zero duration": cmdDurationModuleResult{Duration: 0, PrettyDuration: ""},
+	// 	"With duration": cmdDurationModuleResult{Duration: 20, PrettyDuration: "20s"},
+	// })
 }
 
 func init() {

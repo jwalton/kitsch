@@ -16,9 +16,8 @@ import (
 // shown.
 //
 type JobsModule struct {
-	CommonConfig `yaml:",inline"`
 	// Type is the type of this module.
-	Type string `yaml:"type" jsonschema:",enum=jobs"`
+	Type string `yaml:"type" jsonschema:",required,enum=jobs"`
 	// Symbol is the symbol to show when there are background jobs.  Defaults to "+".
 	Symbol string `yaml:"symbol"`
 	// SymbolThreshold is the threshold for showing the symbol.  Defaults to 1.
@@ -42,12 +41,6 @@ func (mod JobsModule) Execute(context *Context) ModuleResult {
 	showSymbol := jobs >= mod.SymbolThreshold
 	showCount := jobs >= mod.CountThreshold
 
-	data := jobsModuleData{
-		Jobs:       jobs,
-		ShowSymbol: showSymbol,
-		ShowCount:  showCount,
-	}
-
 	defaultText := ""
 
 	if showSymbol {
@@ -57,7 +50,14 @@ func (mod JobsModule) Execute(context *Context) ModuleResult {
 		defaultText += fmt.Sprintf("%d", jobs)
 	}
 
-	return executeModule(context, mod.CommonConfig, data, mod.Style, defaultText)
+	return ModuleResult{
+		DefaultText: defaultText,
+		Data: jobsModuleData{
+			Jobs:       jobs,
+			ShowSymbol: showSymbol,
+			ShowCount:  showCount,
+		},
+	}
 }
 
 func init() {

@@ -40,7 +40,7 @@ func TestProject(t *testing.T) {
 		},
 	}
 
-	mod := moduleFromYAML(heredoc.Doc(`
+	mod := moduleWrapperFromYAML(heredoc.Doc(`
 		type: project
 		template: "{{ .Data.ToolVersion }} / {{ .Data.PackageManagerVersion }} / {{ .Data.PackageVersion }}"
 	`))

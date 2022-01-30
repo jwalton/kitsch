@@ -5,10 +5,8 @@ package schemas
 // GetterModuleJSONSchema is the JSON schema for the GetterModule struct.
 var GetterModuleJSONSchema = `{
   "type": "object",
-"properties": {
-    "style": {"type": "string", "description": ""},
-    "template": {"type": "string", "description": ""},
-    "type": {"type": "string", "description": "", "enum": ["file", "custom"]},
+  "properties": {
+    "type": {"type": "string", "description": "Type is the type of this module.", "enum": ["file", "custom"]},
     "from": {"type": "string", "description": "From is the source to get data from.  The meaning of \"From\" is based on the provided \"Type\"."},
     "as": {"type": "string", "description": "As will determine how to interpret the result of the command.  One of \"text\", \"json\", \"toml\", or \"yaml\".", "enum": ["text", "json", "toml", "yaml"]},
     "regex": {"type": "string", "description": "Regex is a regular expression used to parse values out of the result of the getter.  If specified, then \"As\" will be ignored."},
