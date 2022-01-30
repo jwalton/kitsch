@@ -119,6 +119,82 @@ var DefaultProjectTypes = []ProjectType{
 		},
 	},
 	{
+		Name: "python3",
+		Conditions: condition.Conditions{
+			IfFiles:      []string{"requirements.txt", "Pipfile", "pyproject.toml"},
+			IfExtensions: []string{"py"},
+		},
+		ToolSymbol: "python",
+		ToolVersion: getters.CustomGetter{
+			Type:  getters.TypeCustom,
+			From:  "python3 --version",
+			Regex: `^Python (\d+\.\d+\.\d+)`,
+			Cache: getters.CacheSettings{Enabled: true},
+		},
+	},
+	{
+		Name: "python",
+		Conditions: condition.Conditions{
+			IfFiles:      []string{"requirements.txt", "Pipfile", "pyproject.toml"},
+			IfExtensions: []string{"py"},
+		},
+		ToolSymbol: "python",
+		ToolVersion: getters.CustomGetter{
+			Type:  getters.TypeCustom,
+			From:  "python --version",
+			Regex: `^Python (\d+\.\d+\.\d+)`,
+			Cache: getters.CacheSettings{Enabled: true},
+		},
+	},
+	{
+		Name: "python2",
+		Conditions: condition.Conditions{
+			IfFiles:      []string{"requirements.txt", "Pipfile", "pyproject.toml"},
+			IfExtensions: []string{"py"},
+		},
+		ToolSymbol: "python2",
+		ToolVersion: getters.CustomGetter{
+			Type:  getters.TypeCustom,
+			From:  "python2 --version",
+			Regex: `^Python (\d+\.\d+\.\d+)`,
+			Cache: getters.CacheSettings{Enabled: true},
+		},
+	},
+	{
+		Name: "php",
+		Conditions: condition.Conditions{
+			IfFiles:      []string{"composer.json", ".php-version"},
+			IfExtensions: []string{"php"},
+		},
+		ToolSymbol: "php",
+		ToolVersion: getters.CustomGetter{
+			Type:  getters.TypeCustom,
+			From:  "php --version",
+			Regex: `^PHP (\d+\.\d+\.\d+)`,
+			Cache: getters.CacheSettings{Enabled: true},
+		},
+	},
+	{
+		Name: "ruby",
+		Conditions: condition.Conditions{
+			IfFiles:      []string{"Gemfile", ".ruby-version"},
+			IfExtensions: []string{"rb"},
+		},
+		ToolSymbol: "ruby",
+		ToolVersion: getters.CustomGetter{
+			Type:  getters.TypeCustom,
+			From:  "ruby --version",
+			Regex: `^ruby (\d+\.\d+\.[0-9a-zA-Z]+)`,
+			Cache: getters.CacheSettings{Enabled: true},
+		},
+		PackageManagerSymbol: "gem",
+		PackageManagerVersion: getters.CustomGetter{
+			Type:  getters.TypeCustom,
+			From:  "gem --version",
+			Cache: getters.CacheSettings{Enabled: true},
+		},
+	},
+	{
 		Name: "helm",
 		Conditions: condition.Conditions{
 			IfFiles: []string{"Chart.yaml"},
