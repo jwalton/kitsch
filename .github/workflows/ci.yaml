@@ -2,49 +2,51 @@ name: Build
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
     tags:
       - "*"
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: 1.17
-    - name: golangci-lint
-      uses: golangci/golangci-lint-action@v2
-      with:
-        version: v1.29
-    - name: golint
-      uses: Jerome1337/golint-action@v1.0.2
-    - name: Install deps
-      run: go install golang.org/x/tools/cmd/stringer
-    - name: Generate
-      run: go generate ./...
-    - name: Test
-      run: go test ./...
-    - name: Run GoReleaser (snapshot)
-      if: "!startsWith(github.ref, 'refs/tags/')"
-      uses: goreleaser/goreleaser-action@v2
-      with:
-        version: latest
-        args: release --rm-dist --snapshot
-    - name: Run GoReleaser
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: goreleaser/goreleaser-action@v2
-      with:
-        version: latest
-        args: release --rm-dist
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Deploy docs
-      if: startsWith(github.ref, 'refs/tags/')
-      run: curl -X POST "${KITSCH_CLOUDFLARE_PAGES_DEPLOY_HOOK}"
-      env:
-        KITSCH_CLOUDFLARE_PAGES_DEPLOY_HOOK: ${{ secrets.KITSCH_CLOUDFLARE_PAGES_DEPLOY_HOOK }}
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.29
+      - name: golint
+        uses: Jerome1337/golint-action@v1.0.2
+      - name: Install deps
+        run: go install golang.org/x/tools/cmd/stringer
+      - name: Generate
+        run: go generate ./...
+      - name: Test
+        run: go test ./...
+      - name: Run GoReleaser (snapshot)
+        if: "!startsWith(github.ref, 'refs/tags/')"
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          version: latest
+          args: release --rm-dist --snapshot
+      - name: Run GoReleaser
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          version: latest
+          args: release --rm-dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Deploy docs
+        if: startsWith(github.ref, 'refs/tags/')
+        run: curl -X POST "${KITSCH_CLOUDFLARE_PAGES_DEPLOY_HOOK}"
+        env:
+          KITSCH_CLOUDFLARE_PAGES_DEPLOY_HOOK: ${{ secrets.KITSCH_CLOUDFLARE_PAGES_DEPLOY_HOOK }}
