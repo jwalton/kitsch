@@ -82,7 +82,7 @@ func ResolveProjectType(
 
 		toolVersion, err := getStringValue(projectType.ToolVersion, getterContext)
 		if err != nil || toolVersion == "" {
-			// If we can't get a toolVesrion, skip this project type.
+			// If we can't get a toolVersion, skip this project type.
 			log.Info("Could not get tool version for project type", projectType.Name)
 			continue
 		}

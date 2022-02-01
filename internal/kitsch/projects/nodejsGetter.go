@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/fs"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -58,7 +59,12 @@ func (getter nodejsGetter) getFromVolta(getterContext getters.GetterContext) (in
 		return result, nil
 	}
 
-	// If the version isn't in package.json, need to run volta.
+	result, err = getter.getFromVoltaConfig(getterContext)
+	if err == nil {
+		return result, nil
+	}
+
+	// If the version isn't in package.json, and we can't get it from the Volta config, then we need to run volta.
 	volta, err := fileutils.LookPathSafe("volta")
 	if err != nil {
 		return nil, fmt.Errorf("could not find volta: %w", err)
@@ -105,6 +111,53 @@ func (getter nodejsGetter) getFromVoltaPackageJSON(getterContext getters.GetterC
 	}
 
 	return result, nil
+}
+
+type voltaConfig struct {
+	Node struct {
+		Runtime string `json:"runtime"`
+		Npm     string `json:"npm"`
+	} `json:"node"`
+	Yarn string `json:"yarn"`
+}
+
+// Try to get the nodejs version from ~/.volta/tools/user/platform.json
+func (getter nodejsGetter) getFromVoltaConfig(getterContext getters.GetterContext) (string, error) {
+	voltaHome := getterContext.Getenv("VOLTA_HOME")
+	if voltaHome == "" {
+		voltaHome = filepath.Join(getterContext.Getenv("HOME") + ".volta")
+	}
+	configPath := filepath.Join(voltaHome, "tools", "user", "platform.json")
+	configContents, err := os.ReadFile(configPath)
+	if err != nil {
+		return "", fmt.Errorf("could not read %s: %w", configPath, err)
+	}
+
+	var config voltaConfig
+	err = json.Unmarshal(configContents, &config)
+	if err != nil {
+		return "", fmt.Errorf("could not parse %s: %w", configPath, err)
+	}
+
+	switch getter.executable {
+	case "node":
+		if config.Node.Runtime == "" {
+			return "", fmt.Errorf("No node version specified")
+		}
+		return config.Node.Runtime, nil
+	case "npm":
+		if config.Node.Npm == "" {
+			return "", fmt.Errorf("No npm version specified")
+		}
+		return config.Node.Npm, nil
+	case "yarn":
+		if config.Yarn == "" {
+			return "", fmt.Errorf("No yarn version specified")
+		}
+		return config.Yarn, nil
+	default:
+		return "", fmt.Errorf("Unknown executable: %s", getter.executable)
+	}
 }
 
 func (getter nodejsGetter) getFromExecutable(getterContext getters.GetterContext, resolvedExecutable string) (interface{}, error) {
