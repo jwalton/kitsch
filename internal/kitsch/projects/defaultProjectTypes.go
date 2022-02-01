@@ -61,18 +61,12 @@ var DefaultProjectTypes = []ProjectType{
 			IfFiles: []string{"yarn.lock"},
 		},
 		ToolSymbol: "node",
-		ToolVersion: getters.CustomGetter{
-			Type:  getters.TypeCustom,
-			From:  "node --version",
-			Regex: `v(.*)`,
-			Cache: getters.CacheSettings{Enabled: true},
+		ToolVersion: nodejsGetter{
+			executable: "node",
+			regex:      `v(.*)`,
 		},
-		PackageManagerSymbol: "yarn",
-		PackageManagerVersion: getters.CustomGetter{
-			Type:  getters.TypeCustom,
-			From:  "yarn --version",
-			Cache: getters.CacheSettings{Enabled: true},
-		},
+		PackageManagerSymbol:  "yarn",
+		PackageManagerVersion: nodejsGetter{executable: "yarn"},
 		PackageVersion: getters.CustomGetter{
 			Type:          getters.TypeFile,
 			From:          "package.json",
@@ -86,18 +80,12 @@ var DefaultProjectTypes = []ProjectType{
 			IfFiles: []string{"package.json"},
 		},
 		ToolSymbol: "node",
-		ToolVersion: getters.CustomGetter{
-			Type:  getters.TypeCustom,
-			From:  "node --version",
-			Regex: `v(.*)`,
-			Cache: getters.CacheSettings{Enabled: true},
+		ToolVersion: nodejsGetter{
+			executable: "node",
+			regex:      `v(.*)`,
 		},
-		PackageManagerSymbol: "npm",
-		PackageManagerVersion: getters.CustomGetter{
-			Type:  getters.TypeCustom,
-			From:  "npm --version",
-			Cache: getters.CacheSettings{Enabled: true},
-		},
+		PackageManagerSymbol:  "npm",
+		PackageManagerVersion: nodejsGetter{executable: "npm"},
 		PackageVersion: getters.CustomGetter{
 			Type:          getters.TypeFile,
 			From:          "package.json",
