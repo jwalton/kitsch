@@ -46,7 +46,7 @@ func (getter nodejsGetter) GetValue(getterContext getters.GetterContext) (interf
 	}
 
 	// If the executable is "volta-shim", ask volta for the command we're actually going to run.
-	if strings.HasSuffix(executable, "volta-shim") {
+	if strings.HasSuffix(executable, "volta-shim") || strings.HasSuffix(executable, "volta-shim.exe") {
 		return getter.getFromVolta(getterContext)
 	}
 

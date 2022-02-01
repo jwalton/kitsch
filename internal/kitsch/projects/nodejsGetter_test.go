@@ -40,7 +40,7 @@ func TestGetNodeVersionFromVoltaPacakgeJSON(t *testing.T) {
 	ctx := testContext{fsys: fsys}
 
 	getter := nodejsGetter{executable: "node"}
-	version, err := getter.GetValue(ctx)
+	version, err := getter.getFromVoltaPackageJSON(ctx)
 	assert.NoError(t, err)
 	assert.Equal(t, "16.0.0", version)
 }
