@@ -33,9 +33,11 @@ func (g *gitUtils) Head(maxTagsToSearch int) (HeadInfo, error) {
 	}
 
 	// If we don't have a description, try to get a tag name
+	isTag := false
 	if description == "" {
 		tag, err := g.GetTagNameForHash(headHash, maxTagsToSearch)
 		if err == nil && tag != "" {
+			isTag = true
 			description = "(" + strings.TrimSpace(tag) + ")"
 		}
 	}
@@ -53,6 +55,7 @@ func (g *gitUtils) Head(maxTagsToSearch int) (HeadInfo, error) {
 		Description: description,
 		Detached:    isDetached,
 		Hash:        headHash,
+		IsTag:       isTag,
 	}, nil
 }
 

@@ -42,6 +42,8 @@ type HeadInfo struct {
 	Detached bool
 	// Hash is the current hash of the head.
 	Hash string
+	// IsTag is true if the current head matches a tag.
+	IsTag bool
 }
 
 // Git is an interface for interacting with a git repository.

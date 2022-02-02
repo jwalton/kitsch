@@ -15,6 +15,8 @@ type DemoGit struct {
 	HeadDescription string `yaml:"headDescription"`
 	// IsDetached is true if HEAD is detached.
 	IsDetached bool `yaml:"isDetached"`
+	// IsTag is true if HeadDescription is for a tag.
+	IsTag bool `yaml:"isTag"`
 	// CurrentBranchUpstream is the current upstream branch, or "" if none.
 	CurrentBranchUpstream string `yaml:"currentBranchUpstream"`
 
@@ -83,6 +85,7 @@ func (git DemoGit) Head(maxTagsToSearch int) (head HeadInfo, err error) {
 		Description: headDescription,
 		Detached:    git.IsDetached,
 		Hash:        git.HeadDescription,
+		IsTag:       git.IsTag,
 	}, nil
 }
 
