@@ -23,6 +23,17 @@ type GitModule struct {
 	// see if HEAD is a tagged release.  Defaults to 200.
 	MaxTagsToSearch int `yaml:"maxTagsToSearch"`
 
+	// AheadSymbol is the symbol to use when the current branch is ahead of its upstream.
+	AheadSymbol string `yaml:"aheadSymbol"`
+	// BehindSymbol is the symbol to use when the current branch is behind its upstream.
+	BehindSymbol string `yaml:"behindSymbol"`
+	// DivergedSymbol is the symbol to use when the current branch has diverged from its upstream.
+	DivergedSymbol string `yaml:"divergedSymbol"`
+	// UpToDateSymbol is the symbol to use when the current branch is up to date with its upstream.
+	UpToDateSymbol string `yaml:"upToDateSymbol"`
+	// NoUpstreamSymbol is the symbol to use when the current branch has no upstream.
+	NoUpstreamSymbol string `yaml:"noUpstreamSymbol"`
+
 	// RebasingInteractive is a description to show when an interactive rebase in in progress.
 	RebasingInteractive string `yaml:"rebaseInteractive"`
 	// RebaseMerging is a description to show when a merge in in progress.
@@ -93,20 +104,20 @@ func (mod GitModule) Execute(context *Context) ModuleResult {
 		}
 	}
 
-	symbol := "?"
+	symbol := mod.NoUpstreamSymbol
 	aheadBehind := "upToDate"
 	if upstream != "" {
 		if ahead > 0 && behind > 0 {
-			symbol = "↕"
+			symbol = mod.DivergedSymbol
 			aheadBehind = "diverged"
 		} else if ahead > 0 {
-			symbol = "↑"
+			symbol = mod.AheadSymbol
 			aheadBehind = "ahead"
 		} else if behind > 0 {
-			symbol = "↓"
+			symbol = mod.BehindSymbol
 			aheadBehind = "behind"
 		} else {
-			symbol = "≡"
+			symbol = mod.UpToDateSymbol
 			aheadBehind = "upToDate"
 		}
 	}
@@ -164,10 +175,10 @@ func (mod GitModule) renderDefault(
 	out.WriteString(data.Head.Description)
 
 	if data.Behind > 0 {
-		out.WriteString(fmt.Sprintf(" ↓%d", data.Behind))
+		out.WriteString(fmt.Sprintf(" %s%d", mod.BehindSymbol, data.Behind))
 	}
 	if data.Ahead > 0 {
-		out.WriteString(fmt.Sprintf(" ↑%d", data.Ahead))
+		out.WriteString(fmt.Sprintf(" %s%d", mod.AheadSymbol, data.Ahead))
 	}
 	if data.Behind == 0 && data.Ahead == 0 {
 		out.WriteString(" " + symbol)
@@ -192,6 +203,11 @@ func init() {
 				module := GitModule{
 					Type:                "git",
 					MaxTagsToSearch:     200,
+					AheadSymbol:         "↑",
+					BehindSymbol:        "↓",
+					DivergedSymbol:      "↕",
+					UpToDateSymbol:      "≡",
+					NoUpstreamSymbol:    "?",
 					RebasingInteractive: "REBASE-i",
 					RebaseMerging:       "REBASE-m",
 					Rebasing:            "REBASE",
