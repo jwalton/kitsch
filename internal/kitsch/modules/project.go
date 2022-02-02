@@ -1,7 +1,6 @@
 package modules
 
 import (
-	"github.com/jwalton/kitsch/internal/kitsch/log"
 	"github.com/jwalton/kitsch/internal/kitsch/modules/schemas"
 	"github.com/jwalton/kitsch/internal/kitsch/projects"
 	"gopkg.in/yaml.v3"
@@ -52,6 +51,8 @@ type ProjectModule struct {
 	Type string `yaml:"type" jsonschema:",required,enum=project"`
 	// Projects is project-specific configuration.
 	Projects map[string]ProjectConfig `yaml:"projects"`
+	// DefaultProjectStyle is the style to use if no project-specific style is specified.
+	DefaultProjectStyle string `yaml:"defaultProjectStyle"`
 }
 
 // Execute the module.
@@ -76,11 +77,11 @@ func (mod ProjectModule) Execute(context *Context) ModuleResult {
 		ProjectStyle:         overrides.Style,
 	}
 
-	projectStyle, err := context.Styles.Get(data.ProjectStyle)
-	if err != nil {
-		log.Warn("Invalid style " + data.ProjectStyle + ": " + err.Error())
-		projectStyle, _ = context.Styles.Get("")
+	projectStyleString := data.ProjectStyle
+	if projectStyleString == "" {
+		projectStyleString = mod.DefaultProjectStyle
 	}
+	projectStyle := context.GetStyle(projectStyleString)
 
 	text := ""
 	if data.ToolVersion != "" {

@@ -11,6 +11,7 @@ import (
 	"github.com/jwalton/kitsch/internal/gitutils"
 	"github.com/jwalton/kitsch/internal/kitsch/env"
 	"github.com/jwalton/kitsch/internal/kitsch/getters"
+	"github.com/jwalton/kitsch/internal/kitsch/log"
 	"github.com/jwalton/kitsch/internal/kitsch/projects"
 	"github.com/jwalton/kitsch/internal/kitsch/styling"
 	"golang.org/x/term"
@@ -158,6 +159,18 @@ func (context *Context) Git() gitutils.Git {
 		context.gitInitialized = true
 	}
 	return context.git
+}
+
+// GetStyle returns the specified style, or logs a warning and returns an empty style
+// if the style string cannot be parsed.
+func (context *Context) GetStyle(styleString string) *styling.Style {
+	style, err := context.Styles.Get(styleString)
+	if err != nil {
+		log.Warn(`Unable to parse style: "`+styleString+`":`, err.Error())
+		style, _ = context.Styles.Get("")
+	}
+
+	return style
 }
 
 // NewContext creates a new Context object for executing modules.

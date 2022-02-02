@@ -18,7 +18,6 @@
 package modules
 
 import (
-	"github.com/jwalton/kitsch/internal/kitsch/log"
 	"github.com/jwalton/kitsch/internal/kitsch/styling"
 	"github.com/jwalton/kitsch/internal/perf"
 )
@@ -58,19 +57,4 @@ func defaultString(value string, def string) string {
 		return value
 	}
 	return def
-}
-
-func defaultStyle(context *Context, styleString string, defStyle string) *styling.Style {
-	style, err := context.Styles.Get(styleString)
-	if err != nil {
-		log.Warn(err.Error())
-	}
-	if styleString == "" || err != nil {
-		style, err = context.Styles.Get(defStyle)
-		if err != nil {
-			panic("Error parsing default style: " + err.Error())
-		}
-	}
-
-	return style
 }

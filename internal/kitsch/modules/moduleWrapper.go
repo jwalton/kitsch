@@ -133,11 +133,7 @@ func processModuleResult(
 	if moduleResult.StyleOverride != "" {
 		styleStr = moduleResult.StyleOverride
 	}
-	style, err := context.Styles.Get(styleStr)
-	if err != nil {
-		style = nil
-		log.Warn(err)
-	}
+	style := context.GetStyle(styleStr)
 
 	text := moduleResult.DefaultText
 	startStyle := moduleResult.StartStyle

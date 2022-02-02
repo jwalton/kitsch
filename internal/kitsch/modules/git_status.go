@@ -76,9 +76,9 @@ func (mod GitStatusModule) renderDefault(
 	indexTotal := stats.Index.Added + stats.Index.Modified + stats.Index.Deleted
 	unstagedTotal := stats.Unstaged.Added + stats.Unstaged.Modified + stats.Unstaged.Deleted
 
-	indexStyle := defaultStyle(context, mod.IndexStyle, "green")
-	unstagedStyle := defaultStyle(context, mod.UnstagedStyle, "red")
-	stashStyle := defaultStyle(context, mod.StashStyle, "brightRed")
+	indexStyle := context.GetStyle(mod.IndexStyle)
+	unstagedStyle := context.GetStyle(mod.UnstagedStyle)
+	stashStyle := context.GetStyle(mod.StashStyle)
 
 	if (indexTotal) > 0 || stats.Unmerged > 0 {
 		indexPart := mod.renderStats(stats.Index)

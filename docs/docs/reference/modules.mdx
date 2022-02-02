@@ -137,8 +137,6 @@ Where:
 
 The number of unmerged paths is not shown if it is 0. The "unstaged" and "staged" halves of this are also hidden if all values are zero. By default, unstaged counts are shown in red an staged in green, to mimic the output colors of `git status`.
 
-TODO: Show how you could use a template to make this look like starship prompt.
-
 Configuration:
 
 - `indexStyle (string)` is the style to use for the staged status.
@@ -189,6 +187,7 @@ The project module works out what kind of project the current folder represents,
 Configuration:
 
 - `projects` is a map where keys are project names, and values are `{ style, toolSymbol, packageManagerSymbol }` objects, which can be used to provide a custom style and symbols for existing projects on a theme-by-theme basis.
+- `defaultProjectStyle` is the style to use if no project-specific style is specified.
 
 Outputs:
 

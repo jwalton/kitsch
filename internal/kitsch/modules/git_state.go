@@ -37,8 +37,6 @@ type GitStateModule struct {
 	Bisecting string `yaml:"bisecting"`
 }
 
-// FIXME: Let user configure the names fo rebase/cherry-pick/merge/etc...
-
 type gitStateResult struct {
 	// State is the current state of this repo.
 	State gitutils.RepositoryStateType `yaml:"state"`

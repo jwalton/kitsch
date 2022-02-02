@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/jwalton/kitsch/internal/kitsch/condition"
-	"github.com/jwalton/kitsch/internal/kitsch/log"
 	"gopkg.in/yaml.v3"
 )
 
@@ -28,10 +27,7 @@ type CommonConfig struct {
 // Validate checks for common configuration errors in the CommonConfig, and prints
 // errors to the log if any are found.
 func (config *CommonConfig) Validate(context *Context, prefix string) {
-	_, err := context.Styles.Get(config.Style)
-	if err != nil {
-		log.Warn(fmt.Sprintf("%s: Error parsing style: %v", prefix, err))
-	}
+	context.GetStyle(config.Style)
 }
 
 func getCommonConfig(node *yaml.Node) (CommonConfig, error) {
