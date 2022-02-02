@@ -36,7 +36,7 @@ type: block
 
 would print the hostname and username, joined by a "@".
 
-Every module within a block can also specify [a `conditions` section](./conditions.mdx).  The block will ignore any modules if their conditions are not met.
+Every module within a block can also specify [a `conditions` section](./conditions.mdx). The block will ignore any modules if their conditions are not met.
 
 Configuration:
 
@@ -107,15 +107,70 @@ The "file" module reads a file and uses the contents to produce an output. The c
 
 ## git_diverged
 
-TODO
+The git_diverged module reports whether the current git repo is ahead, behind, up-to-date with, or diverged from the upstream branch.
+
+By default:
+
+- If this folder is not a git repo, this will return an empty string.
+- If there is no upstream branch, this will return "?".
+- If we are up-to-date with the upstream, this will return "≡".
+- If we are ahead of the upstream, this will return "↑X" (where X is the number of commits we are ahead).
+- If we are behind the upstream, this will return "↓Y".
+- If we have diverged from the upstream, this will return "↑X ↓Y".
+
+Configuration:
+
+- `aheadSymbol="↑"` is the symbol to use if we are ahead of the upstream.
+- `behindSymbol="↓"` is the symbol to use if we are behind the upstream.
+- `divergedSymbol="↕"` is the symbol to use if we have diverged from the upstream. Note that this is unused in the default output - we print the ahead and behind count.
+- `upToDateSymbol="≡"` is the symbol to use when we are up-to-date with the upstream.
+- `noUpstreamSymbol="?"` is the symbol to show when there is no upstream. This will be used both in the case where the local branch has no upstream, and also when the HEAD is detached.
+
+Outputs:
+
+- `Upstream (string)` is the name of the upstream branch, or "" if none.
+- `Ahead (int)` is how many commits the local branch is ahead of the upstream.
+- `Behind (int)` is how many commits the local branch is behind the upstream.
+- `Symbol (string)` is the `aheadSymbol`, `behindSymbol`, `divergedSymbol`, `upToDateSymbol`, or `noUpstreamSymbol`.
+- `AheadBehind (string)` is the empty string if not in a git repo, or is one of "ahead", "behind", "diverged", or "upToDate" (this will be "upToDate" if there is no upstream).
 
 ## git_head
 
-TODO
+The git_head module returns information about the HEAD of the current git repo. The default output is the `Description` from the Outputs section below.
+
+Configuration:
+
+- `maxTagsToSearch=200` - The maximum number of tag objects to search. Searching tags, especially annotated tags, can be costly, so in large repos setting this too high could result in the prompt taking too long to display. Setting this to 0 will disable searching tags entirely. Setting this to a negative value will search tags until a match is found or until we run out of tags.
+
+Outputs:
+
+- `Description (string)` a description of the head. Description will be empty if the current folder is not a git repo. If the HEAD is not detached, then this will be the name of the branch we are currently on. If the head is detached, this will be the base branch name if we are in the middle of a rebase or merge, the tag name if the head is at a tag, or the short hash otherwise.
+- `Detached (bool)` is true if the head is detached.
+- `Hash (string)` is the current hash of the HEAD, or an empty string if not in a git repo.
+- `ShortHash (string)` is the short version of Hash.
+- `Upstream (string)` is the name of the upstream branch, or the empty string if there isn't an upstream.
 
 ## git_state
 
-TODO
+The git_state module returns the state of the current git repo. For example, if you are in the middle of an interactive rebase, and you're on the second commit of four, this will return "REBASE-i 2/4".  If the current folder is not a git repo, or if we're not in the middle of a rebase, merge, etc..., this will return the empty string.  The default configuration is based on on [posh-git](https://github.com/dahlbyk/posh-git) and [posh-git-sh](https://github.com/lyze/posh-git-sh).
+
+Configuration:
+
+- `rebasingInteractive="REBASE-i"` is the string to show when an interactive rebase in in progress.
+- `rebaseMerging="REBASE-m"` is the string to show when a merge in in progress.
+- `rebasing="REBASE"` is the string to show when a rebase operation in in progress.
+- `aming="AM"` is the string to show when an `am` operation in in progress.
+- `rebaseAMing="REBASE/AM"` is the string to show when an ambiguous apply-mailbox or rebase is in progress.
+- `merging="MERGING"` is the string to show when a merge in in progress.
+- `cherryPicking="CHERRY-PICKING"` is the string to show when a cherry-pick in in progress.
+- `reverting="REVERTING"` is the string to show when a revert in in progress.
+- `bisecting="BISECTING` is the string to show when a bisect in in progress.
+
+Outputs:
+
+- `State (string)` is the state string.
+- `Step (string)` is the current step.
+- `Total (string)` is the total number of steps, or "" if we're not in the middle of a multi-step operation.
 
 ## git_status
 
