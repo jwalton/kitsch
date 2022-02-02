@@ -26,12 +26,28 @@ prompt:
           #   via {{ .Data.ToolSymbol }}@{{ .Data.ToolVersion }}
           #   {{- if .Data.PackageManagerVersion }}/{{ .Data.PackageManagerSymbol }}@{{ .Data.PackageManagerVersion }}{{ end -}}
     - type: block
+      id: git
       style: brightYellow
       modules:
-        - type: git
+        - type: block
+          modules:
+            - type: git_head
+            - type: git_diverged
+            - type: git_state
+              template: "{{ with .Text }}|{{ . }}{{end}}"
           template: |
-            {{- $gitStyles := dict "upToDate" "$git" "ahead" "$gitAhead" "behind" "$gitBehind" "diverged" "$gitDiverged" -}}
-            {{- style (get $gitStyles .Data.AheadBehind) .Text -}}
+            {{- with .Data.Modules -}}
+              {{- if .git_head.Text -}}
+                {{- $gitStyles := dict
+                  "upToDate" "$git"
+                  "ahead" "$gitAhead"
+                  "behind" "$gitBehind"
+                  "diverged" "$gitDiverged"
+                -}}
+                {{- $gitInfo := printf "%s %s%s" .git_head.Text .git_diverged.Text .git_state.Text -}}
+                {{- style (get $gitStyles .git_diverged.Data.AheadBehind) $gitInfo -}}
+              {{- end -}}
+            {{- end -}}
         - type: git_status
       template: "{{ with .Text }}[{{ . }}]{{end}}"
     - type: kubernetes

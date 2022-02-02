@@ -105,6 +105,18 @@ Outputs:
 
 The "file" module reads a file and uses the contents to produce an output. The configuration and outputs of the "file" module are identical to the ["custom"](#custom) module, except that `from` should be the name of a file in the current folder, or the relative path of a file in a subdirectory of the current folder.
 
+## git_diverged
+
+TODO
+
+## git_head
+
+TODO
+
+## git_state
+
+TODO
+
 ## git_status
 
 The git_status module shows information about the status of the current git repo. The default output of this module is based on [posh-git](https://github.com/dahlbyk/posh-git) and [posh-git-sh](https://github.com/lyze/posh-git-sh). If you're in a git repo that has changes, the output will be something like:
@@ -139,10 +151,6 @@ Outputs:
 - `Unstaged` is a `{ Added, Modified, Deleted, Total }` object. Each is an `int` representing the number of unstaged files in that state.
 - `Unmerged (int)` is the total number of unmerged paths in the git repo.
 - `StashCount (int)` is the number of stashes in the git repo.
-
-## git
-
-TODO
 
 ## hostname
 

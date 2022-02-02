@@ -116,7 +116,12 @@ func init() {
 		registeredModule{
 			jsonSchema: schemas.GitStatusModuleJSONSchema,
 			factory: func(node *yaml.Node) (Module, error) {
-				module := GitStatusModule{Type: "git_status"}
+				module := GitStatusModule{
+					Type:          "git_status",
+					IndexStyle:    "green",
+					UnstagedStyle: "red",
+					StashStyle:    "brightRed",
+				}
 				err := node.Decode(&module)
 				return &module, err
 			},

@@ -16,8 +16,9 @@ prompt:
   modules:
     - type: time
     - type: directory
-    - type: git
-      style: $gitFg
+    - type: git_head
+    - type: git_diverged
+    - type: git_state
     - type: git_status
       indexStyle: "#3f3"
       unstagedStyle: "#f33"
@@ -34,10 +35,17 @@ prompt:
       {{- .directory.Text | style "$directoryFg" | $pl.Segment "$directoryBg" -}}
 
       {{- /* Git */ -}}
-      {{- if .git -}}
-        {{- $gitStyles := dict "upToDate" "$gitBg" "ahead" "$gitBgAhead" "behind" "$gitBgBehind" "diverged" "^gitBgBehind" -}}
-        {{- $gitBg := (get $gitStyles .git.Data.AheadBehind) -}}
-        {{- list "\ue0a0" .git.Text | join " " | style "$gitFg" | $pl.Segment $gitBg -}}
+      {{- if .git_head -}}
+        {{- $gitStyles := dict
+          "upToDate" "$gitBg"
+          "ahead" "$gitBgAhead"
+          "behind" "$gitBgBehind"
+          "diverged" "^gitBgBehind"
+        -}}
+        {{- $gitBg := (get $gitStyles .git_diverged.Data.AheadBehind) -}}
+        {{- $gitInfo := printf "%s %s%s" .git_head.Text .git_diverged.Text .git_state.Text -}}
+        {{- $branchSymbol := "\ue0a0" -}}
+        {{- printf "%s %s" $branchSymbol $gitInfo | style "$gitFg" | $pl.Segment $gitBg -}}
       {{- end -}}
       {{- with .git_status -}}
           {{- $gitStatusBg := "#444" -}}

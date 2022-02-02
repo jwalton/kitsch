@@ -16,7 +16,9 @@ prompt:
     - type: block
       style: bg#440
       modules:
-        - type: git
+        - type: git_head
+        - type: git_diverged
+        - type: git_state
         - type: git_status
     - type: command_duration
       style: bg:$commandDurationBg $commandDurationFg
