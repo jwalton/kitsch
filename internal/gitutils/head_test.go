@@ -26,6 +26,7 @@ func TestHeadOnBranch(t *testing.T) {
 			Description: "master",
 			Detached:    false,
 			Hash:        "7c088a39dcd2dcda89f4dee1fd3eb41c1d34ea2f",
+			IsTag:       false,
 		},
 		state,
 	)
@@ -50,6 +51,7 @@ func TestHeadDetached(t *testing.T) {
 			Description: "(0123456...)",
 			Detached:    true,
 			Hash:        "0123456789abcdef0123456789abcdef01234567",
+			IsTag:       false,
 		},
 		state,
 	)
@@ -77,6 +79,7 @@ func TestHeadOnTag(t *testing.T) {
 			Description: "(v1.0.0)",
 			Detached:    true,
 			Hash:        "0123456789abcdef0123456789abcdef01234567",
+			IsTag:       true,
 		},
 		state,
 	)
@@ -89,6 +92,7 @@ func TestHeadOnTag(t *testing.T) {
 			Description: "(0123456...)",
 			Detached:    true,
 			Hash:        "0123456789abcdef0123456789abcdef01234567",
+			IsTag:       false,
 		},
 		state,
 	)
@@ -123,6 +127,7 @@ func TestHeadOnAnnotatedTag(t *testing.T) {
 			Description: "(v1.1.0)",
 			Detached:    true,
 			Hash:        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+			IsTag:       true,
 		},
 		state,
 	)
@@ -147,6 +152,7 @@ func TestHeadOnPackedRefs(t *testing.T) {
 			Description: "(v1.0.0)",
 			Detached:    true,
 			Hash:        "0123456789abcdef0123456789abcdef01234567",
+			IsTag:       true,
 		},
 		state,
 	)
