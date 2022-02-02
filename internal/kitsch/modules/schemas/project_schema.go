@@ -14,7 +14,8 @@ var ProjectModuleJSONSchema = `{
         "toolSymbol": {"type": "string", "description": "ToolSymbol is the symbol to show for this project's build tool."},
         "packageManagerSymbol": {"type": "string", "description": "PackageManagerSymbol is the symbol to show for this project's package manager."}
       },
-      "additionalProperties": false}}
+      "additionalProperties": false}},
+    "defaultProjectStyle": {"type": "string", "description": "DefaultProjectStyle is the style to use if no project-specific style is specified."}
   },
   "required": ["type"]}`
 

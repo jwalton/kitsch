@@ -48,7 +48,7 @@ func TestHeadDetached(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t,
 		HeadInfo{
-			Description: "(0123456...)",
+			Description: "(0123456…)",
 			Detached:    true,
 			Hash:        "0123456789abcdef0123456789abcdef01234567",
 			IsTag:       false,
@@ -89,7 +89,7 @@ func TestHeadOnTag(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t,
 		HeadInfo{
-			Description: "(0123456...)",
+			Description: "(0123456…)",
 			Detached:    true,
 			Hash:        "0123456789abcdef0123456789abcdef01234567",
 			IsTag:       false,

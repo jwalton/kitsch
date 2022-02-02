@@ -6,7 +6,16 @@ package schemas
 var GitStateModuleJSONSchema = `{
   "type": "object",
   "properties": {
-    "type": {"type": "string", "description": "Type is the type of this module.", "enum": ["git_state"]}
+    "type": {"type": "string", "description": "Type is the type of this module.", "enum": ["git_state"]},
+    "rebaseInteractive": {"type": "string", "description": "RebasingInteractive is the string to show when an interactive rebase in in progress."},
+    "rebaseMerging": {"type": "string", "description": "RebaseMerging is the string to show when a merge in in progress."},
+    "rebasing": {"type": "string", "description": "Rebasing is the string to show when a rebase operation in in progress."},
+    "aming": {"type": "string", "description": "AMing is the string to show when an ` + "`" + `am` + "`" + ` operation in in progress."},
+    "rebaseAMing": {"type": "string", "description": "RebaseAMing is the string to show when an ambiguous apply-mailbox or rebase is in progress."},
+    "merging": {"type": "string", "description": "Merging is the string to show when a merge in in progress."},
+    "cherryPicking": {"type": "string", "description": "CherryPicking is the string to show when a cherry-pick in in progress."},
+    "reverting": {"type": "string", "description": "Reverting is the string to show when a revert in in progress."},
+    "bisecting": {"type": "string", "description": "Bisecting is the string to show when a bisect in in progress."}
   },
   "required": ["type"]}`
 

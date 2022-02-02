@@ -18,14 +18,15 @@ type GitHeadModule struct {
 }
 
 type gitHeadResult struct {
-	// HeadDescription is the name of the branch we are currently on if the head
-	// is not detached.  If the head is detached, this will be the branch name
+	// Description is empty if the current folder is not a git repo.  If the
+	// HEAD is not detached, then this will be the name of the branch we are
+	// currently on.  If the head is detached, this will be the base branch name
 	// if we are in the middle of a rebase or merge, the tag name if the head is
 	// at a tag, or the short hash otherwise.
 	Description string
 	// Detached is true if the head is detached.
 	Detached bool
-	// Hash is the current hash of the head.
+	// Hash is the current hash of the HEAD.
 	Hash string
 	// ShortHash is the short version of the hash.
 	ShortHash string

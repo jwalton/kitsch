@@ -3,6 +3,7 @@ package gitutils
 import (
 	"errors"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/go-git/go-git/v5/plumbing"
@@ -44,7 +45,7 @@ func (g *gitUtils) Head(maxTagsToSearch int) (HeadInfo, error) {
 
 	// If that fails, use the hash
 	if description == "" {
-		description = "(" + headHash[0:shortSHALength] + "...)"
+		description = "(" + headHash[0:shortSHALength] + "…)"
 	}
 
 	if description == "" {
@@ -65,11 +66,22 @@ func (g *gitUtils) Head(maxTagsToSearch int) (HeadInfo, error) {
 // maxTagsToSearch is the maximum number of tag refs to examine when looking for
 // the current hash.  If this is negative, we will search all refs.
 func (g *gitUtils) GetTagNameForHash(hash string, maxTagsToSearch int) (string, error) {
+	if maxTagsToSearch == 0 {
+		return "", errNotFound
+	}
+
 	// Check lightweight tags
 	tags, err := g.tags()
 	if err == nil {
 		count := 0
-		for ref, err := tags.Next(); err == nil && ref != nil; ref, err = tags.Next() {
+		for {
+			ref, err := tags.Next()
+			if err == io.EOF {
+				break
+			} else if err != nil {
+				return "", err
+			}
+
 			count++
 			if maxTagsToSearch >= 0 && count > maxTagsToSearch {
 				break

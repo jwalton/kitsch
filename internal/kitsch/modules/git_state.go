@@ -17,29 +17,29 @@ type GitStateModule struct {
 	// Type is the type of this module.
 	Type string `yaml:"type" jsonschema:",required,enum=git_state"`
 
-	// RebasingInteractive is a description to show when an interactive rebase in in progress.
+	// RebasingInteractive is the string to show when an interactive rebase in in progress.
 	RebasingInteractive string `yaml:"rebaseInteractive"`
-	// RebaseMerging is a description to show when a merge in in progress.
+	// RebaseMerging is the string to show when a merge in in progress.
 	RebaseMerging string `yaml:"rebaseMerging"`
-	// Rebasing is a description to show when a rebase operation in in progress.
+	// Rebasing is the string to show when a rebase operation in in progress.
 	Rebasing string `yaml:"rebasing"`
-	// AMing is a description to show when an `am` operation in in progress.
+	// AMing is the string to show when an `am` operation in in progress.
 	AMing string `yaml:"aming"`
-	// RebaseAMing is a description to show when an ambiguous apply-mailbox or rebase is in progress.
+	// RebaseAMing is the string to show when an ambiguous apply-mailbox or rebase is in progress.
 	RebaseAMing string `yaml:"rebaseAMing"`
-	// Merging is a description to show when a merge in in progress.
+	// Merging is the string to show when a merge in in progress.
 	Merging string `yaml:"merging"`
-	// CherryPicking is a description to show when a cherry-pick in in progress.
+	// CherryPicking is the string to show when a cherry-pick in in progress.
 	CherryPicking string `yaml:"cherryPicking"`
-	// Reverting is a description to show when a revert in in progress.
+	// Reverting is the string to show when a revert in in progress.
 	Reverting string `yaml:"reverting"`
-	// Bisecting is a description to show when a bisect in in progress.
+	// Bisecting is the string to show when a bisect in in progress.
 	Bisecting string `yaml:"bisecting"`
 }
 
 type gitStateResult struct {
 	// State is the current state of this repo.
-	State gitutils.RepositoryStateType `yaml:"state"`
+	State string `yaml:"state"`
 	// Step is the current step number if we are rebasing, 0 otherwise.
 	Step string `yaml:"step"`
 	// Total is the total number of steps to complete to finish the rebase, or 0
@@ -56,9 +56,10 @@ func (mod GitStateModule) Execute(context *Context) ModuleResult {
 	}
 
 	state := git.State()
+	stateDescription := mod.getStateDescription(state.State)
 
 	data := gitStateResult{
-		State: state.State,
+		State: stateDescription,
 		Step:  state.Step,
 		Total: state.Total,
 	}
@@ -73,12 +74,12 @@ func (mod GitStateModule) renderDefault(
 	context *Context,
 	data gitStateResult,
 ) string {
-	if data.State == gitutils.StateNone {
+	if data.State == "" {
 		return ""
 	}
 
 	out := strings.Builder{}
-	out.WriteString(mod.getStateDescription(data.State))
+	out.WriteString(data.State)
 	if data.Total != "" {
 		out.WriteString(fmt.Sprintf(" %s/%s", data.Step, data.Total))
 	}
