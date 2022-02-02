@@ -84,8 +84,13 @@ func (wrapper *ModuleWrapper) UnmarshalYAML(node *yaml.Node) error {
 }
 
 func (wrapper ModuleWrapper) String() string {
+	name := wrapper.config.Type
+	if wrapper.config.ID != wrapper.config.Type {
+		name = name + "#" + wrapper.config.ID
+	}
+
 	return fmt.Sprintf("%s(%d:%d)",
-		wrapper.config.ID,
+		name,
 		wrapper.Line,
 		wrapper.Column,
 	)
@@ -141,7 +146,7 @@ func processModuleResult(
 	if moduleWrapper.config.Template != "" {
 		tmpl, err := compileModuleTemplate(context, moduleWrapper.config.Template)
 		if err != nil {
-			log.Warn(fmt.Sprintf("Error compiling template: %v", err))
+			log.Warn(fmt.Sprintf("Error compiling template in %s: %v", moduleWrapper.String(), err))
 		} else {
 			templateData := TemplateData{
 				Data:    moduleResult.Data,
@@ -151,7 +156,12 @@ func processModuleResult(
 
 			text, err = modtemplate.TemplateToString(tmpl, templateData)
 			if err != nil {
-				log.Warn(fmt.Sprintf("Error executing template:\n%s\n%v", moduleWrapper.config.Template, err))
+				log.Warn(fmt.Sprintf(
+					"Error executing template in %s:\n%s\n%v",
+					moduleWrapper.String(),
+					moduleWrapper.config.Template,
+					err,
+				))
 				text = moduleResult.DefaultText
 			}
 		}
