@@ -58,9 +58,9 @@ func (mod BlockModule) Execute(context *Context) ModuleResult {
 
 		if len(result.Text) != 0 {
 			resultsArray = append(resultsArray, result)
-			if wrapper.config.ID != "" {
-				resultsByID[wrapper.config.ID] = result
-			}
+		}
+		if wrapper.config.ID != "" {
+			resultsByID[wrapper.config.ID] = result
 		}
 	}
 
