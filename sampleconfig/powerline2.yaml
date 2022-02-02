@@ -9,7 +9,6 @@ colors:
   $gitBg: "#0fc"
   $gitBgAhead: "#ef3"
   $gitBgBehind: "#fb3"
-  $gitFgNormal: "#000"
   $gitIndexBg: "#060"
   $gitUnstagedBg: "#600"
 prompt:
@@ -19,9 +18,6 @@ prompt:
     - type: directory
     - type: git
       style: $gitFg
-      aheadStyle: $gitFg
-      behindStyle: $gitFg
-      aheadBehindStyle: $gitFg
     - type: git_status
       indexStyle: "#3f3"
       unstagedStyle: "#f33"
