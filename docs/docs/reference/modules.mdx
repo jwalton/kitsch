@@ -152,7 +152,7 @@ Outputs:
 
 ## git_state
 
-The git_state module returns the state of the current git repo. For example, if you are in the middle of an interactive rebase, and you're on the second commit of four, this will return "REBASE-i 2/4".  If the current folder is not a git repo, or if we're not in the middle of a rebase, merge, etc..., this will return the empty string.  The default configuration is based on on [posh-git](https://github.com/dahlbyk/posh-git) and [posh-git-sh](https://github.com/lyze/posh-git-sh).
+The git_state module returns the state of the current git repo. For example, if you are in the middle of an interactive rebase, and you're on the second commit of four, this will return "REBASE-i 2/4".  If the current folder is not a git repo, or if we're not in the middle of a rebase, merge, etc..., this will return the empty string.  The default configuration is based on [posh-git](https://github.com/dahlbyk/posh-git) and [posh-git-sh](https://github.com/lyze/posh-git-sh).
 
 Configuration:
 
@@ -204,6 +204,18 @@ Outputs:
 - `Unstaged` is a `{ Added, Modified, Deleted, Total }` object. Each is an `int` representing the number of unstaged files in that state.
 - `Unmerged (int)` is the total number of unmerged paths in the git repo.
 - `StashCount (int)` is the number of stashes in the git repo.
+
+Output Example:
+
+```json
+{
+  "Unstaged": { "Added": 0, "Modified": 0, "Deleted": 0, "Total": 0 },
+  "Index": { "Added": 0, "Modified": 0, "Deleted": 0, "Total": 0 },
+  "Unmerged": 0,
+  "StashCount": 0,
+}
+```
+
 
 ## hostname
 

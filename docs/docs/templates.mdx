@@ -60,12 +60,12 @@ We can also apply some custom styles to the prefix and suffix:
 
 ## Git Status
 
-If you're using the default configuration, the output of the git status is based on [posh-git](https://github.com/dahlbyk/posh-git), showing counts for new, modified, and deleted files, both unstaged and in the index. Starship prompt shows the current git status in a very different way, showing a series of symbols; "!" if there are any modified files, "+" if there are any staged, and so on. If you prefer the Starship style, we can emulate it using a template.  We've already seen the `.Text` variable in a template, but every module also produces a number of output variables which we can access via `.Data`. The output from the git_status module looks something like this:
+If you're using the default configuration, the output of the git status is based on [posh-git](https://github.com/dahlbyk/posh-git), showing counts for new, modified, and deleted files, both unstaged and in the index. Starship prompt shows the current git status in a very different way, showing a series of symbols; "!" if there are any modified files, "+" if there are any staged, and so on. If you prefer the Starship style, we can emulate it using a template.  We've already seen the `.Text` variable in a template, but every module also produces a number of output variables which we can access via `.Data`. The output from the git_status module looks like this:
 
 ```json
 {
-  "Unstaged": { "Added": 0, "Modified": 0, "Deleted": 0 },
-  "Index": { "Added": 0, "Modified": 0, "Deleted": 0 },
+  "Unstaged": { "Added": 0, "Modified": 0, "Deleted": 0, "Total": 0 },
+  "Index": { "Added": 0, "Modified": 0, "Deleted": 0, "Total": 0 },
   "Unmerged": 0,
   "StashCount": 0,
 }
