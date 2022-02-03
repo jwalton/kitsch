@@ -28,7 +28,12 @@ jobs:
       - name: Install deps
         run: go install golang.org/x/tools/cmd/stringer
       - name: Generate
-        run: go generate ./...
+        run: |
+          make generate
+          if ! git diff --exit-code > /dev/null 2>&1; then
+            print "'go generate' created changes - please run generate locally and commit changes\n"
+            exit 1
+          fi
       - name: Test
         run: go test ./...
       - name: Run GoReleaser (snapshot)
