@@ -4,8 +4,130 @@ sidebar_position: 5
 
 # Templates
 
-Every module in Kitsch Prompt provides some default output, however every module can also have it's output customized using a "template".  Templates are written using the [go template language](https://pkg.go.dev/text/template), which should be familiar if you've done any work in Kubernetes, especially if you've written a Helm chart.
+Every module in Kitsch Prompt provides some default output, however every module can also have it's output customized using a "template". Templates are written using the [go template language](https://pkg.go.dev/text/template), which should be familiar if you've done any work in Kubernetes, especially if you've written a Helm chart.
 
-Each template is passed a `{ Data, Globals, Text }` object.  `Globals` are [global variables](./reference/globals.mdx) available to all templates.  `Text` is the default text that would have been rendered by the module.  `Data` is an object, the contents of which depend on the module type; each module produces a number of output variables, which can be accessed via `Data`.  You'll have to consult the [module reference](./reference/modules.mdx) to see what variables are available for a given module type.
+Each template is passed a `{ Data, Globals, Text }` object. `Globals` are [global variables](./reference/globals.mdx) available to all templates. `Text` is the default text that would have been rendered by the module. `Data` is an object, the contents of which depend on the module type; each module produces a number of output variables, which can be accessed via `Data`. You'll have to consult the [module reference](./reference/modules.mdx) to see what variables are available for a given module type.
 
-TODO: Add examples.
+## Adding a Prefix and Suffix
+
+Here's a very quick tutorial to get you started with templates:
+
+```
+- type: username
+  style: brightRed
+  template: "-={{ .Text }}=-"
+```
+
+This template takes the default output of the username module, from `.Text`, and adds a "-=" before and a "=-" afterwards. If our username was "jwalton", this would print "-=jwalton=-". There's one problem here though, which is that the username module might be "inactive" - it might produce no output, in which case we probably don't want to print "-==-". We can update this example with:
+
+```
+- type: directory
+  style: brightRed
+  template: "{{ if .Text }}-={{ .Text }}=-{{end}}"
+```
+
+The "if" statement makes it so this outputs nothing if `.Text` is the empty string. One slight but common simplification:
+
+```
+- type: directory
+  style: brightRed
+  template: "{{ with .Text }}-={{ . }}=-{{end}}"
+```
+
+Here `with .Text` does two things - first the inside of the `with` block is not executed if `.Text` is the empty string. Second, inside the `with` block, `.` is replaced with `.Text`. This saves us some typing. If you prefer to, you can write this as a multi-line template:
+
+```
+- type: directory
+  style: brightRed
+  template: |
+    {{- with .Text -}}
+      -={{ . }}=-
+    {{- end -}}"
+```
+
+Note that we use `{{-` here instead of `{{`. The `{{-` version removes all whitespace before that token. Without this, we'd end up printing some spaces and newlines in our prompt, which is definitely not what we want.
+
+We can also apply some custom styles to the prefix and suffix:
+
+```
+- type: directory
+  style: brightRed
+  template: |
+    {{- with .Text -}}
+      {{ style "-=" "red" }}{{ . }}{{ style "=-" "red" }}
+    {{- end -}}"
+```
+
+## Git Status
+
+If you're using the default configuration, the output of the git status is based on [posh-git](https://github.com/dahlbyk/posh-git), showing counts for new, modified, and deleted files, both unstaged and in the index. Starship prompt shows the current git status in a very different way, showing a series of symbols; "!" if there are any modified files, "+" if there are any staged, and so on. If you prefer the Starship style, we can emulate it using a template.  We've already seen the `.Text` variable in a template, but every module also produces a number of output variables which we can access via `.Data`. The output from the git_status module looks something like this:
+
+```json
+{
+  "Unstaged": { "Added": 0, "Modified": 0, "Deleted": 0 },
+  "Index": { "Added": 0, "Modified": 0, "Deleted": 0 },
+  "Unmerged": 0,
+  "StashCount": 0,
+}
+```
+
+This template combines all of these values into Starship-style symbols:
+
+```yaml
+- type: git_status
+  style: brightRed bold
+  template: |
+      {{- if .Text -}}
+        [
+        {{- if gt .Data.Unmerged 0 -}}={{- end -}}
+        {{- if gt .Data.StashCount 0 -}}${{- end -}}
+        {{- if gt .Data.Unstaged.Added 0 -}}?{{- end -}}
+        {{- if gt .Data.Index.Deleted 0 -}}✘{{- end -}}
+        {{- if or
+          ( gt .Data.Unstaged.Modified 0 )
+          ( gt .Data.Unstaged.Deleted 0 )
+          ( gt .Data.Index.Modified 0 )
+          ( gt .Data.Index.Added 0 )
+        -}}!{{- end -}}
+        ]
+      {{- end -}}
+    {{- end -}}
+```
+
+This template starts with `{{- if .Text -}}`, which is a convenient shortcut in many templates - if the module didn't produce any default output, we won't produce any output either.
+
+One thing to note about golang templates; there are no binary operators.  Instead of `if .Data.Unmerged > 0`, you have to write `if gt .Data.Unmerged 0`.  This is calling the `gt` function with the two values `.Data.Unmerged` and `0` (in a more traditional language this would look something like `if(gt(.Data.Unmerged, 0))`).
+
+There's one problem with the template above; in Starship, we'd not only get symbols for file status, but also symbols telling us if the repo is ahead or behind the upstream branch.  What we really want to do here is combine output from the git_status and git_diverged modules.  Fortunately, we can do this with a block module.  The block module has a `.Data.Modules` which is a map where keys are the IDs of modules in the block (or the type of the module, if we don't give it an ID), and values are the `{Text, Data}` for the module:
+
+```yaml
+- type: block
+  style: brightRed bold
+  modules:
+    - type: git_diverged
+      upToDateSymbol: ""
+    - type: git_status
+  template: |
+    {{- with .Data.Modules -}}
+      {{- if or .git_diverged.Text .git_status.Text -}}
+        {{- $status := .git_status.Data -}}
+        [
+        {{- .git_diverged.Data.Symbol -}}
+        {{- if gt $status.Unmerged 0 -}}={{- end -}}
+        {{- if gt $status.StashCount 0 -}}${{- end -}}
+        {{- if gt $status.Unstaged.Added 0 -}}?{{- end -}}
+        {{- if gt $status.Index.Deleted 0 -}}✘{{- end -}}
+        {{- if or
+          ( gt $status.Unstaged.Modified 0 )
+          ( gt $status.Unstaged.Deleted 0 )
+          ( gt $status.Index.Modified 0 )
+          ( gt $status.Index.Added 0 )
+        -}}!{{- end -}}
+        ]
+      {{- end -}}
+    {{- end -}}
+```
+
+Here we create a "block" module which has two child modules: a git_diverged module and a git_status module. We start our template with `{{- with .Data.Modules -}}`. As we saw above, this changes the value of `.` to be `.Data.Modules`, so instead of writing `.Data.Modules.git_diverged.Data.Symbol`, we can just write `.git_diverged.Data.Symbol`. We follow this with an `if` - we only want to print something if the git_diverged or git_status modules produced some output.
+
+`$status := .git_status.Data` creates a new variable named `$status`.  Again, this is just to save us some typing. `.git_diverged.Data.Symbol` is the symbol that was output by `git_diverged`. After that, this example is similar to the previous example.

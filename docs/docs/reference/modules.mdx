@@ -49,7 +49,7 @@ Configuration:
 
 Outputs:
 
-- `Modules` is a map of results from executing each child module, indexed by module ID. Only modules that actually generated output will be included. If a module does not have an ID, then the module's `type` will be used to index the module results.
+- `Modules` is a map of results from executing each child module.  The keys of this map are module IDs (or module types, for modules that have no ID). Only modules that actually generated output will be included. If a module does not have an ID, then the module's `type` will be used to index the module results.  The values in this map are `{Text, Data, StartStyle, EndStyle}` objects, where `Text` is the default output from the module, `Data` is the output variables from the module, and `StartStyle` and `EndStyle` are each a `{FG, BG}` object containing the style of the first and last character of that module - these are based entirely on the module's declared `Style`, so if the module uses a template to style part of the string, these won't be reflected in FG and BG.
 - `ModuleArray` is an array of results from executing each child module. Only modules that actually generated output will be included.
 
 ## custom
