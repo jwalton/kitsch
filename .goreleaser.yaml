@@ -36,6 +36,19 @@ checksum:
   name_template: 'checksums.txt'
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
+brews:
+  - name: kitsch
+    goarm: "6"
+    tap:
+      owner: jwalton
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    commit_author:
+      name: goreleaserbot
+      email: goreleaser@lucid.thedreaming.org
+    homepage: https://kitschprompt.com
+    caveats: |
+      Run "kitsch setup" for details about how to configure your shell to use kitsch!
 changelog:
   sort: asc
   filters:
