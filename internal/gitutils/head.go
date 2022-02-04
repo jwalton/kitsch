@@ -17,15 +17,24 @@ func (g *gitUtils) Head(maxTagsToSearch int) (HeadInfo, error) {
 		return HeadInfo{}, fmt.Errorf("no git repo found")
 	}
 
+	isDetached := true
+	headRef := ""
+	headHash := ""
+
 	head, err := storer.ResolveReference(g.storer, plumbing.HEAD)
-	if err != nil {
-		return HeadInfo{}, err
+	if err == nil {
+		headRef = head.Name().String()
+		headHash = head.Hash().String()
+	} else {
+		// On a brand new repo, we can run into the case where .git/HEAD points
+		// to master, but the master ref hasn't been created yet because there
+		// are no commits.
+		headRef = strings.TrimPrefix(g.readFileIfExist(".git/HEAD"), "ref: ")
+		if headRef == "" {
+			return HeadInfo{}, err
+		}
 	}
 
-	headRef := head.Name().String()
-	headHash := head.Hash().String()
-
-	isDetached := true
 	description := extractBranchName(g.readFileIfExist(".git/rebase-merge/head-name"))
 	if description == "" && strings.HasPrefix(headRef, "refs/heads/") {
 		// If the HEAD file is a symbolic reference to a branch, extract the branch name.
@@ -44,7 +53,7 @@ func (g *gitUtils) Head(maxTagsToSearch int) (HeadInfo, error) {
 	}
 
 	// If that fails, use the hash
-	if description == "" {
+	if description == "" && len(headHash) > shortSHALength {
 		description = "(" + headHash[0:shortSHALength] + "…)"
 	}
 

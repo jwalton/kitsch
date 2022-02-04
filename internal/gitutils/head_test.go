@@ -163,3 +163,26 @@ func TestHeadInNonGitRepo(t *testing.T) {
 	_, err := git.Head(100)
 	assert.EqualError(t, err, "no git repo found")
 }
+
+func TestHeadOnNewGitRepo(t *testing.T) {
+	// On a brand new git repo, .git/HEAD points to master, but there is no ref named master.
+	files := fstest.MapFS{
+		".git/HEAD": &fstest.MapFile{
+			Data: []byte("ref: refs/heads/master\n"),
+		},
+	}
+
+	git := testGitUtils("/Users/oriana/dev/kitsch", files)
+
+	state, err := git.Head(100)
+	assert.Nil(t, err)
+	assert.Equal(t,
+		HeadInfo{
+			Description: "master",
+			Detached:    false,
+			Hash:        "",
+			IsTag:       false,
+		},
+		state,
+	)
+}
