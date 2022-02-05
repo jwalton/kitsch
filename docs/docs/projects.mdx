@@ -33,10 +33,10 @@ projectTypes:
 Here we can see that each item in the the "projectTypes" list contains:
 
 - `name` - the name of this project type.
-- `style` - a default style to apply to the project.  This can be overridden in the "project" module.
+- `style` - a default style to apply to the project. This can be overridden in the "project" module.
 - `conditions` - [conditions](./reference/conditions.mdx) for when to activate this project.
 - `toolSymbol` - the default symbol to show for this project type in the "project" module.
-- `toolVersion` - the "getter" (or a list of getters) to use to get the version of the tool.  If this is a list, then each item in the list will be executed until one succeeds, or until all fail.
+- `toolVersion` - the "getter" (or a list of getters) to use to get the version of the tool. If this is a list, then each item in the list will be executed until one succeeds, or until all fail.
 - `pacakgeManagerSymbol` (optional) - the name of the package manager used (e.g. "npm").
 - `packageManagerVersion` - the "getter" (or a list of getters) to use to get the package manager version for this project type.
 - `packageManagerSymbol` and `packageVersion` (optional) - "getters" for the package manager version and the package version.
@@ -54,13 +54,13 @@ projectTypes:
 
 ## Conditions
 
-Each project has a `conditions` section which specifies under what conditions the project is selected.  See the [conditions reference](./reference/conditions.mdx) for a full list of conditions, but the ones most commonly used in a project are:
+Each project has a `conditions` section which specifies under what conditions the project is selected. See the [conditions reference](./reference/conditions.mdx) for a full list of conditions, but the ones most commonly used in a project are:
 
 - `ifFiles: ["file1", "file2", "file3"]` - The project type will be selected if one or more of the files is present in the current folder.
 - `ifAncestorFiles: ["file1", "file2", "file3"]` - The project type will be selected if one or more of the files is present in the current folder, or any folder higher up the directory hierarchy.
 - `ifExtensions: ["js", "jsx", "ts", "tsx"]` - The project type will be selected if one or more of the extensions is present in the current folder.
 
-Note that "ifFile", "ifAncestorFile", and "ifExtension" are "or"ed together - if any one of these conditions is met, the project type will be selected. The built-in project types do not use "ifAncestorFile". Take for example a node.js project - we detect this kind of project by looking for a "package.json" file in the current folder, but not in ancestor folders.  This means that if you're in a subdirectory of a node project, then the "project" module won't show that you're in a node project. This is considered an "acceptable performance tradeoff" - most of the time developers spend time in the root of a project anyways, since that's where you'd run `make`, `npm test`, `go build`, or whatever command you'd use to build or run your project. If you prefer to look in parent folders, you can easily override this behavior.  For example adding this to "config.yaml" will fix this for node projects:
+Note that "ifFile", "ifAncestorFile", and "ifExtension" are "or"ed together - if any one of these conditions is met, the project type will be selected. The built-in project types do not use "ifAncestorFile". Take for example a node.js project - we detect this kind of project by looking for a "package.json" file in the current folder, but not in ancestor folders. This means that if you're in a subdirectory of a node project, then the "project" module won't show that you're in a node project. This is considered an "acceptable performance tradeoff" - most of the time developers spend time in the root of a project anyways, since that's where you'd run `make`, `npm test`, `go build`, or whatever command you'd use to build or run your project. If you prefer to look in parent folders, you can easily override this behavior. For example adding this to "config.yaml" will fix this for node projects:
 
 ```yaml
 projectTypes:
@@ -71,7 +71,7 @@ projectTypes:
 
 ### Getters
 
-The `tool`, `packageManager`, and `packageVersion` all take a "getter" object that describes how to get an object. There are many different types of getters, but each is a `{ type, from, as, valueTemplate, regex, cache }` object.
+The `tool`, `packageManager`, and `packageVersion` all take a "getter" object that describes how to get an object. There are many different types of getters, but each is a `{ type, from, as, valueTemplate, regex, cache, conditions }` object.
 
 `type` and `from` together define the where the data will be fetched from:
 
@@ -85,7 +85,7 @@ For any getter, you can also specify:
 - `as:` - how to interpret the retrieved value - one of `text`, `json`, `toml`, or `yaml`. For `json`, `toml`, or `yaml`, the file will be parsed and the results passed to the `valueTemplate`. For `text`, the valueTemplate will get a `{ Text }` object. If `as` is specified and `valueTemplate` is not, then this getter will never return a value.
 - `valueTemplate` - A template used to render the value. Note that the valueTemplate is passed the parsed object from "as" - `.Globals` are not available in this template, nor are style functions.
 - `regex` - A regular expression used to extract a value - if there are any capturing groups in the regex, then the first capturing group will be returned. Otherwise, the matched text will be returned. If `regex` is specified, then `as` will be ignored. If both `regex` and `valueTemplate` are specified, then `valueTemplate` will be run after the regex.
-- `cache` - Caching only applies to "custom" getters.  Thisis an `{ enabled, files }` object.
+- `cache` - Caching only applies to "custom" getters. Thisis an `{ enabled, files }` object.
 
 An example of the `regex` option can be seen in this example to fetch the version from the `go version` command. This will print a value like "go version go1.17.1 darwin/amd64", and the regex will extract the "1.17.1" part:
 
@@ -101,15 +101,15 @@ projectTypes:
       regex: "go version go(\d+\.\d+\.\d+)"
 ```
 
-If the "tool" getter returns an empty value or an error, the project will not be selected, even if it otherwise would have been.  For security reasons, a "custom" getter will ignore "." in the PATH. For example, if the command is "npm --version", and there is an "npm" command in the current working directory, then "custom" will not run `./npm` even if "." is in the PATH.
+If the "tool" getter returns an empty value or an error, the project will not be selected, even if it otherwise would have been. For security reasons, a "custom" getter will ignore "." in the PATH. For example, if the command is "npm --version", and there is an "npm" command in the current working directory, then "custom" will not run `./npm` even if "." is in the PATH.
 
 ### Caching
 
-Caching is used to cache the results of running a command between executions.  For example, in node.js, running `npm --version` takes about half a second - if we ran this command every time we wanted to show the prompt, then showing the prompt would take about half a second, which would be unacceptably slow.  To get around this we cache the output of `npm --version`, but we need to know when to invalidate the cache, and that's where the `cache` section comes in.
+Caching is used to cache the results of running a command between executions. For example, in node.js, running `npm --version` takes about half a second - if we ran this command every time we wanted to show the prompt, then showing the prompt would take about half a second, which would be unacceptably slow. To get around this we cache the output of `npm --version`, but we need to know when to invalidate the cache, and that's where the `cache` section comes in.
 
-If `cache.enabled` is true on a getter, then the getter will resolve the full path of the executable (following any sym-links), and then use the full path, the last modified date, the size of the command, and the arguments to the command as a cache key.  If any of these values change, we'll invalidate the command. If `cache.files` is specified, then the full path, last modified date, and size of each of the specified files will be added to the cache key as well.  File names in `cache.files` may start with "~", which will be replaced with the user's home directory, and may contain `${VAR}` environment variable substitutions.
+If `cache.enabled` is true on a getter, then the getter will resolve the full path of the executable (following any sym-links), and then use the full path, the last modified date, the size of the command, and the arguments to the command as a cache key. If any of these values change, we'll invalidate the command. If `cache.files` is specified, then the full path, last modified date, and size of each of the specified files will be added to the cache key as well. File names in `cache.files` may start with "~", which will be replaced with the user's home directory, and may contain `${VAR}` environment variable substitutions.
 
-A good example of when you would need to specify `cache.files` is where you're using a shim-based version manager.  For example, again in node.js, Volta is a popular tool for managing multiple versions of node.js, but it uses a "shim" for each executable, so when we try to lookup the location of `npm`, we will find it in `~/.volta/bin/npm`.  This executable never changes - when you run it, it works out which version of npm needs to be run and then goes and runs it.  If we tried to use the Volta `npm` has a cache key, we'd never invalidate the cache.  Instead, we can use something like this for volta:
+A good example of when you would need to specify `cache.files` is where you're using a shim-based version manager. For example, again in node.js, Volta is a popular tool for managing multiple versions of node.js, but it uses a "shim" for each executable, so when we try to lookup the location of `npm`, we will find it in `~/.volta/bin/npm`. This executable never changes - when you run it, it works out which version of npm needs to be run and then goes and runs it. If we tried to use the Volta `npm` has a cache key, we'd never invalidate the cache. Instead, we can use something like this for volta:
 
 ```yaml
   - type: custom
