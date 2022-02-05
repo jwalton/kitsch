@@ -3,6 +3,7 @@
 package projects
 
 import (
+	"github.com/MakeNowJust/heredoc"
 	"github.com/jwalton/kitsch/internal/kitsch/getters"
 	"github.com/jwalton/kitsch/internal/kitsch/log"
 )
@@ -14,6 +15,8 @@ type ProjectInfo struct {
 
 	// Name is the name of the matched project type.
 	Name string
+	// Style is the default style for the matched project type.
+	Style string
 	// ToolSymbol is the symbol for this project's build tool.
 	ToolSymbol string
 	// ToolVersion is the version of this project's build tool.
@@ -52,18 +55,22 @@ func (projectInfo *ProjectInfo) PackageVersion() string {
 	return projectInfo.packageVersion
 }
 
-func getStringValue(getter getters.Getter, getterContext getters.GetterContext) (string, error) {
-	if getter == nil {
+func getStringValue(getter []getters.Getter, getterContext getters.GetterContext) (string, error) {
+	if len(getter) == 0 {
 		return "", nil
 	}
 
-	value, err := getter.GetValue(getterContext)
-	if err != nil {
-		return "", err
-	}
+	for index := range getter {
 
-	if str, ok := value.(string); ok {
-		return str, nil
+		value, err := getter[index].GetValue(getterContext)
+		if err != nil {
+			log.Warn("Error running getter:", err)
+			continue
+		}
+
+		if str, ok := value.(string); ok {
+			return str, nil
+		}
 	}
 
 	return "", nil
@@ -91,6 +98,7 @@ func ResolveProjectType(
 			projectType:          projectType,
 			getterContext:        getterContext,
 			Name:                 projectType.Name,
+			Style:                projectType.Style,
 			ToolSymbol:           projectType.ToolSymbol,
 			ToolVersion:          toolVersion,
 			PackageManagerSymbol: projectType.PackageManagerSymbol,
@@ -101,4 +109,10 @@ func ResolveProjectType(
 }
 
 //JSONSchemaDefinitions is a string containing JSON schema definitions for objects in the projects package.
-var JSONSchemaDefinitions = "\"ProjectType\": " + projectTypeJSONSchema
+var JSONSchemaDefinitions = "\"ProjectType\": " + projectTypeJSONSchema + ",\n" +
+	heredoc.Doc(`"GetterList": {
+	  "oneOf": [
+	    { "$ref": "#/definitions/CustomGetter" },
+	    { "type": "array", "items": { "$ref": "#/definitions/CustomGetter" } }
+	  ]
+	}`)

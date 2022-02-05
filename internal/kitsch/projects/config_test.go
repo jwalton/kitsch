@@ -32,9 +32,52 @@ func TestLoadProjects(t *testing.T) {
 					IfFiles: []string{"package.json"},
 				},
 				ToolSymbol: "Node",
-				ToolVersion: getters.CustomGetter{
+				ToolVersion: []getters.Getter{getters.CustomGetter{
 					Type: getters.TypeCustom,
 					From: "node --version",
+				}},
+			},
+		},
+		projects,
+	)
+}
+
+func TestLoadProjectsGetterArray(t *testing.T) {
+	doc := `
+  - name: "test"
+    conditions:
+      ifFiles: ["package.json"]
+    toolSymbol: Node
+    toolVersion:
+      - type: custom
+        from: "node --version"
+      - type: custom
+        from: "volta which node"
+        regex: "image/node/(\\d+\\.\\d+\\.\\d+)/bin/node"
+`
+
+	projects := []ProjectType{}
+	err := yaml.Unmarshal([]byte(doc), &projects)
+
+	assert.Nil(t, err)
+	assert.Equal(t,
+		[]ProjectType{
+			{
+				Name: "test",
+				Conditions: condition.Conditions{
+					IfFiles: []string{"package.json"},
+				},
+				ToolSymbol: "Node",
+				ToolVersion: []getters.Getter{
+					getters.CustomGetter{
+						Type: getters.TypeCustom,
+						From: "node --version",
+					},
+					getters.CustomGetter{
+						Type:  getters.TypeCustom,
+						From:  "volta which node",
+						Regex: "image/node/(\\d+\\.\\d+\\.\\d+)/bin/node",
+					},
 				},
 			},
 		},
@@ -49,10 +92,10 @@ var from = []ProjectType{
 			IfExtensions: []string{".java"},
 		},
 		ToolSymbol: "Java",
-		ToolVersion: getters.CustomGetter{
+		ToolVersion: []getters.Getter{getters.CustomGetter{
 			Type: getters.TypeCustom,
 			From: "java --version",
-		},
+		}},
 	},
 	{
 		Name: "node",
@@ -60,10 +103,10 @@ var from = []ProjectType{
 			IfFiles: []string{"package.json"},
 		},
 		ToolSymbol: "Node",
-		ToolVersion: getters.CustomGetter{
+		ToolVersion: []getters.Getter{getters.CustomGetter{
 			Type: getters.TypeCustom,
 			From: "node --version",
-		},
+		}},
 	},
 }
 
@@ -108,10 +151,10 @@ func TestMergeAlteredProjectTypes(t *testing.T) {
 					IfFiles: []string{"package.json"},
 				},
 				ToolSymbol: "JS",
-				ToolVersion: getters.CustomGetter{
+				ToolVersion: []getters.Getter{getters.CustomGetter{
 					Type: getters.TypeCustom,
 					From: "node --version",
-				},
+				}},
 			},
 		},
 		to,

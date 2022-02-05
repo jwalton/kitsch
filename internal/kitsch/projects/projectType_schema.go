@@ -7,11 +7,12 @@ var projectTypeJSONSchema = `{
   "type": "object",
   "properties": {
     "name": {"type": "string", "description": "Name is the name of this project type."},
+    "style": {"type": "string", "description": "Style is a default style for this project type."},
     "conditions": {"$ref": "#/definitions/Conditions"},
     "toolSymbol": {"type": "string", "description": "ToolSymbol is the default symbol to use for this project type."},
-    "toolVersion": {"$ref": "#/definitions/CustomGetter"},
+    "toolVersion": {"$ref": "#/definitions/GetterList"},
     "packageManagerSymbol": {"type": "string", "description": "PackageManagerSymbol is the optional default symbol to use for the package manager for this project type."},
-    "packageManagerVersion": {"$ref": "#/definitions/CustomGetter"},
-    "packageVersion": {"$ref": "#/definitions/CustomGetter"}
+    "packageManagerVersion": {"$ref": "#/definitions/GetterList"},
+    "packageVersion": {"$ref": "#/definitions/GetterList"}
   }}`
 

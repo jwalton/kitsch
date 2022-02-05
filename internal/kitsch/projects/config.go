@@ -3,57 +3,46 @@ package projects
 import (
 	"fmt"
 
-	"github.com/jwalton/kitsch/internal/kitsch/condition"
 	"github.com/jwalton/kitsch/internal/kitsch/getters"
 	"github.com/jwalton/kitsch/internal/kitsch/log"
 	"gopkg.in/yaml.v3"
 )
 
-type projectTypeSpec struct {
-	// Name is the name of this project type.
-	Name string `yaml:"name"`
-	// Condition is the condition that must be met for this project type to be used.
-	Conditions condition.Conditions `yaml:"conditions"`
-	// ToolSymbol is the default symbol to use for this project type.
-	ToolSymbol string `yaml:"toolSymbol"`
-	// PackageManagerSymbol is the default symbol to use for the package manager
-	// for this project type.
-	PackageManagerSymbol string `yaml:"packageManagerSymbol"`
-	// ToolVersion is used to retrieve the version of the build tool for this project.
-	ToolVersion getters.CustomGetter `yaml:"toolVersion"`
-	// PackageManagerVersion is, if specified, used to retrieve the version of the
-	// package manager for this project.
-	PackageManagerVersion getters.CustomGetter `yaml:"packageManagerVersion"`
-	// PackageVersion is, if specified, used to retrieve the version of the
-	// project's package.
-	PackageVersion getters.CustomGetter `yaml:"packageVersion"`
-}
+type getterList []getters.Getter
 
-// UnmarshalYAML unmarshals a YAML node into a ProjectType.
-func (item *ProjectType) UnmarshalYAML(node *yaml.Node) error {
+// UnmarshalYAML unmarshals a YAML node into a ProjectTypeList.
+func (list *getterList) UnmarshalYAML(node *yaml.Node) error {
 	if node == nil {
 		return fmt.Errorf("no value provided")
 	}
 
-	spec := projectTypeSpec{}
-	err := node.Decode(&spec)
-	if err != nil {
+	if node.Kind == yaml.MappingNode {
+		// A single getter.
+		getter := getters.CustomGetter{}
+		err := node.Decode(&getter)
+		if err != nil {
+			return err
+		}
+		*list = []getters.Getter{getter}
+		return nil
+	}
+
+	// A nodeList of getters.
+	var nodeList []yaml.Node
+	if err := node.Decode(&nodeList); err != nil {
 		return err
 	}
 
-	item.Name = spec.Name
-	item.Conditions = spec.Conditions
-	item.ToolSymbol = spec.ToolSymbol
-	item.PackageManagerSymbol = spec.PackageManagerSymbol
-	if spec.ToolVersion.From != "" {
-		item.ToolVersion = spec.ToolVersion
+	newList := make([]getters.Getter, len(nodeList))
+	for index := range nodeList {
+		getter := getters.CustomGetter{}
+		err := nodeList[index].Decode(&getter)
+		if err != nil {
+			return err
+		}
+		newList[index] = getter
 	}
-	if spec.PackageManagerVersion.From != "" {
-		item.PackageManagerVersion = spec.PackageManagerVersion
-	}
-	if spec.PackageVersion.From != "" {
-		item.PackageVersion = spec.PackageVersion
-	}
+	*list = newList
 
 	return nil
 }
@@ -99,6 +88,9 @@ func MergeProjectTypes(to []ProjectType, from []ProjectType, addMissing bool) []
 }
 
 func mergeProjectType(to ProjectType, from ProjectType) ProjectType {
+	if to.Style == "" {
+		to.Style = from.Style
+	}
 	if to.Conditions.IsEmpty() {
 		to.Conditions = from.Conditions
 	}

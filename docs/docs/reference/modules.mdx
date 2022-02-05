@@ -251,10 +251,14 @@ Outputs:
 
 The project module works out what kind of project the current folder represents, and displays the current tooling versions. This is done through the ["projects" top-level configuration item](../projects.mdx) in `${configdir}/kitsch.yaml`.
 
+The default output of the project module will be something like "w/nodejs@16.13.2" or "w/go@1.17.5".
+
+Each project has a unique style associated with it; the style comes from the `style` field in the `projects` map in this module.  If none is specified, then it falls back to the `defaultProjectStyle` in this module.  If that is also unspecified, then the style will be taken from teh top-level `projects` configuration.
+
 Configuration:
 
 - `projects` is a map where keys are project names, and values are `{ style, toolSymbol, packageManagerSymbol }` objects, which can be used to provide a custom style and symbols for existing projects on a theme-by-theme basis.
-- `defaultProjectStyle` is the style to use if no project-specific style is specified.
+- `defaultProjectStyle` is the style to use if no project-specific style is specified in `projects`.  If this is also unspecified, we will fall back to the style specified in the top level `projects` configuration.
 
 Outputs:
 

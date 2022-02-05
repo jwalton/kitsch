@@ -21,10 +21,6 @@ prompt:
             - type: hostname
         - type: directory
           style: bold
-        - type: project
-          # template: |
-          #   via {{ .Data.ToolSymbol }}@{{ .Data.ToolVersion }}
-          #   {{- if .Data.PackageManagerVersion }}/{{ .Data.PackageManagerSymbol }}@{{ .Data.PackageManagerVersion }}{{ end -}}
     - type: block
       id: git
       style: brightYellow
@@ -50,6 +46,11 @@ prompt:
             {{- end -}}
         - type: git_status
       template: "{{ with .Text }}[{{ . }}]{{end}}"
+    - type: project
+      style: "#555"
+      # template: |
+      #   via {{ .Data.ToolSymbol }}@{{ .Data.ToolVersion }}
+      #   {{- if .Data.PackageManagerVersion }}/{{ .Data.PackageManagerSymbol }}@{{ .Data.PackageManagerVersion }}{{ end -}}
     - type: kubernetes
       style: $fg
       conditions:

@@ -68,24 +68,27 @@ func (mod ProjectModule) Execute(context *Context) ModuleResult {
 		overrides = ProjectConfig{}
 	}
 
+	projectStyleString := overrides.Style
+	if projectStyleString == "" {
+		projectStyleString = mod.DefaultProjectStyle
+	}
+	if projectStyleString == "" {
+		projectStyleString = projectInfo.Style
+	}
+	projectStyle := context.GetStyle(projectStyleString)
+
 	data := projectModuleData{
 		projectInfo:          *projectInfo,
 		Name:                 projectInfo.Name,
 		ToolSymbol:           defaultString(overrides.ToolSymbol, projectInfo.ToolSymbol),
 		ToolVersion:          projectInfo.ToolVersion,
 		PackageManagerSymbol: defaultString(overrides.PackageManagerSymbol, projectInfo.PackageManagerSymbol),
-		ProjectStyle:         overrides.Style,
+		ProjectStyle:         projectStyleString,
 	}
-
-	projectStyleString := data.ProjectStyle
-	if projectStyleString == "" {
-		projectStyleString = mod.DefaultProjectStyle
-	}
-	projectStyle := context.GetStyle(projectStyleString)
 
 	text := ""
 	if data.ToolVersion != "" {
-		text = "via " + projectStyle.Apply(data.ToolSymbol+"@"+data.ToolVersion)
+		text = "w/" + projectStyle.Apply(data.ToolSymbol+"@"+data.ToolVersion)
 	}
 
 	return ModuleResult{DefaultText: text, Data: data}

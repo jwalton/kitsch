@@ -6,7 +6,8 @@ package getters
 var cacheSettingsJSONSchema = `{
   "type": "object",
   "properties": {
-    "enabled": {"type": "boolean", "description": "Enabled is true if caching should be enabled for this getter.  At the moment, this only applied to getters with ` + "`" + `Type: \"custom\"` + "`" + `.  This makes it so we will cache the output of a command instead of re-running that command."}
+    "enabled": {"type": "boolean", "description": "Enabled is true if caching should be enabled for this getter.  At the moment, this only applied to getters with ` + "`" + `Type: \"custom\"` + "`" + `.  This makes it so we will cache the output of a command instead of re-running that command."},
+    "file": {"type": "array", "description": "Files is the path to one or more files to use as the key for the cache.  Each file's full path (following any symlinks), size, and last modified time will all form part of the cache key.  For \"custom\" getters, the executable is implicitly used as a file - if this is specified, then both the executable and these files will be used.", "items": {"type": "string", "description": ""}}
   }}`
 
 // customGetterJSONSchema is the JSON schema for the CustomGetter struct.

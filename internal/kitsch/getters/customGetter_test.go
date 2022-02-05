@@ -11,7 +11,9 @@ import (
 
 type testGetterContext struct {
 	directory fileutils.Directory
+	home      string
 	cache     cache.Cache
+	env       map[string]string
 }
 
 // GetWorkingDirectory returns the current working directory.
@@ -19,9 +21,14 @@ func (context *testGetterContext) GetWorkingDirectory() fileutils.Directory {
 	return context.directory
 }
 
+// GetHomeDirectoryPath returns the path to the user's home directory.
+func (context *testGetterContext) GetHomeDirectoryPath() string {
+	return context.home
+}
+
 // Getenv returns the value of the specified environment variable.
 func (context *testGetterContext) Getenv(key string) string {
-	return ""
+	return context.env[key]
 }
 
 // GetValueCache returns the value cache.
@@ -32,6 +39,7 @@ func (context *testGetterContext) GetValueCache() cache.Cache {
 func makeTestGetterContext(fsys fstest.MapFS) *testGetterContext {
 	return &testGetterContext{
 		directory: fileutils.NewDirectoryTestFS("/foo/bar", fsys),
+		home:      "/users/jwalton",
 		cache:     cache.NewMemoryCache(),
 	}
 }

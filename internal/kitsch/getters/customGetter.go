@@ -13,7 +13,6 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/Masterminds/sprig/v3"
-	"github.com/jwalton/kitsch/internal/cache"
 	"github.com/jwalton/kitsch/internal/fileutils"
 	"github.com/jwalton/kitsch/internal/kitsch/modtemplate"
 	"github.com/mattn/go-shellwords"
@@ -113,6 +112,12 @@ type CacheSettings struct {
 	// makes it so we will cache the output of a command instead of re-running that
 	// command.
 	Enabled bool `yaml:"enabled"`
+	// Files is the path to one or more files to use as the key for the cache.  Each file's
+	// full path (following any symlinks), size, and last modified time will all
+	// form part of the cache key.  For "custom" getters, the executable is implicitly
+	// used as a file - if this is specified, then both the executable and these
+	// files will be used.
+	Files []string `yaml:"file"`
 }
 
 // CustomGetter is a getter that can be configured from a YAML file.
@@ -144,11 +149,10 @@ func (getter CustomGetter) GetValue(context GetterContext) (interface{}, error) 
 	var result interface{}
 
 	folder := context.GetWorkingDirectory()
-	valueCache := context.GetValueCache()
 
 	switch getter.Type {
 	case TypeCustom:
-		bytesValue, err = getter.getCustomValue(folder, valueCache, getter.From)
+		bytesValue, err = getter.getCustomValue(context, getter.From)
 	case TypeFile:
 		bytesValue, err = fs.ReadFile(folder.FileSystem(), getter.From)
 	case TypeAncestorFile:
@@ -214,11 +218,80 @@ func (getter CustomGetter) GetValue(context GetterContext) (interface{}, error) 
 	return result, nil
 }
 
+func (getter CustomGetter) getCacheKeyForFile(file string) (string, error) {
+	var err error
+	origFile := file
+
+	file, err = filepath.Abs(file)
+	if err != nil {
+		return "", fmt.Errorf("could not get absolute path for file: \"%s\": %w", origFile, err)
+	}
+
+	// If the file is a symlink, resolve it.
+	file, err = filepath.EvalSymlinks(file)
+	if err != nil {
+		return "E_NOEXIST", nil
+	}
+
+	fileDetails, err := os.Stat(file)
+	if err != nil {
+		return "E_NOEXIST", nil
+	}
+
+	return fmt.Sprintf(
+		"%s:%d:%d",
+		file,
+		fileDetails.ModTime().Unix(),
+		fileDetails.Size(),
+	), nil
+}
+
+var variableRegExp = regexp.MustCompile(`\$\{?([a-zA-Z_]+[a-zA-Z0-9_]*)\}?`)
+
+// ResolveFile resolve a file to an absolute path.  This will take care of paths that
+// start with "~" or which contain "${VAR}"iables.
+func resolveFile(context GetterContext, file string) string {
+	if strings.HasPrefix(file, "~") {
+		file = filepath.Join(context.GetHomeDirectoryPath(), file[1:])
+	}
+
+	for match := variableRegExp.FindStringSubmatchIndex(file); match != nil; match = variableRegExp.FindStringSubmatchIndex(file) {
+		varName := file[match[2]:match[3]]
+		varValue := context.Getenv(varName)
+		file = file[:match[0]] + varValue + file[match[1]:]
+	}
+
+	return file
+}
+
+func (getter CustomGetter) getCacheKeyForFiles(context GetterContext, executable string) (string, error) {
+	result := ""
+
+	if executable != "" {
+		exeKey, err := getter.getCacheKeyForFile(executable)
+		if err != nil {
+			return "", err
+		}
+		result += "exe:" + exeKey
+	}
+
+	for _, file := range getter.Cache.Files {
+		fileKey, err := getter.getCacheKeyForFile(resolveFile(context, file))
+		if err != nil {
+			return "", err
+		}
+		result += ":file=" + fileKey
+	}
+
+	return result, nil
+}
+
 func (getter CustomGetter) getCustomValue(
-	projectFolder fileutils.Directory,
-	valueCache cache.Cache,
+	context GetterContext,
 	command string,
 ) ([]byte, error) {
+	valueCache := context.GetValueCache()
+
 	commandParts, err := shellwords.Parse(command)
 	if err != nil {
 		return nil, fmt.Errorf("invalid command: \"%s\": %w", command, err)
@@ -240,31 +313,26 @@ func (getter CustomGetter) getCustomValue(
 		return nil, fmt.Errorf("could not resolve executable: \"%s\": %w", commandParts[0], err)
 	}
 
-	executableDetails, err := os.Stat(executable)
-	if err != nil {
-		return nil, fmt.Errorf("could not stat executable:  \"%s\": %w", commandParts[0], err)
-	}
-
-	var cacheKey string
-
 	// Try to get the value from the cache.
+	var cacheKey string
 	if getter.Cache.Enabled {
-		cacheKey = fmt.Sprintf(
-			"%s %s -- %d/%d",
-			executable,
-			strings.Join(commandParts[1:], " "),
-			executableDetails.ModTime().Unix(),
-			executableDetails.Size(),
-		)
+		cacheKey, err = getter.getCacheKeyForFiles(context, executable)
+		if err != nil {
+			cacheKey = ""
+		} else {
+			cacheKey += ":args=" + strings.Join(commandParts[1:], " ")
+		}
 
-		if value := valueCache.Get(cacheKey); value != nil {
-			return value, nil
+		if cacheKey != "" {
+			if value := valueCache.Get(cacheKey); value != nil {
+				return value, nil
+			}
 		}
 	}
 
 	// If that fails, run the command.
 	cmd := exec.Command(executable, commandParts[1:]...)
-	cmd.Dir = projectFolder.Path()
+	cmd.Dir = context.GetWorkingDirectory().Path()
 	result, err := cmd.CombinedOutput()
 	if err != nil {
 		return nil, fmt.Errorf("error running command: \"%s\": %w", executable, err)

@@ -13,6 +13,9 @@ type GetterContext interface {
 	// GetWorkingDirectory returns the current working directory.
 	GetWorkingDirectory() fileutils.Directory
 
+	// GetHomeDirectoryPath returns the path to the user's home directory.
+	GetHomeDirectoryPath() string
+
 	// Getenv returns the value of the specified environment variable.
 	Getenv(key string) string
 

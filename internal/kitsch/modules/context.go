@@ -135,6 +135,11 @@ func (context *Context) GetWorkingDirectory() fileutils.Directory {
 	return context.Directory
 }
 
+// GetHomeDirectoryPath returns the full path to the user's home directory.
+func (context *Context) GetHomeDirectoryPath() string {
+	return context.Globals.Home
+}
+
 // Getenv returns the value of the specified environment variable.
 func (context *Context) Getenv(key string) string {
 	return context.Environment.Getenv(key)
