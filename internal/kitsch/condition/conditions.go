@@ -33,17 +33,19 @@ type Conditions struct {
 }
 
 // IsEmpty returns true if the condition has no conditions to match.
-func (conditions Conditions) IsEmpty() bool {
-	return len(conditions.IfAncestorFiles) == 0 &&
-		len(conditions.IfFiles) == 0 &&
-		len(conditions.IfExtensions) == 0 &&
-		len(conditions.OnlyIfOS) == 0 &&
-		len(conditions.OnlyIfNotOS) == 0
+func (conditions *Conditions) IsEmpty() bool {
+	return conditions == nil ||
+		(len(conditions.IfAncestorFiles) == 0 &&
+			len(conditions.IfFiles) == 0 &&
+			len(conditions.IfExtensions) == 0 &&
+			len(conditions.OnlyIfOS) == 0 &&
+			len(conditions.OnlyIfNotOS) == 0)
+
 }
 
 // Matches returns true if this condition is matched in the given directory
 // and for the current operating system.
-func (conditions Conditions) Matches(directory fileutils.Directory) bool {
+func (conditions *Conditions) Matches(directory fileutils.Directory) bool {
 	if !conditions.matchesOS() {
 		return false
 	}
@@ -78,7 +80,7 @@ func (conditions Conditions) Matches(directory fileutils.Directory) bool {
 	return false
 }
 
-func (conditions Conditions) matchesOS() bool {
+func (conditions *Conditions) matchesOS() bool {
 	if len(conditions.OnlyIfNotOS) > 0 {
 		if contains(conditions.OnlyIfNotOS, runtime.GOOS) {
 			return false

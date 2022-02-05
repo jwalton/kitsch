@@ -133,7 +133,11 @@ func (builder *schemaBuilder) addStruct(structName string, s *types.Struct) erro
 		if tags.ref {
 			refStruct := tags.refStruct
 			if refStruct == "" {
-				refStruct = getBareTypeName(field.Type())
+				var err error
+				refStruct, err = getBareTypeName(field.Type())
+				if err != nil {
+					return err
+				}
 			}
 			fieldSchema = fmt.Sprintf(`{"$ref": "#/definitions/%s"}`, refStruct)
 		} else {
@@ -180,7 +184,11 @@ func (builder *schemaBuilder) generateSchemaForType(
 			fieldSchema = fmt.Sprintf(`{"type": "%s", "description": "%s"}`, basicSchemaType, description)
 		case *types.Struct:
 			childBuilder := schemaBuilder{pkg: builder.pkg, indent: builder.indent + defaultIndent}
-			err := childBuilder.addStruct(getBareTypeName(t), v)
+			bareTypeName, err := getBareTypeName(t)
+			if err != nil {
+				return "", err
+			}
+			err = childBuilder.addStruct(bareTypeName, v)
 			if err != nil {
 				return "", err
 			}
@@ -245,9 +253,15 @@ func (builder *schemaBuilder) getDescriptionForField(
 	return ""
 }
 
-func getBareTypeName(t types.Type) string {
-	if named, ok := t.(*types.Named); ok {
-		return named.Obj().Name()
+func getBareTypeName(t types.Type) (string, error) {
+	if ptr, ok := t.(*types.Pointer); ok {
+		t = ptr.Elem()
 	}
-	return ""
+
+	if named, ok := t.(*types.Named); ok {
+		return named.Obj().Name(), nil
+	}
+
+	return "", fmt.Errorf("Unhandled type: %T", t)
+
 }

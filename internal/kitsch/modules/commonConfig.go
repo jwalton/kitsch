@@ -21,7 +21,7 @@ type CommonConfig struct {
 	// Template is a golang template to use to render the output of this module.
 	Template string `yaml:"template"`
 	// Conditions are conditions that must be met for this module to execute.
-	Conditions condition.Conditions `yaml:"conditions"`
+	Conditions *condition.Conditions `yaml:"conditions,omitempty" jsonschema:",ref"`
 }
 
 // Validate checks for common configuration errors in the CommonConfig, and prints

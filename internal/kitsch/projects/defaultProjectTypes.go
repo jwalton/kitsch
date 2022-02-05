@@ -10,7 +10,7 @@ var DefaultProjectTypes = []ProjectType{
 	{
 		Name:  "java",
 		Style: "brightRed",
-		Conditions: condition.Conditions{
+		Conditions: &condition.Conditions{
 			IfExtensions: []string{"java"},
 		},
 		ToolSymbol: "java",
@@ -27,7 +27,7 @@ var DefaultProjectTypes = []ProjectType{
 	{
 		Name:  "go",
 		Style: "brightCyan",
-		Conditions: condition.Conditions{
+		Conditions: &condition.Conditions{
 			IfFiles:      []string{"go.mod"},
 			IfExtensions: []string{"go"},
 		},
@@ -44,7 +44,7 @@ var DefaultProjectTypes = []ProjectType{
 	{
 		Name:  "rust",
 		Style: "brightRed",
-		Conditions: condition.Conditions{
+		Conditions: &condition.Conditions{
 			IfFiles:      []string{"Cargo.toml"},
 			IfExtensions: []string{"rs"},
 		},
@@ -69,7 +69,7 @@ var DefaultProjectTypes = []ProjectType{
 	{
 		Name:  "node-yarn",
 		Style: "brightBlue",
-		Conditions: condition.Conditions{
+		Conditions: &condition.Conditions{
 			IfFiles: []string{"yarn.lock"},
 		},
 		ToolSymbol: "node",
@@ -119,7 +119,7 @@ var DefaultProjectTypes = []ProjectType{
 	{
 		Name:  "node",
 		Style: "brightYellow",
-		Conditions: condition.Conditions{
+		Conditions: &condition.Conditions{
 			IfFiles: []string{"package.json"},
 		},
 		ToolSymbol: "node",
@@ -169,7 +169,7 @@ var DefaultProjectTypes = []ProjectType{
 	{
 		Name:  "deno",
 		Style: "brightGreen",
-		Conditions: condition.Conditions{
+		Conditions: &condition.Conditions{
 			IfFiles: []string{"mod.ts"},
 		},
 		ToolSymbol: "deno",
@@ -185,7 +185,7 @@ var DefaultProjectTypes = []ProjectType{
 	{
 		Name:  "python",
 		Style: "brightYellow",
-		Conditions: condition.Conditions{
+		Conditions: &condition.Conditions{
 			IfFiles:      []string{"requirements.txt", "Pipfile", "pyproject.toml"},
 			IfExtensions: []string{"py"},
 		},
@@ -214,7 +214,7 @@ var DefaultProjectTypes = []ProjectType{
 	{
 		Name:  "php",
 		Style: "#8993bb",
-		Conditions: condition.Conditions{
+		Conditions: &condition.Conditions{
 			IfFiles:      []string{"composer.json", ".php-version"},
 			IfExtensions: []string{"php"},
 		},
@@ -231,7 +231,7 @@ var DefaultProjectTypes = []ProjectType{
 	{
 		Name:  "ruby",
 		Style: "brightRed",
-		Conditions: condition.Conditions{
+		Conditions: &condition.Conditions{
 			IfFiles:      []string{"Gemfile", ".ruby-version"},
 			IfExtensions: []string{"rb"},
 		},
@@ -256,7 +256,7 @@ var DefaultProjectTypes = []ProjectType{
 	{
 		Name:  "helm",
 		Style: "brightWhite",
-		Conditions: condition.Conditions{
+		Conditions: &condition.Conditions{
 			IfFiles: []string{"Chart.yaml"},
 		},
 		ToolSymbol: "helm",

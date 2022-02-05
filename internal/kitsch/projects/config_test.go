@@ -28,7 +28,7 @@ func TestLoadProjects(t *testing.T) {
 		[]ProjectType{
 			{
 				Name: "test",
-				Conditions: condition.Conditions{
+				Conditions: &condition.Conditions{
 					IfFiles: []string{"package.json"},
 				},
 				ToolSymbol: "Node",
@@ -64,7 +64,7 @@ func TestLoadProjectsGetterArray(t *testing.T) {
 		[]ProjectType{
 			{
 				Name: "test",
-				Conditions: condition.Conditions{
+				Conditions: &condition.Conditions{
 					IfFiles: []string{"package.json"},
 				},
 				ToolSymbol: "Node",
@@ -88,7 +88,7 @@ func TestLoadProjectsGetterArray(t *testing.T) {
 var from = []ProjectType{
 	{
 		Name: "java",
-		Conditions: condition.Conditions{
+		Conditions: &condition.Conditions{
 			IfExtensions: []string{".java"},
 		},
 		ToolSymbol: "Java",
@@ -99,7 +99,7 @@ var from = []ProjectType{
 	},
 	{
 		Name: "node",
-		Conditions: condition.Conditions{
+		Conditions: &condition.Conditions{
 			IfFiles: []string{"package.json"},
 		},
 		ToolSymbol: "Node",
@@ -147,7 +147,7 @@ func TestMergeAlteredProjectTypes(t *testing.T) {
 		[]ProjectType{
 			{
 				Name: "node",
-				Conditions: condition.Conditions{
+				Conditions: &condition.Conditions{
 					IfFiles: []string{"package.json"},
 				},
 				ToolSymbol: "JS",
