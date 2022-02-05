@@ -22,14 +22,14 @@ type Conditions struct {
 	IfFiles []string `yaml:"ifFiles"`
 	// IfExtensions is a list of extensions to search for in the current folder.
 	IfExtensions []string `yaml:"ifExtensions"`
-	// IfOS is a list of operating systems.  If the current GOOS is not in
+	// OnlyIfOS is a list of operating systems.  If the current GOOS is not in
 	// the list, then the Conditions are not met, even if other conditions would
 	// be satisfied.
-	IfOS []string `yaml:"ifOS"`
-	// IfNotOS is a list of operating systems.  If the current GOOS is in
+	OnlyIfOS []string `yaml:"onlyIfOS"`
+	// OnlyIfNotOS is a list of operating systems.  If the current GOOS is in
 	// the list, then the Conditions are not met, even if other conditions would
 	// be satisfied.
-	IfNotOS []string `yaml:"ifNotOS"`
+	OnlyIfNotOS []string `yaml:"onlyIfNotOS"`
 }
 
 // IsEmpty returns true if the condition has no conditions to match.
@@ -37,8 +37,8 @@ func (conditions Conditions) IsEmpty() bool {
 	return len(conditions.IfAncestorFiles) == 0 &&
 		len(conditions.IfFiles) == 0 &&
 		len(conditions.IfExtensions) == 0 &&
-		len(conditions.IfOS) == 0 &&
-		len(conditions.IfNotOS) == 0
+		len(conditions.OnlyIfOS) == 0 &&
+		len(conditions.OnlyIfNotOS) == 0
 }
 
 // Matches returns true if this condition is matched in the given directory
@@ -79,14 +79,14 @@ func (conditions Conditions) Matches(directory fileutils.Directory) bool {
 }
 
 func (conditions Conditions) matchesOS() bool {
-	if len(conditions.IfNotOS) > 0 {
-		if contains(conditions.IfNotOS, runtime.GOOS) {
+	if len(conditions.OnlyIfNotOS) > 0 {
+		if contains(conditions.OnlyIfNotOS, runtime.GOOS) {
 			return false
 		}
 	}
 
-	if len(conditions.IfOS) > 0 {
-		return contains(conditions.IfOS, runtime.GOOS)
+	if len(conditions.OnlyIfOS) > 0 {
+		return contains(conditions.OnlyIfOS, runtime.GOOS)
 	}
 
 	return true

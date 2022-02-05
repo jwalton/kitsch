@@ -9,7 +9,7 @@ var conditionsJSONSchema = `{
     "ifAncestorFiles": {"type": "array", "description": "IfAncestorFiles is a list of files to search for in the current folder, or another folder higher up in the directory structure.", "items": {"type": "string", "description": ""}},
     "ifFiles": {"type": "array", "description": "IfFiles is a list of files to search for in the current folder.", "items": {"type": "string", "description": ""}},
     "ifExtensions": {"type": "array", "description": "IfExtensions is a list of extensions to search for in the current folder.", "items": {"type": "string", "description": ""}},
-    "ifOS": {"type": "array", "description": "IfOS is a list of operating systems.  If the current GOOS is not in the list, then the Conditions are not met, even if other conditions would be satisfied.", "items": {"type": "string", "description": ""}},
-    "ifNotOS": {"type": "array", "description": "IfNotOS is a list of operating systems.  If the current GOOS is in the list, then the Conditions are not met, even if other conditions would be satisfied.", "items": {"type": "string", "description": ""}}
+    "onlyIfOS": {"type": "array", "description": "OnlyIfOS is a list of operating systems.  If the current GOOS is not in the list, then the Conditions are not met, even if other conditions would be satisfied.", "items": {"type": "string", "description": ""}},
+    "onlyIfNotOS": {"type": "array", "description": "OnlyIfNotOS is a list of operating systems.  If the current GOOS is in the list, then the Conditions are not met, even if other conditions would be satisfied.", "items": {"type": "string", "description": ""}}
   }}`
 

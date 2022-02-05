@@ -16,8 +16,8 @@ var CommonConfigJSONSchema = `{
         "ifAncestorFiles": {"type": "array", "description": "", "items": {"type": "string", "description": ""}},
         "ifFiles": {"type": "array", "description": "", "items": {"type": "string", "description": ""}},
         "ifExtensions": {"type": "array", "description": "", "items": {"type": "string", "description": ""}},
-        "ifOS": {"type": "array", "description": "", "items": {"type": "string", "description": ""}},
-        "ifNotOS": {"type": "array", "description": "", "items": {"type": "string", "description": ""}}
+        "onlyIfOS": {"type": "array", "description": "", "items": {"type": "string", "description": ""}},
+        "onlyIfNotOS": {"type": "array", "description": "", "items": {"type": "string", "description": ""}}
       },
       "additionalProperties": false}
   }}`
