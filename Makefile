@@ -58,7 +58,7 @@ snapshot: ; $(info $(M) creating snapshot…) @ ## Run goreleaser snapshot
 .PHONY: docs
 docs: build; $(info $(M) generating documentation…) @ ## Generate documentation
 	$Q ./install.sh --dir .
-	$Q cd docs && KITSCH=$(CURDIR)/kitsch npm run build
+	$Q cd docs && npm install && KITSCH=$(CURDIR)/kitsch npm run build
 	$Q cp $(CURDIR)/install.sh $(CURDIR)/docs/build/install.sh
 	$Q $(CURDIR)/kitsch version > $(CURDIR)/docs/build/latest-version.txt
 
