@@ -119,7 +119,7 @@ type TemplateData struct {
 }
 
 func compileModuleTemplate(context *Context, tmpl string) (*template.Template, error) {
-	return modtemplate.CompileTemplate(&context.Styles, context.Environment, "module-template", tmpl)
+	return modtemplate.CompileTemplate(&context.Styles, context.Environment, context.Globals.TerminalWidth, "module-template", tmpl)
 }
 
 // executeModule is called to execute a module.  This handles "common" stuff that

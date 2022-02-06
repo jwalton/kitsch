@@ -1,35 +1,24 @@
 package modtemplate
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 	"text/template"
 
-	"github.com/Masterminds/sprig/v3"
+	"github.com/jwalton/go-ansiparser"
 	"github.com/jwalton/kitsch/internal/kitsch/env"
+	"github.com/jwalton/kitsch/internal/kitsch/powerline"
 	"github.com/jwalton/kitsch/internal/kitsch/styling"
 )
 
-const recursionMaxNums = 1000
+const csi = "\x1b["
 
-var sprigTemplateFunctions template.FuncMap
-
-func init() {
-	sprigTemplateFunctions = sprig.TxtFuncMap()
-	delete(sprigTemplateFunctions, "env")
-}
-
-// CompileTemplate compiles a module template and adds default template functions.
-func CompileTemplate(
+func addTemplateFunctions(
 	styles *styling.Registry,
 	environment env.Env,
-	terminalWidth int,
-	name string,
-	templateString string,
-) (*template.Template, error) {
-	tmpl := template.New(name)
-
+	screenWidth int,
+	tmpl *template.Template,
+) *template.Template {
 	funcMap := template.FuncMap{}
 
 	// Borrowed from Helm.
@@ -54,20 +43,21 @@ func CompileTemplate(
 		return environment.Getenv(name)
 	}
 
-	tmpl = addTemplateFunctions(styles, environment, terminalWidth, tmpl)
-	tmpl, err := tmpl.Parse(templateString)
-	if err != nil {
-		return nil, err
+	funcMap["rightJustify"] = func(str string) string {
+		strs := strings.Split(str, "\n")
+		for i, s := range strs {
+			printLength := 0
+			ansiTokenizer := ansiparser.NewStringTokenizer(s)
+			for ansiTokenizer.Next() {
+				printLength += ansiTokenizer.Token().PrintLength()
+			}
+			strs[i] = fmt.Sprintf("%ss%s%dG%s%su", csi, csi, screenWidth-printLength, s, csi)
+		}
+		return strings.Join(strs, "\n")
 	}
-	return tmpl, nil
-}
 
-// TemplateToString renders a template to a string.
-func TemplateToString(template *template.Template, data interface{}) (string, error) {
-	var b bytes.Buffer
-	err := template.Execute(&b, data)
-	if err != nil {
-		return "", err
-	}
-	return b.String(), nil
+	return tmpl.Funcs(funcMap).
+		Funcs(sprigTemplateFunctions).
+		Funcs(styling.TxtFuncMap(styles)).
+		Funcs(powerline.TxtFuncMap(styles))
 }
