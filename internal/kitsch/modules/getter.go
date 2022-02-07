@@ -54,7 +54,7 @@ func (mod GetterModule) Execute(context *Context) ModuleResult {
 
 	value, err := getter.GetValue(context)
 	if err != nil {
-		log.Warn("Error executing custom module: ", err)
+		log.Warn("Error executing "+mod.Type.String()+" module: ", err)
 		value = ""
 	}
 
