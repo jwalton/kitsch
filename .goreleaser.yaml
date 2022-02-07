@@ -48,7 +48,12 @@ brews:
       email: goreleaser@lucid.thedreaming.org
     homepage: https://kitschprompt.com
     caveats: |
-      Run "kitsch setup" for details about how to configure your shell to use kitsch!
+      ***************************************************************************
+
+        Please run "kitsch setup" for details about how to configure your shell
+        to use kitsch.
+
+      ***************************************************************************
 changelog:
   sort: asc
   filters:
