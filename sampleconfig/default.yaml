@@ -49,8 +49,10 @@ prompt:
     - type: project
       style: "#555"
       # template: |
-      #   via {{ .Data.ToolSymbol }}@{{ .Data.ToolVersion }}
-      #   {{- if .Data.PackageManagerVersion }}/{{ .Data.PackageManagerSymbol }}@{{ .Data.PackageManagerVersion }}{{ end -}}
+      #   w/{{- printf "%s@%s" .Data.ToolSymbol .Data.ToolVersion | style .Data.ProjectStyle -}}
+      #   {{- if .Data.PackageManagerVersion -}}
+      #     /{{- printf "%s@%s" .Data.PackageManagerSymbol .Data.PackageManagerVersion | style .Data.ProjectStyle -}}
+      #   {{- end -}}
     - type: kubernetes
       style: $fg
       conditions:
