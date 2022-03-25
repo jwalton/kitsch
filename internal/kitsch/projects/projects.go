@@ -61,11 +61,13 @@ func getStringValue(getter []getters.Getter, getterContext getters.GetterContext
 	}
 
 	for index := range getter {
-
 		value, err := getter[index].GetValue(getterContext)
 		if err != nil {
-			log.Warn("Error running getter:", err)
-			continue
+			if index != len(getter)-1 {
+				// If there are multiple getters, try again with the next getter.
+				continue
+			}
+			return "", err
 		}
 
 		if str, ok := value.(string); ok {
@@ -90,7 +92,7 @@ func ResolveProjectType(
 		toolVersion, err := getStringValue(projectType.ToolVersion, getterContext)
 		if err != nil || toolVersion == "" {
 			// If we can't get a toolVersion, skip this project type.
-			log.Info("Could not get tool version for project type", projectType.Name)
+			log.Info("Could not get tool version for project type", projectType.Name, err)
 			continue
 		}
 
