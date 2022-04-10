@@ -134,6 +134,10 @@ Outputs:
 - `Symbol (string)` is the `aheadSymbol`, `behindSymbol`, `divergedSymbol`, `upToDateSymbol`, or `noUpstreamSymbol`.
 - `AheadBehind (string)` is the empty string if not in a git repo, or is one of "ahead", "behind", "diverged", or "upToDate" (this will be "upToDate" if there is no upstream).
 
+## flexible_space
+
+The flexible_space module adds a variable-width space to a line.  The space will grow to use as many characters as possible without causing the current line to wrap.  This can be used to split a prompt into a portion printed on the left side of the terminal and a second portion printed on the right side.  You can put multiple flexible_spaces on a single line, in which case the available space will be split evenly between them (you could use two flexible_spaces to center some text, for example).
+
 ## git_head
 
 The git_head module returns information about the HEAD of the current git repo. The default output is the `Description` from the Outputs section below.

@@ -13,64 +13,82 @@ colors:
   $gitUnstagedBg: "#600"
 prompt:
   type: block
+  join: ""
   modules:
-    - type: time
-    - type: directory
-    - type: git_head
-    - type: git_diverged
-    - type: git_state
-    - type: git_status
-      indexStyle: "#3f3"
-      unstagedStyle: "#f33"
-      unmergedStyle: "#f8f bold"
-      stashStyle: "#f90 bold"
-    - type: jobs
-    - type: command_duration
-      style: $commandDurationFg
-  template: |
-    {{- $pl := newPowerline " " "\ue0b0" " " -}}
-    {{- $globals := .Globals -}}
-    {{- with .Data.Modules -}}
-      {{- printf " %s" .time.Text | style "$timeFg" | $pl.Segment "$timeBg" -}}
-      {{- .directory.Text | style "$directoryFg" | $pl.Segment "$directoryBg" -}}
+    - type: block
+      id: left
+      modules:
+        - type: directory
+        - type: git_head
+        - type: git_diverged
+        - type: git_state
+        - type: git_status
+          indexStyle: "#3f3"
+          unstagedStyle: "#f33"
+          unmergedStyle: "#f8f bold"
+          stashStyle: "#f90 bold"
+        - type: jobs
+        - type: command_duration
+          style: $commandDurationFg
+      template: |
+        {{- $pl := newPowerline " " "\ue0b0" " " -}}
+        {{- $globals := .Globals -}}
+        {{- with .Data.Modules -}}
+          {{- printf " %s" .directory.Text | style "$directoryFg" | $pl.Segment "$directoryBg" -}}
 
-      {{- /* Git */ -}}
-      {{- if .git_head -}}
-        {{- $gitStyles := dict
-          "upToDate" "$gitBg"
-          "ahead" "$gitBgAhead"
-          "behind" "$gitBgBehind"
-          "diverged" "^gitBgBehind"
-        -}}
-        {{- $gitBg := (get $gitStyles .git_diverged.Data.AheadBehind) -}}
-        {{- $gitInfo := printf "%s %s%s" .git_head.Text .git_diverged.Text .git_state.Text -}}
-        {{- $branchSymbol := "\ue0a0" -}}
-        {{- printf "%s %s" $branchSymbol $gitInfo | style "$gitFg" | $pl.Segment $gitBg -}}
-      {{- end -}}
-      {{- with .git_status -}}
-          {{- $gitStatusBg := "#444" -}}
-          {{- if and (gt .Data.Index.Total 0) (gt .Data.Unstaged.Total 0) -}}
-            {{- $gitStatusBg = "linear-gradient($gitIndexBg, $gitUnstagedBg)" -}}
-          {{- else if gt .Data.Index.Total 0 -}}
-            {{- $gitStatusBg = "$gitIndexBg" -}}
-          {{- else if gt .Data.Unstaged.Total 0 -}}
-            {{- $gitStatusBg = "$gitUnstagedBg" -}}
+          {{- /* Git */ -}}
+          {{- if .git_head -}}
+            {{- $gitStyles := dict
+              "upToDate" "$gitBg"
+              "ahead" "$gitBgAhead"
+              "behind" "$gitBgBehind"
+              "diverged" "^gitBgBehind"
+            -}}
+            {{- $gitBg := (get $gitStyles .git_diverged.Data.AheadBehind) -}}
+            {{- $gitInfo := printf "%s %s%s" .git_head.Text .git_diverged.Text .git_state.Text -}}
+            {{- $branchSymbol := "\ue0a0" -}}
+            {{- printf "%s %s" $branchSymbol $gitInfo | style "$gitFg" | $pl.Segment $gitBg -}}
           {{- end -}}
-          {{- .Text | style "#fff" | $pl.Segment $gitStatusBg -}}
-      {{- end -}}
-      {{- .command_duration.Text | $pl.Segment "$commandDurationBg" -}}
+          {{- with .git_status -}}
+              {{- $gitStatusBg := "#444" -}}
+              {{- if and (gt .Data.Index.Total 0) (gt .Data.Unstaged.Total 0) -}}
+                {{- $gitStatusBg = "linear-gradient($gitIndexBg, $gitUnstagedBg)" -}}
+              {{- else if gt .Data.Index.Total 0 -}}
+                {{- $gitStatusBg = "$gitIndexBg" -}}
+              {{- else if gt .Data.Unstaged.Total 0 -}}
+                {{- $gitStatusBg = "$gitUnstagedBg" -}}
+              {{- end -}}
+              {{- .Text | style "#fff" | $pl.Segment $gitStatusBg -}}
+          {{- end -}}
+          {{- .command_duration.Text | $pl.Segment "$commandDurationBg" -}}
 
-      {{- /* Jobs and Status */ -}}
-      {{- if or (ne $globals.Status 0) .jobs.Text (eq $globals.Keymap "vicmd") -}}
-        {{- $color := (ne $globals.Status 0) | ternary "#b00" "#00b" -}}
-        {{- $out := list .jobs.Text -}}
-        {{- if (ne $globals.Status 0) -}}
-          {{- $out = mustAppend $out $globals.Status -}}
+          {{- /* Jobs and Status */ -}}
+          {{- if or (ne $globals.Status 0) .jobs.Text (eq $globals.Keymap "vicmd") -}}
+            {{- $color := (ne $globals.Status 0) | ternary "#b00" "#00b" -}}
+            {{- $out := list .jobs.Text -}}
+            {{- if (ne $globals.Status 0) -}}
+              {{- $out = mustAppend $out $globals.Status -}}
+            {{- end -}}
+            {{- if (eq $globals.Keymap "vicmd") -}}
+              {{- $out = mustAppend $out ":" -}}
+            {{- end -}}
+            {{- $out | join " " | style "#fff" | $pl.Segment $color -}}
+          {{- end -}}
         {{- end -}}
-        {{- if (eq $globals.Keymap "vicmd") -}}
-          {{- $out = mustAppend $out ":" -}}
+        {{- $pl.Finish -}}{{- " " -}}
+    - type: flexible_space
+    - type: block
+      id: right
+      modules:
+        - type: time
+      template: |
+        {{- $pl := newReversePowerline " " "\ue0b2" " " -}}
+        {{- with .Data.Modules -}}
+          {{- printf "%s " .time.Text | style "$timeFg" | $pl.Segment "$timeBg" -}}
         {{- end -}}
-        {{- $out | join " " | style "#fff" | $pl.Segment $color -}}
-      {{- end -}}
-    {{- end -}}
-    {{- $pl.Finish -}}{{- " " -}}
+        {{- $pl.Finish -}}{{- "\n" -}}
+    - type: block
+      id: prompt
+      modules:
+        - type: prompt
+          errorStyle: brightRed

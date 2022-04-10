@@ -95,15 +95,15 @@ var promptCmd = &cobra.Command{
 		performance.End("Context setup")
 
 		// Execute the prompt.
-		result := configuration.Prompt.Execute(&context)
+		moduleResult, promptTest := modules.RenderPrompt(&context, configuration.Prompt)
 
-		performance.EndWithChildren("Prompt", result.Performance)
+		performance.EndWithChildren("Prompt", moduleResult.Performance)
 
 		if perf {
 			performance.Print()
 		}
 
-		withEscapes := shellprompt.AddZeroWidthCharacterEscapes(context.Globals.Shell, result.Text)
+		withEscapes := shellprompt.AddZeroWidthCharacterEscapes(context.Globals.Shell, promptTest)
 		fmt.Print(withEscapes)
 	},
 }
