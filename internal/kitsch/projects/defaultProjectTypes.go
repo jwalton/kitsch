@@ -36,7 +36,7 @@ var DefaultProjectTypes = []ProjectType{
 			getters.CustomGetter{
 				Type:  getters.TypeCustom,
 				From:  "go version",
-				Regex: `go version go(\d+\.\d+\.\d+)`,
+				Regex: `go version go([\d+.]+)`,
 				Cache: getters.CacheSettings{Enabled: true},
 			},
 		},
