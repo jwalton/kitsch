@@ -34,7 +34,7 @@ func tokenize(s string) ([]gradientToken, int) {
 		t := ansiTokenizer.Token()
 		switch t.Type {
 		case ansiparser.String:
-			if isASCIIString(t.Content) {
+			if t.IsASCII {
 				// If the string is all ASCII, just copy it to a string token.
 				tokens = append(tokens, gradientToken{
 					t:          tokenString,
@@ -66,16 +66,6 @@ func tokenize(s string) ([]gradientToken, int) {
 	}
 
 	return tokens, printWidth
-}
-
-// isASCIIString returns true if s contains only ASCII characters.
-func isASCIIString(s string) bool {
-	for _, r := range s {
-		if r > 127 {
-			return false
-		}
-	}
-	return true
 }
 
 func tokenizeStringTokenWithUnicodeCharacters(ansiToken ansiparser.AnsiToken) []gradientToken {

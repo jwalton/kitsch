@@ -11,7 +11,6 @@ func TestTokenize(t *testing.T) {
 	assert.Equal(t, []gradientToken{
 		{t: tokenString, content: "abc", printWidth: 3},
 	}, tokens)
-	// Astronaut characters is 2 columns wide.
 	assert.Equal(t, 3, printWidth)
 }
 
