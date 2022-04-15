@@ -22,6 +22,10 @@ type CommonConfig struct {
 	Template string `yaml:"template"`
 	// Conditions are conditions that must be met for this module to execute.
 	Conditions *condition.Conditions `yaml:"conditions,omitempty" jsonschema:",ref"`
+	// Timeout is the maximum amount of time, in milliseconds, to wait for this
+	// module to execute.  If not specified, the default timeout for most modules
+	// will be 200ms, but for block modules it will be infinite.
+	Timeout int64 `yaml:"timeout"`
 }
 
 // Validate checks for common configuration errors in the CommonConfig, and prints

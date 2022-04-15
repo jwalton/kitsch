@@ -34,10 +34,12 @@ prompt:
         {{- $pl := newPowerline " " "\ue0b0" " " -}}
         {{- $globals := .Globals -}}
         {{- with .Data.Modules -}}
-          {{- printf " %s" .directory.Text | style "$directoryFg" | $pl.Segment "$directoryBg" -}}
+          {{- if .directory.Text -}}
+            {{- printf " %s" .directory.Text | style "$directoryFg" | $pl.Segment "$directoryBg" -}}
+          {{- end -}}
 
           {{- /* Git */ -}}
-          {{- if .git_head -}}
+          {{- if .git_head.Text -}}
             {{- $gitStyles := dict
               "upToDate" "$gitBg"
               "ahead" "$gitBgAhead"
@@ -50,15 +52,17 @@ prompt:
             {{- printf "%s %s" $branchSymbol $gitInfo | style "$gitFg" | $pl.Segment $gitBg -}}
           {{- end -}}
           {{- with .git_status -}}
-              {{- $gitStatusBg := "#444" -}}
-              {{- if and (gt .Data.Index.Total 0) (gt .Data.Unstaged.Total 0) -}}
-                {{- $gitStatusBg = "linear-gradient($gitIndexBg, $gitUnstagedBg)" -}}
-              {{- else if gt .Data.Index.Total 0 -}}
-                {{- $gitStatusBg = "$gitIndexBg" -}}
-              {{- else if gt .Data.Unstaged.Total 0 -}}
-                {{- $gitStatusBg = "$gitUnstagedBg" -}}
+              {{- if .Text -}}
+                {{- $gitStatusBg := "#444" -}}
+                {{- if and (gt .Data.Index.Total 0) (gt .Data.Unstaged.Total 0) -}}
+                  {{- $gitStatusBg = "linear-gradient($gitIndexBg, $gitUnstagedBg)" -}}
+                {{- else if gt .Data.Index.Total 0 -}}
+                  {{- $gitStatusBg = "$gitIndexBg" -}}
+                {{- else if gt .Data.Unstaged.Total 0 -}}
+                  {{- $gitStatusBg = "$gitUnstagedBg" -}}
+                {{- end -}}
+                {{- .Text | style "#fff" | $pl.Segment $gitStatusBg -}}
               {{- end -}}
-              {{- .Text | style "#fff" | $pl.Segment $gitStatusBg -}}
           {{- end -}}
           {{- .command_duration.Text | $pl.Segment "$commandDurationBg" -}}
 
@@ -84,7 +88,9 @@ prompt:
       template: |
         {{- $pl := newReversePowerline " " "\ue0b2" " " -}}
         {{- with .Data.Modules -}}
-          {{- printf "%s " .time.Text | style "$timeFg" | $pl.Segment "$timeBg" -}}
+          {{- if .time.Text -}}
+            {{- printf "%s " .time.Text | style "$timeFg" | $pl.Segment "$timeBg" -}}
+          {{- end -}}
         {{- end -}}
         {{- $pl.Finish -}}{{- "\n" -}}
     - type: block

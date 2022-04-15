@@ -10,6 +10,7 @@ var CommonConfigJSONSchema = `{
     "id": {"type": "string", "description": "ID is a unique identifier for this module.  IDs are unique only within the parent block."},
     "style": {"type": "string", "description": "Style is the style to apply to this module."},
     "template": {"type": "string", "description": "Template is a golang template to use to render the output of this module."},
-    "conditions": {"$ref": "#/definitions/Conditions"}
+    "conditions": {"$ref": "#/definitions/Conditions"},
+    "timeout": {"type": "integer", "description": "Timeout is the maximum amount of time, in milliseconds, to wait for this module to execute.  If not specified, the default timeout for most modules will be 200ms, but for block modules it will be infinite."}
   }}`
 

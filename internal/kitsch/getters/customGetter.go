@@ -418,5 +418,5 @@ func (getter CustomGetter) applyTemplate(as AsType, bytesValue []byte) (interfac
 	return result, nil
 }
 
-//JSONSchemaDefinitions is a string containing JSON schema definitions for objects in the getters package.
+// JSONSchemaDefinitions is a string containing JSON schema definitions for objects in the getters package.
 var JSONSchemaDefinitions = "\"CacheSettings\": " + cacheSettingsJSONSchema + ",\n\"CustomGetter\": " + customGetterJSONSchema

@@ -90,7 +90,7 @@ var promptCmd = &cobra.Command{
 			context = modules.NewDemoContext(*demoConfig, styles)
 		} else {
 			globals := modules.NewGlobals(shell, cwd, logicalCWD, terminalWidth, status, jobs, cmdDuration, keymap)
-			context = modules.NewContext(globals, configuration.ProjectsTypes, cacheDir, styles)
+			context = modules.NewContext(globals, configuration.ProjectsTypes, configuration.Timeout, cacheDir, styles)
 		}
 		performance.End("Context setup")
 

@@ -1,5 +1,5 @@
 ---
-sidebar_position: 1
+sidebar_position: 2
 ---
 
 # Modules
@@ -10,6 +10,9 @@ There are certain configuration items that are available on all modules:
 
 - `style` a the [style string](/docs/styles) to apply to the entire module output.
 - `template` is a golang template used to render the result of the module.
+- `timeout` is the maximum amount of time the module is allowed to run, in milliseconds.
+
+If the timeout of a block is exceeded, the module's output will be empty, and the template for the module will not be run. If you're using a template in a parent block, note especially that the module's `.Data` will be empty, too.  If `timeout` is unspecified, then the default timeout will be set to the `timeout` value specified at the top-level of the config file, or 500ms if unspecified.  Blocks are treated specially here - a block's default timeout is infinite.
 
 If a module is a child of a "block" module, it can also have the following items:
 
@@ -49,7 +52,7 @@ Configuration:
 
 Outputs:
 
-- `Modules` is a map of results from executing each child module.  The keys of this map are module IDs (or module types, for modules that have no ID). Only modules that actually generated output will be included. If a module does not have an ID, then the module's `type` will be used to index the module results.  The values in this map are `{Text, Data, StartStyle, EndStyle}` objects, where `Text` is the default output from the module, `Data` is the output variables from the module, and `StartStyle` and `EndStyle` are each a `{FG, BG}` object containing the style of the first and last character of that module - these are based entirely on the module's declared `Style`, so if the module uses a template to style part of the string, these won't be reflected in FG and BG.
+- `Modules` is a map of results from executing each child module. The keys of this map are module IDs (or module types, for modules that have no ID). If a module does not have an ID, then the module's `type` will be used to index the module results. The values in this map are `{Text, Data, StartStyle, EndStyle}` objects, where `Text` is the default output from the module, `Data` is the output variables from the module, and `StartStyle` and `EndStyle` are each a `{FG, BG}` object containing the style of the first and last character of that module - these are based entirely on the module's declared `Style`, so if the module uses a template to style part of the string, these won't be reflected in FG and BG. Modules are always included in this map, even if they produced no output, but note that if a module times out, then `Modules[id].Data` will be an empty object.
 - `ModuleArray` is an array of results from executing each child module. Only modules that actually generated output will be included.
 
 ## custom
@@ -136,7 +139,7 @@ Outputs:
 
 ## flexible_space
 
-The flexible_space module adds a variable-width space to a line.  The space will grow to use as many characters as possible without causing the current line to wrap.  This can be used to split a prompt into a portion printed on the left side of the terminal and a second portion printed on the right side.  You can put multiple flexible_spaces on a single line, in which case the available space will be split evenly between them (you could use two flexible_spaces to center some text, for example).
+The flexible_space module adds a variable-width space to a line. The space will grow to use as many characters as possible without causing the current line to wrap. This can be used to split a prompt into a portion printed on the left side of the terminal and a second portion printed on the right side. You can put multiple flexible_spaces on a single line, in which case the available space will be split evenly between them (you could use two flexible_spaces to center some text, for example).
 
 ## git_head
 
@@ -156,7 +159,7 @@ Outputs:
 
 ## git_state
 
-The git_state module returns the state of the current git repo. For example, if you are in the middle of an interactive rebase, and you're on the second commit of four, this will return "REBASE-i 2/4".  If the current folder is not a git repo, or if we're not in the middle of a rebase, merge, etc..., this will return the empty string.  The default configuration is based on [posh-git](https://github.com/dahlbyk/posh-git) and [posh-git-sh](https://github.com/lyze/posh-git-sh).
+The git_state module returns the state of the current git repo. For example, if you are in the middle of an interactive rebase, and you're on the second commit of four, this will return "REBASE-i 2/4". If the current folder is not a git repo, or if we're not in the middle of a rebase, merge, etc..., this will return the empty string. The default configuration is based on [posh-git](https://github.com/dahlbyk/posh-git) and [posh-git-sh](https://github.com/lyze/posh-git-sh).
 
 Configuration:
 
@@ -216,10 +219,9 @@ Output Example:
   "Unstaged": { "Added": 0, "Modified": 0, "Deleted": 0, "Total": 0 },
   "Index": { "Added": 0, "Modified": 0, "Deleted": 0, "Total": 0 },
   "Unmerged": 0,
-  "StashCount": 0,
+  "StashCount": 0
 }
 ```
-
 
 ## hostname
 
@@ -257,12 +259,12 @@ The project module works out what kind of project the current folder represents,
 
 The default output of the project module will be something like "w/nodejs@16.13.2" or "w/go@1.17.5".
 
-Each project has a unique style associated with it; the style comes from the `style` field in the `projects` map in this module.  If none is specified, then it falls back to the `defaultProjectStyle` in this module.  If that is also unspecified, then the style will be taken from teh top-level `projects` configuration.
+Each project has a unique style associated with it; the style comes from the `style` field in the `projects` map in this module. If none is specified, then it falls back to the `defaultProjectStyle` in this module. If that is also unspecified, then the style will be taken from teh top-level `projects` configuration.
 
 Configuration:
 
 - `projects` is a map where keys are project names, and values are `{ style, toolSymbol, packageManagerSymbol }` objects, which can be used to provide a custom style and symbols for existing projects on a theme-by-theme basis.
-- `defaultProjectStyle` is the style to use if no project-specific style is specified in `projects`.  If this is also unspecified, we will fall back to the style specified in the top level `projects` configuration.
+- `defaultProjectStyle` is the style to use if no project-specific style is specified in `projects`. If this is also unspecified, we will fall back to the style specified in the top level `projects` configuration.
 
 Outputs:
 

@@ -1,6 +1,8 @@
 package getters
 
 import (
+	"path/filepath"
+	"strings"
 	"testing"
 	"testing/fstest"
 
@@ -15,5 +17,7 @@ func TestResolveFile(t *testing.T) {
 	}
 
 	result := resolveFile(context, "~/${VAR1}/$VAR2/baz")
-	assert.Equal(t, "/users/jwalton/foo/bar/baz", result)
+	expected := strings.Replace("/users/jwalton/foo/bar/baz", "/", string(filepath.Separator), -1)
+
+	assert.Equal(t, expected, result)
 }

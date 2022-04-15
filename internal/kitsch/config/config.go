@@ -17,10 +17,14 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const defaultTimeout = 500
+
 var errNoPrompt = errors.New("configuration is missing prompt")
 
 // Config represents a configuration file.
 type Config struct {
+	// Timeout is the default module timeout, in milliseconds.
+	Timeout int64 `yaml:"timeout"`
 	// Extends is the name of another configuration file to extend.
 	Extends string `yaml:"extends"`
 	// Colors is a collection of custom colors.
@@ -29,6 +33,10 @@ type Config struct {
 	ProjectsTypes []projects.ProjectType `yaml:"projectTypes"`
 	// Prompt is the module to use to display the prompt.
 	Prompt modules.ModuleWrapper
+}
+
+func newConfig() Config {
+	return Config{Timeout: defaultTimeout}
 }
 
 // LoadFromYaml loads the configuration file from a YAML file.
@@ -80,8 +88,7 @@ func (c *Config) mergeParent(parent *Config) {
 
 // LoadConfigFromFile will load a configuration from a file.
 func LoadConfigFromFile(configFile string, strict bool) (*Config, error) {
-	var config = Config{}
-
+	var config = newConfig()
 	yamlData, err := os.ReadFile(configFile)
 	if err != nil {
 		return nil, err
@@ -101,7 +108,7 @@ func LoadConfigFromFile(configFile string, strict bool) (*Config, error) {
 
 // LoadDefaultConfig will load a default configuration.
 func LoadDefaultConfig() (*Config, error) {
-	var config = Config{}
+	var config = newConfig()
 	err := config.LoadFromYaml(sampleconfig.DefaultConfig, false)
 	if err != nil {
 		// Default config should not have errors!

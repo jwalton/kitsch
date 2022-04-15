@@ -124,6 +124,8 @@ type Context struct {
 	ValueCache cache.Cache
 	// Styles is the style registry to use to create styles.
 	Styles styling.Registry
+	// DefaultTimeout is the default module timeout, in milliseconds.
+	DefaultTimeout int64
 
 	mutex          sync.Mutex
 	gitInitialized bool
@@ -182,16 +184,18 @@ func (context *Context) GetStyle(styleString string) *styling.Style {
 func NewContext(
 	globals Globals,
 	projectTypes []projects.ProjectType,
+	defaultTimeout int64,
 	cacheDir string,
 	styles styling.Registry,
 ) Context {
 	return Context{
-		Globals:      globals,
-		Directory:    fileutils.NewDirectory(globals.CWD),
-		Environment:  env.New(),
-		ProjectTypes: projectTypes,
-		ValueCache:   cache.NewFileCache(cacheDir),
-		Styles:       styles,
+		Globals:        globals,
+		Directory:      fileutils.NewDirectory(globals.CWD),
+		Environment:    env.New(),
+		ProjectTypes:   projectTypes,
+		ValueCache:     cache.NewFileCache(cacheDir),
+		Styles:         styles,
+		DefaultTimeout: defaultTimeout,
 	}
 }
 
@@ -260,6 +264,7 @@ func NewDemoContext(
 		Styles:         styles,
 		gitInitialized: true,
 		git:            config.Git,
+		DefaultTimeout: 1000,
 	}
 }
 

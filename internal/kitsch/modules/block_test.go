@@ -54,3 +54,19 @@ func TestBlockSubIDs(t *testing.T) {
 
 	assert.Equal(t, "oriana", result.Text)
 }
+
+func TestBlockSubIDsNoData(t *testing.T) {
+	blockMod := moduleWrapperFromYAML(heredoc.Doc(`
+		type: block
+		template: "{{ with .Data.Modules.text }}there is text{{ end }}"
+		modules:
+		- type: text
+		  text: ""
+    `))
+
+	result := blockMod.Execute(newTestContext("oriana"))
+
+	// This should render text, because the "text" module should be included
+	// in .Data.Modules, even though there was no output.
+	assert.Equal(t, "there is text", result.Text)
+}

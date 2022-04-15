@@ -3,6 +3,7 @@ package modules
 import (
 	"fmt"
 	"text/template"
+	"time"
 
 	"github.com/jwalton/kitsch/internal/kitsch/log"
 	"github.com/jwalton/kitsch/internal/kitsch/modtemplate"
@@ -103,9 +104,37 @@ func (wrapper ModuleWrapper) Execute(context *Context) ModuleWrapperResult {
 		// If the item has conditions, and they don't match, return an empty result.
 		return ModuleWrapperResult{}
 	}
-	moduleResult := wrapper.Module.Execute(context)
 
-	return processModuleResult(context, wrapper, moduleResult)
+	// If the module has no timeout, use the default timeout.
+	timeout := wrapper.config.Timeout
+	if timeout == 0 && wrapper.config.Type != "block" {
+		timeout = context.DefaultTimeout
+	}
+
+	// Run the module in a goroutine, so we can time it out.
+	ch := make(chan ModuleWrapperResult, 1)
+	go func() {
+		moduleResult := wrapper.Module.Execute(context)
+		ch <- processModuleResult(context, wrapper, moduleResult)
+	}()
+
+	var result ModuleWrapperResult
+	if timeout <= 0 {
+		result = <-ch
+	} else {
+		// If the module doesn't execute in time, return an empty result.
+		select {
+		case result = <-ch:
+		case <-time.After(time.Duration(timeout) * time.Millisecond):
+			// Module timed out!
+			// TODO: Record a list of which modules timed out in the context,
+			// so we can display a list of them in a warning.
+			log.Warn("Module ", wrapper.config.ID, " timed out after ", timeout, "ms")
+			result = ModuleWrapperResult{}
+		}
+	}
+
+	return result
 }
 
 // TemplateData is the common data structure passed to a template when it is executed.
