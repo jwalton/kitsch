@@ -87,10 +87,10 @@ var promptCmd = &cobra.Command{
 				log.Error("Failed to load demo config:", err)
 				os.Exit(1)
 			}
-			context = modules.NewDemoContext(*demoConfig, styles)
+			context = modules.NewDemoContext(*demoConfig, &styles)
 		} else {
 			globals := modules.NewGlobals(shell, cwd, logicalCWD, terminalWidth, status, jobs, cmdDuration, keymap)
-			context = modules.NewContext(globals, configuration.ProjectsTypes, configuration.Timeout, cacheDir, styles)
+			context = modules.NewContext(globals, configuration.ProjectsTypes, configuration.Timeout, cacheDir, &styles)
 		}
 		performance.End("Context setup")
 

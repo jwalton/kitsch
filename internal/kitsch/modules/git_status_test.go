@@ -12,7 +12,7 @@ import (
 func TestGitStatusClean(t *testing.T) {
 	context := NewDemoContext(
 		DemoConfig{},
-		styling.Registry{},
+		&styling.Registry{},
 	)
 
 	mod := moduleWrapperFromYAML(heredoc.Doc(`
@@ -43,7 +43,7 @@ func TestGitStatusChanges(t *testing.T) {
 				StashCount: 8,
 			},
 		},
-		styling.Registry{},
+		&styling.Registry{},
 	)
 
 	mod := moduleWrapperFromYAML(heredoc.Doc(`
@@ -63,7 +63,7 @@ func TestGitStatusUnmerged(t *testing.T) {
 				},
 			},
 		},
-		styling.Registry{},
+		&styling.Registry{},
 	)
 
 	mod := moduleWrapperFromYAML(heredoc.Doc(`

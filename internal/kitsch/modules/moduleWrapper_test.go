@@ -24,6 +24,7 @@ func TestModuleWrapperExecute(t *testing.T) {
 			Data:       textModuleResult{Text: "test"},
 			StartStyle: styling.CharacterColors{},
 			EndStyle:   styling.CharacterColors{},
+			Duration:   result.Duration,
 		},
 		result,
 	)
@@ -45,6 +46,7 @@ func TestExecuteModuleWrapperWithTemplate(t *testing.T) {
 			Data:       textModuleResult{Text: "Text Text"},
 			StartStyle: styling.CharacterColors{},
 			EndStyle:   styling.CharacterColors{},
+			Duration:   result.Duration,
 		},
 		result,
 	)

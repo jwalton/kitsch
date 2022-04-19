@@ -21,6 +21,7 @@ func TestPrompt(t *testing.T) {
 			PromptStyle:  "",
 			ViCmdMode:    false,
 		},
+		Duration: result.Duration,
 	}, result)
 }
 
@@ -39,6 +40,7 @@ func TestRootPrompt(t *testing.T) {
 			PromptStyle:  "",
 			ViCmdMode:    false,
 		},
+		Duration: result.Duration,
 	}, result)
 }
 

@@ -123,7 +123,7 @@ type Context struct {
 	// The cache to retrieve values from.
 	ValueCache cache.Cache
 	// Styles is the style registry to use to create styles.
-	Styles styling.Registry
+	Styles *styling.Registry
 	// DefaultTimeout is the default module timeout, in milliseconds.
 	DefaultTimeout int64
 
@@ -186,7 +186,7 @@ func NewContext(
 	projectTypes []projects.ProjectType,
 	defaultTimeout int64,
 	cacheDir string,
-	styles styling.Registry,
+	styles *styling.Registry,
 ) Context {
 	return Context{
 		Globals:        globals,
@@ -244,7 +244,7 @@ func (demoConfig *DemoConfig) Load(filename string) error {
 // NewDemoContext creates a demo context object.
 func NewDemoContext(
 	config DemoConfig,
-	styles styling.Registry,
+	styles *styling.Registry,
 ) Context {
 	var cwdMode fs.FileMode = 0755
 	if config.CWDIsReadOnly {
@@ -296,7 +296,7 @@ func newTestContext(username string) *Context {
 		},
 		ProjectTypes:   projects.DefaultProjectTypes,
 		ValueCache:     cache.NewMemoryCache(),
-		Styles:         styling.Registry{},
+		Styles:         &styling.Registry{},
 		gitInitialized: true,
 		git:            nil,
 	}

@@ -7,11 +7,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func testStyleRegistry() Registry {
+func testStyleRegistry() *Registry {
 	gchalkInstance := gchalk.New()
 	gchalkInstance.SetLevel(gchalk.LevelAnsi16m)
 	styles := Registry{gchalkInstance: gchalkInstance}
-	return styles
+	return &styles
 }
 
 func TestApply(t *testing.T) {
