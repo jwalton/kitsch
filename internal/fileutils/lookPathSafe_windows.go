@@ -67,11 +67,11 @@ func LookPathSafe(file string) (string, error) {
 	}
 
 	if strings.ContainsAny(file, `:\/`) {
-		if f, err := findExecutable(file, exts); err == nil {
-			return f, nil
-		} else {
+		f, err := findExecutable(file, exts)
+		if err != nil {
 			return "", &exec.Error{Name: file, Err: err}
 		}
+		return f, nil
 	}
 	if f, err := findExecutable(filepath.Join(".", file), exts); err == nil {
 		return f, nil
