@@ -5,6 +5,7 @@ import (
 	"os"
 	"sync"
 	"testing/fstest"
+	"time"
 
 	"github.com/jwalton/kitsch/internal/cache"
 	"github.com/jwalton/kitsch/internal/fileutils"
@@ -124,8 +125,8 @@ type Context struct {
 	ValueCache cache.Cache
 	// Styles is the style registry to use to create styles.
 	Styles *styling.Registry
-	// DefaultTimeout is the default module timeout, in milliseconds.
-	DefaultTimeout int64
+	// DefaultTimeout is the default module timeout.
+	DefaultTimeout time.Duration
 
 	mutex          sync.Mutex
 	gitInitialized bool
@@ -184,13 +185,14 @@ func (context *Context) GetStyle(styleString string) *styling.Style {
 func NewContext(
 	globals Globals,
 	projectTypes []projects.ProjectType,
-	defaultTimeout int64,
+	defaultTimeout time.Duration,
+	scanTimeout time.Duration,
 	cacheDir string,
 	styles *styling.Registry,
 ) Context {
 	return Context{
 		Globals:        globals,
-		Directory:      fileutils.NewDirectory(globals.CWD),
+		Directory:      fileutils.NewDirectory(globals.CWD, scanTimeout),
 		Environment:    env.New(),
 		ProjectTypes:   projectTypes,
 		ValueCache:     cache.NewFileCache(cacheDir),

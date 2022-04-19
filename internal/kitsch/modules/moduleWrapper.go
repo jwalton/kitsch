@@ -108,7 +108,7 @@ func (wrapper ModuleWrapper) Execute(context *Context) ModuleWrapperResult {
 	}
 
 	// If the module has no timeout, use the default timeout.
-	timeout := wrapper.config.Timeout
+	timeout := time.Duration(wrapper.config.Timeout) * time.Millisecond
 	if timeout == 0 && wrapper.config.Type != "block" {
 		timeout = context.DefaultTimeout
 	}
@@ -129,11 +129,11 @@ func (wrapper ModuleWrapper) Execute(context *Context) ModuleWrapperResult {
 		// If the module doesn't execute in time, return an empty result.
 		select {
 		case result = <-ch:
-		case <-time.After(time.Duration(timeout) * time.Millisecond):
+		case <-time.After(timeout):
 			// Module timed out!
 			// TODO: Record a list of which modules timed out in the context,
 			// so we can display a list of them in a warning.
-			log.Warn("Module ", wrapper.String(), " timed out after ", timeout, "ms")
+			log.Warn("Module ", wrapper.String(), " timed out after ", timeout)
 			result = ModuleWrapperResult{}
 		}
 	}

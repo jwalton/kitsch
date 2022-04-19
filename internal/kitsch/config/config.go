@@ -18,6 +18,7 @@ import (
 )
 
 const defaultTimeout = 500
+const defaultScanTimeout = 100
 
 var errNoPrompt = errors.New("configuration is missing prompt")
 
@@ -25,6 +26,8 @@ var errNoPrompt = errors.New("configuration is missing prompt")
 type Config struct {
 	// Timeout is the default module timeout, in milliseconds.
 	Timeout int64 `yaml:"timeout"`
+	// ScanTimeout is the maximum time to spend scanning files in the current directory.
+	ScanTimeout int64 `yaml:"scanTimeout"`
 	// Extends is the name of another configuration file to extend.
 	Extends string `yaml:"extends"`
 	// Colors is a collection of custom colors.
@@ -36,7 +39,7 @@ type Config struct {
 }
 
 func newConfig() Config {
-	return Config{Timeout: defaultTimeout}
+	return Config{Timeout: defaultTimeout, ScanTimeout: defaultScanTimeout}
 }
 
 // LoadFromYaml loads the configuration file from a YAML file.

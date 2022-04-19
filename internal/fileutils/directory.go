@@ -1,10 +1,14 @@
 package fileutils
 
 import (
+	"io"
 	"io/fs"
 	"os"
 	"strings"
 	"sync"
+	"time"
+
+	"github.com/jwalton/kitsch/internal/kitsch/log"
 )
 
 // Directory represents a directory on the file system.  Directory has functions
@@ -17,8 +21,6 @@ type Directory interface {
 	HasExtension(extension string) bool
 	// HasFile returns true if the directory contains a file with the specified name.
 	HasFile(name string) bool
-	// HasDirectory returns true if the directory contains a directory with the specified name.
-	HasDirectory(name string) bool
 	// HasGlob returns true if the directory contains files which match the
 	// specified glob pattern.  The pattern is the same as for `match.Match`.
 	// The pattern may describe hierarchical paths like "*/*.js".
@@ -34,10 +36,14 @@ type Directory interface {
 }
 
 // NewDirectory creates a new Directory object for the directory at the given path.
-func NewDirectory(path string) Directory {
+// scanTimeout is the maximum time to spend reading files from disk.  If 0,
+// no timeout is used.
+func NewDirectory(path string, scanTimeout time.Duration) Directory {
 	return &directory{
-		path:       path,
-		fileSystem: os.DirFS(path),
+		path:         path,
+		fileSystem:   os.DirFS(path),
+		testInstance: false,
+		scanTimeout:  scanTimeout,
 	}
 }
 
@@ -49,60 +55,101 @@ func NewDirectoryTestFS(path string, fs fs.FS) Directory {
 		path:         path,
 		fileSystem:   fs,
 		testInstance: true,
+		scanTimeout:  0,
 	}
 }
 
 type directory struct {
 	path       string
 	fileSystem fs.FS
-	mutex      sync.Mutex
-	// files is the set of all files in the current directory.
-	files []fs.DirEntry
+	filesOnce  sync.Once
+	// files is a map of all files in the current directory.
+	files map[string]interface{}
 	// extensions is a map of all file extensions in the current directory, without
 	// a leading ".".  For example, if there's a "foo.gif" in the current folder,
 	// then `extensions["gif"]` will be set.
 	extensions   map[string]interface{}
 	testInstance bool
+	// scanTimeout is the maximum time to wait for loading directory contents to complete.
+	scanTimeout time.Duration
 }
 
 // Note that caller must have mutex.
-func (dir *directory) lazyInitFiles() error {
-	if dir.files == nil {
-		files, err := fs.ReadDir(dir.fileSystem, ".")
-		if err != nil {
-			return err
-		}
-		dir.files = files
-	}
-
-	return nil
-}
-
-func (dir *directory) lazyInitExtensions() {
-	if dir.extensions == nil {
+func (dir *directory) lazyInitFiles() {
+	dir.filesOnce.Do(func() {
+		dir.files = make(map[string]interface{})
 		dir.extensions = make(map[string]interface{})
 
-		for _, file := range dir.files {
-			parts := strings.Split(file.Name(), ".")
+		if dir.testInstance {
+			// For test instance, use fs.ReadDir.  This is MUCH
+			// slower, so we don't use it in "production", but
+			// it does let us use an in-memory filesystem for tests.
+			files, err := fs.ReadDir(dir.fileSystem, ".")
+			if err != nil {
+				return
+			}
 
-			if len(parts[0]) == 0 {
-				// Skip dotfiles.
-				continue
-			} else if len(parts) == 2 {
-				// If there are two parts, use the second part as the extension.,
-				ext := parts[1]
-				if len(ext) > 0 {
-					dir.extensions[ext] = nil
-				}
-			} else if len(parts) > 2 {
-				// If there are multiple parts, like "foo.rc.js", then we want to
-				// add "js" and "rc.js" to the list of extensions.
-				for i := 1; i < len(parts); i++ {
-					ext := strings.Join(parts[i:], ".")
-					if len(ext) > 0 {
-						dir.extensions[ext] = nil
+			for _, file := range files {
+				dir.cacheFile(file.Name())
+			}
+
+		} else {
+			f, err := os.Open(dir.path)
+			if err != nil {
+				return
+			}
+			defer f.Close()
+
+			start := time.Now()
+
+			done := false
+			fileCount := 0
+			for !done {
+				// Grab files, 256 at a time.
+				files, err := f.Readdirnames(256)
+				if err == io.EOF {
+					done = true
+				} else if err != nil {
+					return
+				} else {
+					for _, file := range files {
+						fileCount++
+						dir.cacheFile(file)
 					}
 				}
+
+				if dir.scanTimeout > 0 && time.Since(start) > dir.scanTimeout {
+					// We've spent too long reading files from the disk.  Use what
+					// we have so far.
+					done = true
+					log.Info("Directory scan timed out ", dir.path, " after ", fileCount, " files.")
+				}
+			}
+		}
+	})
+}
+
+// cacheFile caches information about a file in the current directory.
+func (dir *directory) cacheFile(filename string) {
+	dir.files[filename] = nil
+
+	parts := strings.Split(filename, ".")
+
+	if len(parts[0]) == 0 {
+		// Skip dotfiles.
+	} else if len(parts) == 2 {
+		// If there are two parts, use the second part as the extension.
+		ext := parts[1]
+		if len(ext) > 0 {
+			dir.extensions[ext] = nil
+		}
+	} else if len(parts) > 2 {
+		// If there are multiple parts, like "foo.rc.js", then we want to
+		// add "js" and "rc.js" to the list of extensions.
+		for i := 1; i < len(parts); i++ {
+			ext := strings.Join(parts[i:], ".")
+			if len(ext) > 0 {
+				dir.extensions[ext] = nil
 			}
 		}
 	}
@@ -118,15 +165,7 @@ func (dir *directory) HasExtension(extension string) bool {
 		return false
 	}
 
-	dir.mutex.Lock()
-	defer dir.mutex.Unlock()
-
-	err := dir.lazyInitFiles()
-	if err != nil {
-		return false
-	}
-
-	dir.lazyInitExtensions()
+	dir.lazyInitFiles()
 
 	_, ok := dir.extensions[extension]
 	return ok
@@ -137,13 +176,10 @@ func (dir *directory) Path() string {
 }
 
 func (dir *directory) HasFile(name string) bool {
-	_, err := fs.Stat(dir.fileSystem, name)
-	return err == nil
-}
+	dir.lazyInitFiles()
 
-func (dir *directory) HasDirectory(name string) bool {
-	fileinfo, err := fs.Stat(dir.fileSystem, name)
-	return err == nil && fileinfo.IsDir()
+	_, ok := dir.files[name]
+	return ok
 }
 
 func (dir *directory) HasGlob(name string) bool {

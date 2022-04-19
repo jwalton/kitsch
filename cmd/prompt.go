@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
+	"time"
 
 	"github.com/jwalton/gchalk"
 	"github.com/jwalton/go-supportscolor"
@@ -90,7 +91,14 @@ var promptCmd = &cobra.Command{
 			context = modules.NewDemoContext(*demoConfig, &styles)
 		} else {
 			globals := modules.NewGlobals(shell, cwd, logicalCWD, terminalWidth, status, jobs, cmdDuration, keymap)
-			context = modules.NewContext(globals, configuration.ProjectsTypes, configuration.Timeout, cacheDir, &styles)
+			context = modules.NewContext(
+				globals,
+				configuration.ProjectsTypes,
+				time.Duration(configuration.Timeout)*time.Millisecond,
+				time.Duration(configuration.ScanTimeout)*time.Millisecond,
+				cacheDir,
+				&styles,
+			)
 		}
 		performance.End("Context setup")
 

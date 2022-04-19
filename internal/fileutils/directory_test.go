@@ -1,6 +1,8 @@
 package fileutils
 
 import (
+	"path"
+	"runtime"
 	"testing"
 	"testing/fstest"
 
@@ -8,6 +10,23 @@ import (
 )
 
 func TestHasExtension(t *testing.T) {
+	_, sourceFile, _, ok := runtime.Caller(0)
+	if !ok {
+		panic("No caller information")
+	}
+
+	sourceDir := path.Dir(sourceFile)
+	dir := NewDirectory(sourceDir, 0)
+
+	assert.Equal(t, true, dir.HasExtension("go"))
+	assert.Equal(t, true, dir.HasExtension(".go"))
+	assert.Equal(t, false, dir.HasExtension("js"))
+	assert.Equal(t, false, dir.HasExtension(".js"))
+	assert.Equal(t, false, dir.HasExtension("test.js"))
+	assert.Equal(t, false, dir.HasExtension(".test.js"))
+}
+
+func TestHasExtensionTestFS(t *testing.T) {
 	fsys := fstest.MapFS{
 		"foo.go": &fstest.MapFile{
 			Data: []byte(""),
@@ -49,19 +68,4 @@ func TestHasFile(t *testing.T) {
 	dir := NewDirectoryTestFS("/foo/bar", fsys)
 
 	assert.Equal(t, true, dir.HasFile("src"))
-	assert.Equal(t, true, dir.HasFile("src/index.js"))
-	assert.Equal(t, false, dir.HasDirectory("test"))
-}
-
-func TestHasDirectory(t *testing.T) {
-	fsys := fstest.MapFS{
-		"src/index.js": &fstest.MapFile{
-			Data: []byte(""),
-		},
-	}
-
-	dir := NewDirectoryTestFS("/foo/bar", fsys)
-
-	assert.Equal(t, true, dir.HasDirectory("src"))
-	assert.Equal(t, false, dir.HasDirectory("test"))
 }
