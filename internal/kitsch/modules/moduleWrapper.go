@@ -133,7 +133,7 @@ func (wrapper ModuleWrapper) Execute(context *Context) ModuleWrapperResult {
 			// Module timed out!
 			// TODO: Record a list of which modules timed out in the context,
 			// so we can display a list of them in a warning.
-			log.Warn("Module ", wrapper.config.ID, " timed out after ", timeout, "ms")
+			log.Warn("Module ", wrapper.String(), " timed out after ", timeout, "ms")
 			result = ModuleWrapperResult{}
 		}
 	}
