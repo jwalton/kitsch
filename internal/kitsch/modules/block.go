@@ -1,6 +1,7 @@
 package modules
 
 import (
+	"fmt"
 	"strings"
 	"text/template"
 
@@ -48,20 +49,30 @@ func (mod BlockModule) Execute(context *Context) ModuleResult {
 	childDurations := perf.New(len(mod.Modules))
 	resultsByID := make(map[string]ModuleWrapperResult, len(mod.Modules))
 
-	for index := range mod.Modules {
-		wrapper := &mod.Modules[index]
+	moduleResults := executeModules(context, mod.Modules)
+	for index := range moduleResults {
+		wrapper := mod.Modules[index]
+		result := moduleResults[index]
 
 		moduleDescription := wrapper.String()
-		childDurations.Start(moduleDescription)
-		result := wrapper.Execute(context)
-		childDurations.EndWithChildren(moduleDescription, result.Performance)
+		childDurations.Add(moduleDescription, result.Duration, result.Performance)
 
 		if len(result.Text) != 0 {
 			resultsArray = append(resultsArray, result)
 		}
-		if wrapper.config.ID != "" {
-			resultsByID[wrapper.config.ID] = result
+
+		id := wrapper.config.ID
+		if id == "" {
+			_, typeInUse := resultsByID[wrapper.config.Type]
+			if !typeInUse {
+				// If the module has no ID, use its type.
+				id = wrapper.config.Type
+			} else {
+				id = fmt.Sprintf("%s(%d:%d)", wrapper.config.Type, wrapper.Line, wrapper.Column)
+			}
 		}
+
+		resultsByID[id] = result
 	}
 
 	defaultText := mod.joinChildren(context, resultsArray)
@@ -161,4 +172,34 @@ func init() {
 			},
 		},
 	)
+}
+
+// executeModules executes an array of modules in parallel.  It returns an array
+// of the same length as `modules`, where each value in the resulting array
+// contains the result of executing the corresponding module.
+func executeModules(context *Context, modules []ModuleWrapper) []ModuleWrapperResult {
+	type chResult struct {
+		index int
+		value ModuleWrapperResult
+	}
+
+	// Create a channel to receive results from each module.
+	ch := make(chan chResult)
+
+	// Create a goroutine for each module.
+	executeModule := func(index int, module ModuleWrapper) {
+		ch <- chResult{index, module.Execute(context)}
+	}
+	for i, module := range modules {
+		go executeModule(i, module)
+	}
+
+	// Collect the results from the channel.
+	results := make([]ModuleWrapperResult, len(modules))
+	for i := 0; i < len(modules); i++ {
+		result := <-ch
+		results[result.index] = result.value
+	}
+
+	return results
 }

@@ -46,6 +46,8 @@ type ModuleWrapperResult struct {
 	// EndStyle is similar to StartStyle, but contains the colors of the last
 	// character in Text.
 	EndStyle styling.CharacterColors
+	// Duration is the time it took this module to execute.
+	Duration time.Duration
 	// Performance is an array of execution times for children of this module.
 	Performance *perf.Performance
 }
@@ -86,7 +88,7 @@ func (wrapper *ModuleWrapper) UnmarshalYAML(node *yaml.Node) error {
 
 func (wrapper ModuleWrapper) String() string {
 	name := wrapper.config.Type
-	if wrapper.config.ID != wrapper.config.Type {
+	if wrapper.config.ID != "" {
 		name = name + "#" + wrapper.config.ID
 	}
 
@@ -111,6 +113,8 @@ func (wrapper ModuleWrapper) Execute(context *Context) ModuleWrapperResult {
 		timeout = context.DefaultTimeout
 	}
 
+	start := time.Now()
+
 	// Run the module in a goroutine, so we can time it out.
 	ch := make(chan ModuleWrapperResult, 1)
 	go func() {
@@ -133,6 +137,8 @@ func (wrapper ModuleWrapper) Execute(context *Context) ModuleWrapperResult {
 			result = ModuleWrapperResult{}
 		}
 	}
+
+	result.Duration = time.Since(start)
 
 	return result
 }

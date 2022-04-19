@@ -96,8 +96,7 @@ var promptCmd = &cobra.Command{
 
 		// Execute the prompt.
 		moduleResult, promptTest := modules.RenderPrompt(&context, configuration.Prompt)
-
-		performance.EndWithChildren("Prompt", moduleResult.Performance)
+		performance.Add("Prompt", moduleResult.Duration, moduleResult.Performance)
 
 		if perf {
 			performance.Print()

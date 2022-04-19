@@ -3,6 +3,7 @@ package styling
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/jwalton/gchalk"
 	"github.com/jwalton/kitsch/internal/kitsch/log"
@@ -10,6 +11,8 @@ import (
 
 // Registry is used to store and retrieve styles.
 type Registry struct {
+	mutex sync.Mutex
+
 	// CustomColors is a map of color names and their replacements.  For example,
 	// if CustomColors["$foregroud"] = "red", then "$foreground" could be used in
 	// a style string to refer to the color red.  Custom colors must start with
@@ -22,6 +25,9 @@ type Registry struct {
 // AddCustomColor registers a custom color with the registry.
 // The color name must start with a "$".
 func (registry *Registry) AddCustomColor(name string, color string) {
+	registry.mutex.Lock()
+	defer registry.mutex.Unlock()
+
 	if registry.CustomColors == nil {
 		registry.CustomColors = map[string]string{}
 	}
@@ -58,6 +64,9 @@ func (registry *Registry) AddCustomColors(colors map[string]string) {
 // • Any modifier accepted by `gchalk.Style()` (e.g. "bold", "dim", "inverse").
 //
 func (registry *Registry) Get(styleString string) (*Style, error) {
+	registry.mutex.Lock()
+	defer registry.mutex.Unlock()
+
 	if style := registry.styles[styleString]; style != nil {
 		return style, nil
 	}

@@ -57,12 +57,23 @@ func (p *Performance) EndWithChildren(description string, childPerfs *Performanc
 		startTime = p.lastStart
 	}
 
+	duration := time.Since(startTime)
+	p.Add(description, duration, childPerfs)
+}
+
+// Add adds execution time for an item to this Performance object.
+// `description` is a unique name for this item, `duration` is the time the item
+// took to execute, and `childPerfs` are any child items that were executed.
+func (p *Performance) Add(
+	description string,
+	duration time.Duration,
+	childPerfs *Performance,
+) {
 	var children []Record
 	if childPerfs != nil {
 		children = childPerfs.Records
 	}
 
-	duration := time.Since(startTime)
 	p.Records = append(p.Records, Record{
 		Description: description,
 		Duration:    duration,

@@ -49,9 +49,5 @@ func getCommonConfig(node *yaml.Node) (CommonConfig, error) {
 		return config, fmt.Errorf("object is missing type (%d:%d)", node.Line, node.Column)
 	}
 
-	if config.ID == "" {
-		config.ID = config.Type
-	}
-
 	return config, nil
 }

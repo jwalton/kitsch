@@ -66,3 +66,14 @@ func TestGradient(t *testing.T) {
 		`error compiling style "linear-gradient(bananajoe, blue)": invalid color "bananajoe" at 0`,
 	)
 }
+
+func TestAddCustomColors(t *testing.T) {
+	styles := testStyleRegistry()
+	styles.AddCustomColors(map[string]string{
+		"$red":  "#ff0000",
+		"$blue": "#0000ff",
+	})
+
+	_, err := styles.Get("$blue")
+	assert.NoError(t, err)
+}
