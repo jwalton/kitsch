@@ -18,7 +18,7 @@ func TestFileModule(t *testing.T) {
 
 	mod := moduleWrapperFromYAML(heredoc.Doc(`
 		type: file
-		from: foo.json
+		file: foo.json
 		as: json
 		template: '{{.Data.foo}}'
 	`))
@@ -37,12 +37,12 @@ func TestFileModuleRegex(t *testing.T) {
 
 	mod := moduleWrapperFromYAML(heredoc.Doc(`
 		type: file
-		from: docker.txt
+		file: docker.txt
 		regex: "^Docker version (.*), build .*$"
 	`))
 
 	result := mod.Execute(context)
-	assert.Equal(t, getterModuleTextResult{Text: "20.10.8"}, result.Data)
+	assert.Equal(t, fileModuleTextResult{Text: "20.10.8"}, result.Data)
 	assert.Equal(t, "20.10.8", result.Text)
 }
 
@@ -53,12 +53,12 @@ func TestFileModuleMissingFile(t *testing.T) {
 
 	mod := moduleWrapperFromYAML(heredoc.Doc(`
 		type: file
-		from: foo.json
+		file: foo.json
 		as: json
 		template: '{{.Data.foo}}'
 	`))
 
 	result := mod.Execute(context)
-	assert.Equal(t, getterModuleTextResult{Text: ""}, result.Data)
+	assert.Equal(t, fileModuleTextResult{Text: ""}, result.Data)
 	assert.Equal(t, "", result.Text)
 }

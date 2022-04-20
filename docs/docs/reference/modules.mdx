@@ -61,7 +61,7 @@ The "custom" module runs a command and returns the result. If the `as` parameter
 
 Configuration:
 
-- `from` is the command to run (e.g. "docker --version").
+- `command` is the command to run (e.g. "docker --version").
 - `as="text"` indicates how the output should be interpreted. This must be one of "text", "json", "toml", or "yaml".
 - `regex=""` is a regular expression used to parse values out of the result of the getter (e.g. "^Docker version (._), build ._$"). If specified, then "as" will be ignored.
 - `cache={ enabled: false }` controls caching. If `cache.enabled` is true, then the module will resolve the full path of the executable (following any sym-links), and then use the full path, the last modified date, the size of the command, and the arguments as a cache key. Caches are written to the "cache" subfolder in your configuration directory. Caching means that, if we're interested in what version of npm is installed, we only need to run `npm --version` if and when the `npm` executable changes.
@@ -106,7 +106,7 @@ Outputs:
 
 ## file
 
-The "file" module reads a file and uses the contents to produce an output. The configuration and outputs of the "file" module are identical to the ["custom"](#custom) module, except that `from` should be the name of a file in the current folder, or the relative path of a file in a subdirectory of the current folder.
+The "file" module reads a file and uses the contents to produce an output. The configuration and outputs of the "file" module are identical to the ["custom"](#custom) module, except that instead of the `command` option, there is a `file` option which gives the path to the file to read.  Thi should be the name of a file in the current folder, or the relative path of a file in a subdirectory of the current folder.
 
 ## git_diverged
 
