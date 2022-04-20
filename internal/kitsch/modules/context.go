@@ -80,8 +80,9 @@ func NewGlobals(
 	}
 
 	if terminalWidth <= 0 {
-		terminalWidth, _, err = term.GetSize(0)
+		terminalWidth, _, err = term.GetSize(int(os.Stdout.Fd()))
 		if err != nil {
+			log.Info("Unable to get terminal width:", err.Error())
 			terminalWidth = 80
 		}
 	}
