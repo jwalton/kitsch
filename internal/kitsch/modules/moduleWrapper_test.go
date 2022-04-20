@@ -3,6 +3,7 @@ package modules
 import (
 	"testing"
 	"testing/fstest"
+	"time"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/jwalton/kitsch/internal/fileutils"
@@ -73,4 +74,43 @@ func TestExecuteModuleWithConditions(t *testing.T) {
 	context.Directory = fileutils.NewDirectoryTestFS("/foo/bar", fstest.MapFS{})
 	result2 := mod.Execute(context)
 	assert.Equal(t, "", result2.Text)
+}
+
+type sleepModule struct {
+	// Type is the type of this module.
+	Type string
+	// Duration is the time to sleep in milliseconds.
+	Duration int64
+	// Text is the output of this module.
+	Text string
+}
+
+// Execute the module.
+func (mod sleepModule) Execute(context *Context) ModuleResult {
+	time.Sleep(time.Duration(mod.Duration) * time.Millisecond)
+
+	return ModuleResult{
+		DefaultText: mod.Text,
+		Data:        nil,
+	}
+}
+
+func TestExecuteModuleWithTimeout(t *testing.T) {
+	mod := ModuleWrapper{
+		config: CommonConfig{
+			Type:    "sleep",
+			Timeout: 10,
+		},
+		Module: sleepModule{
+			Type:     "sleep",
+			Duration: 1000,
+			Text:     "Hello World",
+		},
+	}
+
+	context := newTestContext("jwalton")
+	result := mod.Execute(context)
+
+	// Should have no output, because it should have timed out.
+	assert.Equal(t, "", result.Text)
 }
