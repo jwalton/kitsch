@@ -267,7 +267,7 @@ func NewDemoContext(
 		Styles:         styles,
 		gitInitialized: true,
 		git:            config.Git,
-		DefaultTimeout: 1000,
+		DefaultTimeout: 1000 * time.Millisecond,
 	}
 }
 
