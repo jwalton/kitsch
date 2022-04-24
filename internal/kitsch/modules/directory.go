@@ -84,6 +84,10 @@ func (mod DirectoryModule) Execute(context *Context) ModuleResult {
 	isHome := strings.HasPrefix(path, context.Globals.Home)
 
 	prefix := ""
+
+	// TODO: Should add a timeout to figuring out if this is a git repo or not.
+	// This sometimes takes a long time, and we end up timing out the entire
+	// directory module.
 	git := context.Git()
 	if mod.TruncateToRepo && git != nil && strings.HasPrefix(path, git.RepoRoot()) {
 		// Truncate to root of git repo if we're in a git repo.
