@@ -3,6 +3,7 @@ package log
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/jwalton/gchalk"
 )
@@ -10,6 +11,7 @@ import (
 // If verbose is false, we'll only print the first warning that comes along, and
 // hide all "info" messages.
 var verbose = false
+var verboseMutex = sync.Mutex{}
 
 var warningShowed = false
 
@@ -26,8 +28,7 @@ func SetVerbose(v bool) {
 // Info prints an info-level message to stderr.
 func Info(message ...interface{}) {
 	if verbose {
-		print(gchalk.Stderr.BrightCyan("Info: "))
-		println(fmt.Sprint(message...))
+		println(gchalk.Stderr.BrightCyan("Info: "), fmt.Sprint(message...))
 	}
 }
 
@@ -35,15 +36,16 @@ func Info(message ...interface{}) {
 // first warning will be displayed.  Once the user fixes that warning, or the
 // user runs `check` or in verbose mode, we can show them more warnings.
 func Warn(message ...interface{}) {
+	verboseMutex.Lock()
+	defer verboseMutex.Unlock()
+
 	if verbose || !warningShowed {
 		warningShowed = true
-		print(gchalk.Stderr.BrightYellow("Warn: "))
-		println(fmt.Sprint(message...))
+		println(gchalk.Stderr.BrightYellow("Warn : "), fmt.Sprint(message...))
 	}
 }
 
 // Error prints an error message to stderr.
 func Error(message ...interface{}) {
-	print(gchalk.Stderr.BrightRed("Error: "))
-	println(fmt.Sprint(message...))
+	println(gchalk.Stderr.BrightRed("Error: "), fmt.Sprint(message...))
 }
