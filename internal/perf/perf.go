@@ -59,6 +59,7 @@ func (p *Performance) EndWithChildren(description string, childPerfs *Performanc
 
 	duration := time.Since(startTime)
 	p.Add(description, duration, childPerfs)
+	p.lastStart = time.Now()
 }
 
 // Add adds execution time for an item to this Performance object.
