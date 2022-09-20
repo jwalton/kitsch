@@ -1,0 +1,101 @@
+prompt:
+  type: block
+  modules:
+    - type: block
+      style: brightCyan bold
+      modules:
+        - type: block
+          join: "@"
+          modules:
+            - type: username
+            - type: hostname
+        - type: directory
+          style: bold
+    - type: block
+      id: git
+      modules:
+        - type: git_head
+          template: |
+            {{- if .Text -}}
+              {{- if .Data.Detached -}}
+                  on {{ style "brightMagenta bold" " HEAD " -}}
+                  {{- printf "(%s)" .Data.ShortHash | style "brightGreen" -}}
+              {{- else -}}
+                on {{ printf " %s" .Data.Description | style "brightMagenta bold" -}}
+              {{- end -}}
+            {{- end -}}
+        - type: git_state
+          rebaseInteractive: REBASING
+          rebaseMerging: REBASING
+          rebasing: REBASING
+          rebaseAMing: AM/REBASE
+          template: |
+            {{- with .Text -}}
+              ({{ . | style "brightYellow bold" }})
+            {{- end -}}
+        - type: block
+          style: brightRed bold
+          modules:
+            - type: git_diverged
+              upToDateSymbol: ""
+            - type: git_status
+          template: |
+            {{- with .Data.Modules -}}
+              {{- if or .git_diverged.Text .git_status.Text -}}
+                {{- $status := .git_status.Data -}}
+                [
+                {{- .git_diverged.Data.Symbol -}}
+                {{- if gt $status.Unmerged 0 -}}={{- end -}}
+                {{- if gt $status.StashCount 0 -}}${{- end -}}
+                {{- if gt $status.Unstaged.Added 0 -}}?{{- end -}}
+                {{- if gt $status.Index.Deleted 0 -}}✘{{- end -}}
+                {{- if or
+                  (gt $status.Unstaged.Modified 0 )
+                  (gt $status.Unstaged.Deleted 0 )
+                  (gt $status.Index.Modified 0 )
+                  (gt $status.Index.Added 0 )
+                -}}!{{- end -}}
+                ]
+              {{- end -}}
+            {{- end -}}
+    - type: project
+      defaultProjectStyle: green bold
+      projects:
+        java:
+          style: dim red
+          toolSymbol: "☕ "
+        go:
+          style: bold cyan
+          toolSymbol: "🐹 "
+        rust:
+          style: bold red
+          toolSymbol: "🦀 "
+        node-yarn:
+          style: bold blue
+          toolSymbol: " "
+        node:
+          style: bold green
+          toolSymbol: " "
+        deno:
+          style: bold green
+          toolSymbol: "🦕 "
+        python:
+          style: bold yellow
+          toolSymbol: "🐍 "
+        php:
+          style: bold 147
+          toolSymbol: "🐘 "
+        ruby:
+          style: bold red
+          toolSymbol: "💎 "
+        helm:
+          style: bold white
+          toolSymbol: "⎈ "
+    - type: kubernetes
+      conditions:
+        ifFiles: ['helm', 'charts']
+    - type: command_duration
+      style: brightYellow
+    - type: jobs
+    - type: prompt
+      errorStyle: brightRed
