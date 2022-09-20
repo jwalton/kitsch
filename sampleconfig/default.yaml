@@ -1,6 +1,6 @@
 colors:
-  $fg: "#08f"
-  $directory: "linear-gradient(#0ff, $fg)"
+  $fg: brightBlue
+  $directory: brightBlue
   $git: brightCyan
   $gitAhead: brightGreen
   $gitBehind: brightRed

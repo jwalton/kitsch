@@ -213,7 +213,7 @@ var DefaultProjectTypes = []ProjectType{
 	},
 	{
 		Name:  "php",
-		Style: "#8993bb",
+		Style: "cyan",
 		Conditions: &condition.Conditions{
 			IfFiles:      []string{"composer.json", ".php-version"},
 			IfExtensions: []string{"php"},
