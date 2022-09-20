@@ -5,6 +5,7 @@ import (
 	"embed"
 	"fmt"
 	"os"
+	"strings"
 	"text/template"
 )
 
@@ -46,7 +47,8 @@ func getInitScript(filename string, shell string, configFile string) (string, er
 
 	initTemplate, err := initTemplates.ReadFile("templates/" + shell + "-" + filename + "." + shellExt)
 	if err != nil {
-		return "", fmt.Errorf("invalid shell %s", shell)
+		validShells := strings.Join(ValidShells(), ", ")
+		return "", fmt.Errorf("invalid shell %s.  Use one of: %s", shell, validShells)
 	}
 
 	return execTemplate(string(initTemplate), data)

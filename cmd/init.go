@@ -3,16 +3,24 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/jwalton/kitsch/internal/kitsch/initscripts"
+	"github.com/jwalton/kitsch/internal/kitsch/log"
 	"github.com/spf13/cobra"
 )
 
 var initCmd = &cobra.Command{
-	Use:   "init",
+	Use:   "init [shell]",
 	Short: "Returns a script which can be used to initialize " + programName + ".",
-	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) != 1 {
+			_ = cmd.Usage()
+			validShells := strings.Join(initscripts.ValidShells(), ", ")
+			log.Error("init command requires the name of a shells.  Use one of: " + validShells + ".")
+			os.Exit(1)
+		}
+
 		shell := args[0]
 
 		printFullInit, err := cmd.Flags().GetBool("print-full-init")

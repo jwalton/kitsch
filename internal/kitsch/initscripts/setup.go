@@ -18,6 +18,15 @@ var shellConfigFiles = map[string]string{
 	"powershell": "Microsoft.PowerShell_profile.ps1 (you can find the location of this file by running `echo $PROFILE`)",
 }
 
+// ValidShells returns a list of valid shell types.
+func ValidShells() []string {
+	result := []string{}
+	for supportedShell := range shellConfigFiles {
+		result = append(result, supportedShell)
+	}
+	return result
+}
+
 // ShowSetupInstructions prints setup instructions for the given shell.
 func ShowSetupInstructions(
 	programName string,
