@@ -47,7 +47,7 @@ prompt:
         - type: git_status
       template: "{{ with .Text }}[{{ . }}]{{end}}"
     - type: project
-      style: "#555"
+      style: "brightBlack"
       # template: |
       #   w/{{- printf "%s@%s" .Data.ToolSymbol .Data.ToolVersion | style .Data.ProjectStyle -}}
       #   {{- if .Data.PackageManagerVersion -}}
