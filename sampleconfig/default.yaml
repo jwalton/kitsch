@@ -12,7 +12,7 @@ prompt:
       style: brightBlack
     - type: block
       style: $directory
-      template: "{{ with .Text }}[{{ . }}]{{end}}"
+      template: "{{ with .Text }}[{{ . }}]{{ end }}"
       modules:
         - type: block
           join: "@"
@@ -21,6 +21,8 @@ prompt:
             - type: hostname
         - type: directory
           style: bold
+    - type: cpu
+      template: "{{ with .Text }}CPU: {{ . }}{{ end }}"
     - type: block
       id: git
       style: brightYellow
@@ -30,7 +32,7 @@ prompt:
             - type: git_head
             - type: git_diverged
             - type: git_state
-              template: "{{ with .Text }}|{{ . }}{{end}}"
+              template: "{{ with .Text }}|{{ . }}{{ end }}"
           template: |
             {{- with .Data.Modules -}}
               {{- if .git_head.Text -}}
