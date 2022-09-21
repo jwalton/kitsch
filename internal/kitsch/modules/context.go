@@ -128,6 +128,10 @@ type Context struct {
 	Styles *styling.Registry
 	// DefaultTimeout is the default module timeout.
 	DefaultTimeout time.Duration
+	// FlexibleSpaceReplacement is a string to use to replace flexible spaces.
+	// If set, flexible spaces will be replaced with this sentinel value.
+	// See DemoConfig.FlexibleSpaceReplacement for details.
+	FlexibleSpaceReplacement string
 
 	mutex          sync.Mutex
 	gitInitialized bool
@@ -214,6 +218,11 @@ type DemoConfig struct {
 	Git gitutils.DemoGit `yaml:"git"`
 	// CWDIsReadOnly is true if the current working directory is read-only.
 	CWDIsReadOnly bool `yaml:"cwdIsReadOnly"`
+	// FlexibleSpaceReplacement is a string to use to replace flexible spaces.
+	// This is only used when generating documentation - we replace flexible spaces
+	// with a sentinel value, and then in documentation generation we can use
+	// flexbox to make flexible spaces look good in the docs.
+	FlexibleSpaceReplacement string `yaml:"flexibleSpaceReplacement"`
 }
 
 // Load will load the demo configuration from the specified file.
@@ -259,15 +268,16 @@ func NewDemoContext(
 	}
 
 	return Context{
-		Globals:        config.Globals,
-		Directory:      fileutils.NewDirectoryTestFS(config.Globals.CWD, demoFsys),
-		Environment:    env.DummyEnv{Env: config.Env},
-		ProjectTypes:   []projects.ProjectType{},
-		ValueCache:     cache.NewMemoryCache(),
-		Styles:         styles,
-		gitInitialized: true,
-		git:            config.Git,
-		DefaultTimeout: 1000 * time.Millisecond,
+		Globals:                  config.Globals,
+		Directory:                fileutils.NewDirectoryTestFS(config.Globals.CWD, demoFsys),
+		Environment:              env.DummyEnv{Env: config.Env},
+		ProjectTypes:             []projects.ProjectType{},
+		ValueCache:               cache.NewMemoryCache(),
+		Styles:                   styles,
+		gitInitialized:           true,
+		git:                      config.Git,
+		DefaultTimeout:           1000 * time.Millisecond,
+		FlexibleSpaceReplacement: config.FlexibleSpaceReplacement,
 	}
 }
 

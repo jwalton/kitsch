@@ -59,8 +59,13 @@ func init() {
 }
 
 // processFlexibleSpaces replaces flexible space markers with spaces.
-func processFlexibleSpaces(terminalWidth int, renderedPrompt string) string {
+func processFlexibleSpaces(terminalWidth int, renderedPrompt string, replacement string) string {
 	result := ""
+
+	if replacement != "" {
+		// Just replace all the flexible space markers with the provided sentinel value.
+		return strings.ReplaceAll(renderedPrompt, flexibleSpaceMarker, replacement)
+	}
 
 	// Split into lines.
 	lines := strings.Split(renderedPrompt, "\n")

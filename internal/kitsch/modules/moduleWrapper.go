@@ -214,7 +214,7 @@ func processModuleResult(
 // RenderPrompt renders the top-level module in a prompt.
 func RenderPrompt(context *Context, root ModuleWrapper) (ModuleWrapperResult, string) {
 	result := root.Execute(context)
-	return result, processFlexibleSpaces(context.Globals.TerminalWidth, result.Text)
+	return result, processFlexibleSpaces(context.Globals.TerminalWidth, result.Text, context.FlexibleSpaceReplacement)
 }
 
 // func testTemplate(context *Context, prefix string, template string, dataMap map[string]interface{}) {

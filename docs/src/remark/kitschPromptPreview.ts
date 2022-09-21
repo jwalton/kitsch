@@ -1,14 +1,15 @@
 import Convert from "ansi-to-html";
 import { execSync } from "child_process";
+import escapeHtml from "escape-html";
 import * as fs from "fs";
 import { Code, Parent } from "mdast";
+import path from "path";
 import tmp from "tmp";
 import { Transformer } from "unified";
 import visit from "unist-util-visit";
-import escapeHtml from "escape-html";
-import path from "path";
 
 const KITSCH = process.env.KITSCH || "kitsch";
+const FLEX_SPACE = "--space--";
 
 const convert = new Convert({
   fg: "#cccccc",
@@ -40,27 +41,33 @@ function execCombined(
 function runKitschPrompt(exmaple: string): string {
   const configParts = exmaple.split("---");
 
-  let demo: string;
-  let config: string;
+  let demoContext: string;
+  let kitschConfig: string;
+
   if (configParts.length === 2) {
-    demo = configParts[0];
-    config = configParts[1];
+    demoContext = configParts[0];
+    kitschConfig = configParts[1];
   } else {
-    demo = "";
-    config = configParts[0];
+    demoContext = "";
+    kitschConfig = configParts[0];
   }
 
+  demoContext += `\nflexibleSpaceReplacement: '${FLEX_SPACE}'`;
+
   // Fix the CWD to be the root of the docs folder.
-  config = config.replace(/\${CWD}/g, path.join(__dirname, "..", ".."));
+  kitschConfig = kitschConfig.replace(
+    /\${CWD}/g,
+    path.join(__dirname, "..", "..")
+  );
 
   // Copy the example to a temporary file
   const demoFile = tmp.fileSync({ postfix: ".yaml" });
-  fs.writeFileSync(demoFile.name, demo);
+  fs.writeFileSync(demoFile.name, demoContext);
 
   let options = "";
-  if (config.trim()) {
+  if (kitschConfig.trim()) {
     const configFile = tmp.fileSync({ postfix: ".yaml" });
-    fs.writeFileSync(configFile.name, config);
+    fs.writeFileSync(configFile.name, kitschConfig);
     options += ` --config "${configFile.name}"`;
   }
 
@@ -73,28 +80,44 @@ function runKitschPrompt(exmaple: string): string {
 
     let html = escapeMdx(output);
 
-    // Convert ANSI to HTML.
-    html = convert.toHtml(html);
-
-    // Fix each style tag to be a JSX style tag.
-    html = html.replace(/style="([^"]*)"/g, (match, style) => {
-      const reactStyle = style
-        .split(";")
-        .map((s) => {
-          const [key, value] = s.split(":");
-          return `"${key}": "${value}"`;
-        })
-        .join(",");
-
-      return `style={{${reactStyle}}}`;
+    // Split up lines at flexible spaces.
+    const lines = html.split("\n");
+    const splitLines = lines.map((line) => {
+      const parts = line.split(FLEX_SPACE);
+      if (parts.length > 1) {
+        return `<div class="kitschPromptLine"><span class="kitchPromptLinePart">${parts
+          .map(convertToHtml)
+          .join('</span><span class="kitchPromptLinePart">')}</span></div>`;
+      } else {
+        return convertToHtml(line);
+      }
     });
 
-    html = html.replace(/\n/g, "<br/>");
+    html = splitLines.join("");
 
     return html;
   } catch (err) {
     return escapeMdx("Error running example: " + err.stack);
   }
+}
+
+export function convertToHtml(ansi: string) {
+  // Convert ANSI to HTML.
+  let html = convert.toHtml(ansi);
+
+  // Fix each style tag to be a JSX style tag.
+  html = html.replace(/style="([^"]*)"/g, (match, style) => {
+    const reactStyle = style
+      .split(";")
+      .map((s) => {
+        const [key, value] = s.split(":");
+        return `"${key}": "${value}"`;
+      })
+      .join(",");
+
+    return `style={{${reactStyle}}}`;
+  });
+  return html;
 }
 
 export default function kitschPromptPreview(): Transformer {
